@@ -4,8 +4,8 @@
  * headwear) on your own photos, prints every result URL to eyeball, and pins
  * the raw responses as fixtures.
  *
- *   YOUCAM_API_KEY=... npm run smoke -- \
- *     --body me-full.jpg --face me-face.jpg --garment dress.jpg --outer coat.jpg --hat cap.jpg
+ *   npm run smoke -- \   (reads YOUCAM_API_KEY from .env.local)
+ *     --body me-full.jpg --face me-face.jpg --garment dress.jpg --outer coat.jpg --hat cap.jpg [--gender male|female]
  *
  * Spends roughly 9 units. Every step is independent: a failure is reported and
  * the next step still runs where it can.
@@ -17,7 +17,7 @@ import { FEATURES, type FeatureId } from "../lib/youcam/features.ts";
 const BASE = "https://yce-api-01.makeupar.com";
 const KEY = process.env.YOUCAM_API_KEY;
 if (!KEY) {
-  console.error("Set YOUCAM_API_KEY first.");
+  console.error("Set YOUCAM_API_KEY in .env.local first.");
   process.exit(1);
 }
 
@@ -108,7 +108,7 @@ const balance = async () => JSON.stringify(await api("/s2s/v1.0/client/credit").
     }
     const made = await run("makeup-vto", "makeup-vto", { feature: "makeup-vto", makeup: { label: "test", lip: { color: "#8e1b2b", texture: "matte" }, foundation: { color: "#e9c7b0", coverage: 45 }, smooth: 40 } }, src);
     if (args.hat) {
-      await run("hat", "hat", { feature: "hat", ref: "x", gender: "female" }, made ? { src_file_url: made } : src, { ref_file_id: await upload(args.hat) });
+      await run("hat", "hat", { feature: "hat", ref: "x", gender: args.gender === "male" ? "male" : "female" }, made ? { src_file_url: made } : src, { ref_file_id: await upload(args.hat) });
     }
   }
   console.log("Balance after: ", await balance());
