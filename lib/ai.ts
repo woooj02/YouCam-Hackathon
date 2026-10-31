@@ -1,5 +1,5 @@
 /**
- * Claude, server-side. Three jobs, each with a narrow contract:
+ * The language model, server-side. Three jobs, each with a narrow contract:
  *   - breakdown: a written brief -> scenes, roles and look requirements (structured output)
  *   - tag:       a rack photo -> name, slot, colours, tags (vision + structured output)
  *   - director:  plain-language changes -> planner ops (tool use over the real solver)
@@ -14,10 +14,10 @@ export const MODEL = "claude-opus-5-5";
 export const FALLBACK = { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const };
 
 let client: Anthropic | null = null;
-export function claude(): Anthropic {
+export function llm(): Anthropic {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not set");
   client ??= new Anthropic();
   return client;
 }
 
-export const hasClaude = () => Boolean(process.env.ANTHROPIC_API_KEY);
+export const hasLLM = () => Boolean(process.env.ANTHROPIC_API_KEY);

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { hasClaude } from "@/lib/claude";
+import { hasLLM } from "@/lib/ai";
 import { direct, directOffline } from "@/lib/director";
 import type { Production } from "@/lib/engine/types";
 
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "bad_request", message: "production and message are required" }, { status: 400 });
     }
     const message = body.message.slice(0, 2000);
-    const result = hasClaude() ? await direct(body.production, message, body.history ?? []) : directOffline(body.production, message);
+    const result = hasLLM() ? await direct(body.production, message, body.history ?? []) : directOffline(body.production, message);
     return NextResponse.json(result);
   } catch (err) {
     console.error(err);

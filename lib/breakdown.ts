@@ -1,5 +1,5 @@
 /**
- * Claude's breakdown -> a Production skeleton. Pure and deterministic, so the
+ * The AI breakdown -> a Production skeleton. Pure and deterministic, so the
  * designer can preview it, correct it, then apply it. Photos and rack pieces
  * carry over by name, so re-breaking a brief never loses work.
  */

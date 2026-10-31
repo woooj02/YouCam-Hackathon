@@ -1,7 +1,7 @@
 /**
  * The director: plain-language production changes ("the navy coat has moth
  * damage", "lock Elsie's party look", "make Quill's coat black") become planner
- * ops. Claude reads and acts through tools; every number it reports comes from
+ * ops. The model reads and acts through tools; every number it reports comes from
  * the solver's output, and the browser replays the returned ops on the full
  * production so both sides agree.
  */
@@ -11,7 +11,7 @@ import { applyOp, type Op } from "./engine/ops";
 import { lightweight } from "./engine/light";
 import { usesOf } from "./engine/solver";
 import type { Production, Slot } from "./engine/types";
-import { claude, FALLBACK, MODEL } from "./claude";
+import { FALLBACK, llm, MODEL } from "./ai";
 
 const SYSTEM = `You are ENCORE's production director, working with a theatre costume designer.
 You change the wardrobe plan only through your tools, and you report only what the tools return:
@@ -177,7 +177,7 @@ export async function direct(production: Production, message: string, history: {
   ];
 
   for (let turn = 0; turn < 8; turn++) {
-    const res = await claude().beta.messages.create({
+    const res = await llm().beta.messages.create({
       model: MODEL,
       max_tokens: 4000,
       ...FALLBACK,
@@ -207,7 +207,7 @@ export async function direct(production: Production, message: string, history: {
 }
 
 /**
- * No Claude key: understand the one sentence every show eventually says,
+ * No model key: understand the one sentence every show eventually says,
  * "<piece> is gone", so the replanning demo works offline too.
  */
 export function directOffline(production: Production, message: string): DirectorResult {

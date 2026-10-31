@@ -16,7 +16,7 @@ Judges may score from the video alone. Every second either shows the product wor
 ## 0:12–0:30 · The brief and the cast
 **Screen:** `/studio/setup`, Brief tab. The Lantern Keepers brief is pasted. Click **Draft the breakdown**. Scenes, roles and looks appear, then **Worth confirming** questions.
 Cut to the Cast tab: three performers with full-body and close-up photos.
-**VO:** "ENCORE starts where a designer does: the brief. Claude drafts the breakdown, scenes, roles and every look, and flags what's ambiguous. Then the cast, photographed once."
+**VO:** "ENCORE starts where a designer does: the brief. The AI drafts the breakdown, scenes, roles and every look, and flags what's ambiguous. Then the cast, photographed once."
 
 ## 0:30–0:45 · The rack (phone)
 **Screen:** Phone footage: photograph the navy greatcoat on a hanger in Rack intake. Fields fill in: *Navy wool greatcoat · Outer layer · navy · coat, wool, naval*. Tap **Add to rack**.

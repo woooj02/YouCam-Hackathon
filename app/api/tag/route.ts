@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import { claude, FALLBACK, hasClaude, MODEL } from "@/lib/claude";
+import { FALLBACK, hasLLM, llm, MODEL } from "@/lib/ai";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -18,12 +18,12 @@ const Tag = z.object({
 
 /** Rack intake: a photo of one piece becomes an editable rack tag. The designer confirms it. */
 export async function POST(req: Request) {
-  if (!hasClaude()) return NextResponse.json({ error: "no_key", message: "Add ANTHROPIC_API_KEY to auto-tag photos, or tag by hand." }, { status: 503 });
+  if (!hasLLM()) return NextResponse.json({ error: "no_key", message: "Add ANTHROPIC_API_KEY to auto-tag photos, or tag by hand." }, { status: 503 });
   try {
     const { image } = (await req.json()) as { image?: string };
     const m = image && /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(image);
     if (!m) return NextResponse.json({ error: "bad_request", message: "Send one JPEG or PNG photo." }, { status: 400 });
-    const res = await claude().beta.messages.parse({
+    const res = await llm().beta.messages.parse({
       model: MODEL,
       max_tokens: 4000,
       ...FALLBACK,
@@ -44,6 +44,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ tag: res.parsed_output });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "claude_error", message: "Tagging is busy. Tag by hand or retry." }, { status: 502 });
+    return NextResponse.json({ error: "ai_error", message: "Tagging is busy. Tag by hand or retry." }, { status: 502 });
   }
 }

@@ -8,7 +8,7 @@ Small theatres dress a whole cast from one shared rack, a hire house and the thr
 
 ## What it does
 ENCORE is a fitting room for an entire cast.
-1. **Brief in, breakdown out.** Paste the show; Claude drafts scenes, roles and each look's needs, and flags ambiguities.
+1. **Brief in, breakdown out.** Paste the show; the AI drafts scenes, roles and each look's needs, and flags ambiguities.
 2. **Photograph the rack.** Each photo becomes an editable rack tag. The designer adds sizes, quantities and whether a piece is owned, on hire or for sale.
 3. **Plan the whole cast at once.** A constraint solver allocates the rack across every look: never two wearers for one piece in a scene, only sizes that fit, never over budget. What it can't fill becomes a priced sourcing line.
 4. **See opening night.** Every look is rendered on the real performer with YouCam: costume, outer layer, hairstyle, makeup and headwear.
@@ -29,7 +29,7 @@ What makes it production-grade rather than a wrapper:
 - **Engine errors arrive as HTTP 200.** They're parsed into instructions a person can act on.
 - **The API key never leaves the server.**
 
-The planner is a branch-and-bound solver with scene-capacity, size, availability and budget constraints. Claude works only through tools over that solver, so every price and quantity it mentions comes from the plan. Next.js on Vercel; Claude for the breakdown, rack tagging and the director.
+The planner is a branch-and-bound solver with scene-capacity, size, availability and budget constraints. The AI works only through tools over that solver, so every price and quantity it mentions comes from the plan. Next.js on Vercel; an LLM for the breakdown, rack tagging and the director.
 
 ## Results
 On 200 seeded synthetic productions, picking each look on its own (the way most teams work) produced a feasible plan 24.5% of the time, with 317 double-bookings and 25.5% of plans over budget. ENCORE's planner produced a feasible plan 100% of the time, with zero double-bookings, in about 4 ms per production. It leaves slots unfilled rather than double-booking or overspending, and reports those slots as sourcing needs. Reproducible with `npm run eval`.
@@ -53,7 +53,7 @@ Try-on becomes far more useful when it's attached to a decision with constraints
 - Pilots with community theatres and school drama departments.
 
 ## Built with
-YouCam API (AI Clothes Virtual Try-On, AI Hairstyle Virtual Try-On, AI Makeup Virtual Try-On, AI Hat Virtual Try-On, File API), Claude (Anthropic API), Next.js, TypeScript, Tailwind CSS, Zod, Vitest, Vercel.
+YouCam API (AI Clothes Virtual Try-On, AI Hairstyle Virtual Try-On, AI Makeup Virtual Try-On, AI Hat Virtual Try-On, File API), Anthropic API, Next.js, TypeScript, Tailwind CSS, Zod, Vitest, Vercel.
 
 ## Links
 - Code: https://github.com/woooj02/YouCam-Hackathon

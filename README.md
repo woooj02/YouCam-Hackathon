@@ -27,7 +27,7 @@ Costume software already tracks stock, measurements and scene plots. What it can
 
 ## What ENCORE does
 
-1. **Brief in, breakdown out.** Paste the show. Claude drafts scenes, roles, and each look's needs per slot (costume, outer layer, headwear). The designer corrects it before anything is planned.
+1. **Brief in, breakdown out.** Paste the show. The AI drafts scenes, roles, and each look's needs per slot (costume, outer layer, headwear). The designer corrects it before anything is planned.
 2. **Photograph the rack.** Each photo becomes an editable rack tag (name, slot, colours, tags). The designer adds sizes, quantity and whether it's owned, on hire, or for sale.
 3. **Plan the whole cast at once.** A constraint solver assigns pieces to every look: never more wearers in a scene than the rack holds, only sizes that fit, never over budget. Anything it can't fill becomes a sourcing need, not a hidden double-booking.
 4. **See opening night.** Each look is rendered on the performer in two YouCam chains (below). The cast board fills with complete looks.
@@ -82,11 +82,11 @@ Engineering details that matter for a real deployment:
 
 ## The agent
 
-Claude does three bounded jobs (`lib/claude.ts`, `lib/director.ts`):
+The AI does three bounded jobs (`lib/ai.ts`, `lib/director.ts`):
 
 - **Breakdown:** structured output (zod schema) from the written brief, plus questions where the brief is ambiguous.
 - **Rack tagging:** vision plus structured output from one photo of one piece. The designer confirms it.
-- **Director:** a tool loop over the real solver (`find_items`, `mark_unavailable`, `change_requirement`, `lock_look`, `set_budget`, `production_summary`). Claude never states a price, size or quantity the tools didn't return. The server returns an op log and the browser replays it on the full production; the solver is deterministic, so both sides agree.
+- **Director:** a tool loop over the real solver (`find_items`, `mark_unavailable`, `change_requirement`, `lock_look`, `set_budget`, `production_summary`). The model never states a price, size or quantity the tools didn't return. The server returns an op log and the browser replays it on the full production; the solver is deterministic, so both sides agree.
 
 Without an Anthropic key the director runs offline and still understands "`<piece>` is unavailable" and "re-plan".
 
@@ -120,7 +120,7 @@ npm run smoke -- --body full.jpg --face face.jpg --garment dress.jpg --outer coa
 ```
 app/                 landing, studio, setup, fitting cards, API routes
 app/api/youcam/      upload, run, task, templates, credits (server-side key)
-app/api/director     Claude tool loop over the solver
+app/api/director     AI tool loop over the solver
 lib/engine/          types, solver, ops, render graph (pure, unit-tested)
 lib/youcam/          YouCam client, request bodies, result parsing
 lib/showcase.ts      The Lantern Keepers, an original one-act written for the demo

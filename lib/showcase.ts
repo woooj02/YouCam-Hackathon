@@ -5,7 +5,7 @@
  * two roles, and the budget is tight.
  *
  * Brands and shops here are fictional. Garment images are placeholders until a
- * team photographs its own rack (the intake flow tags photos with Claude).
+ * team photographs its own rack (the intake flow tags photos with AI).
  */
 import type { Item, Production } from "./engine/types";
 
