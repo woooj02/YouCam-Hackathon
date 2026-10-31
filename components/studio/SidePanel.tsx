@@ -18,10 +18,10 @@ export function SidePanel({ onLost }: { onLost: (item: Item) => void }) {
     ["activity", "Activity"],
   ];
   return (
-    <aside className="flex h-full flex-col rounded-2xl border border-line bg-stage">
+    <aside className="flex h-full flex-col rounded-2xl border border-line bg-surface shadow-card">
       <div className="flex gap-1 border-b border-line p-2">
         {tabs.map(([id, label]) => (
-          <button key={id} onClick={() => setTab(id)} className={`flex-1 rounded-lg px-3 py-2 text-sm ${tab === id ? "bg-panel text-paper" : "text-muted hover:text-paper"}`}>
+          <button key={id} onClick={() => setTab(id)} className={`flex-1 rounded-lg px-3 py-2 text-sm ${tab === id ? "bg-panel text-fg" : "text-muted hover:text-fg"}`}>
             {label}
           </button>
         ))}
@@ -47,7 +47,7 @@ function Rack({ onLost }: { onLost: (item: Item) => void }) {
               const uses = usesOf(p, it.id);
               const hot = highlight && Date.now() - highlight.at < 4000 && highlight.itemIds.includes(it.id);
               return (
-                <li key={it.id} className={`flex items-center gap-3 rounded-xl p-2 ${hot ? "glow-gold" : ""} ${it.available ? "hover:bg-panel" : "opacity-50"}`}>
+                <li key={it.id} className={`flex items-center gap-3 rounded-xl p-2 ${hot ? "glow-accent" : ""} ${it.available ? "hover:bg-panel" : "opacity-50"}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={it.image?.startsWith("data:") || it.image?.startsWith("http") ? it.image : swatchFor(it)} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
                   <div className="min-w-0 flex-1">
@@ -86,7 +86,7 @@ function Basket() {
           </span>
         </div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-panel">
-          <div className="h-full rounded-full bg-gold transition-all duration-700" style={{ width: `${pct}%` }} />
+          <div className="h-full rounded-full grad transition-all duration-700" style={{ width: `${pct}%` }} />
         </div>
       </div>
       <ul className="space-y-2">
@@ -94,7 +94,7 @@ function Basket() {
           const it = itemById(p, l.itemId)!;
           const hot = highlight && Date.now() - highlight.at < 4000 && highlight.itemIds.includes(l.itemId);
           return (
-            <li key={l.itemId} className={`rise rounded-xl border border-line p-3 ${hot ? "glow-gold" : ""}`}>
+            <li key={l.itemId} className={`rise rounded-xl border border-line p-3 ${hot ? "glow-accent" : ""}`}>
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-sm">{it.name}</span>
                 <span className="text-sm">{money(p, l.total)}</span>
@@ -109,7 +109,7 @@ function Basket() {
       </ul>
       {plan.gaps.length ? (
         <div>
-          <h4 className="mb-2 text-xs uppercase tracking-wider text-gold">Still to source</h4>
+          <h4 className="mb-2 text-xs uppercase tracking-wider text-accent">Still to source</h4>
           <ul className="space-y-1 text-sm">
             {plan.gaps.map((g, i) => (
               <li key={i} className="rounded-lg bg-panel px-3 py-2">

@@ -28,13 +28,13 @@ Cut to the Cast tab: three performers with full-body and close-up photos.
 **VO:** "Pick looks one character at a time and the captain and the harbourmaster both get the only navy coat, in the same scene. ENCORE plans every look together: one piece, one person per scene, inside the budget."
 
 ## 1:05–1:35 · See opening night (the reveal)
-**Screen:** Click **See opening night**. The cast board fills: six complete looks on three real performers, each with a portrait inset. Slow scroll. Open **Elsie, the masquerade** in the drawer: Full-body photo → Costume → Outer layer, and Close-up → Hairstyle → Makeup. Hover the gold API labels.
+**Screen:** Click **See opening night**. The cast board fills: six complete looks on three real performers, each with a portrait inset. Slow scroll. Open **Elsie, the masquerade** in the drawer: Full-body photo → Costume → Outer layer, and Close-up → Hairstyle → Makeup. Hover the pink API labels.
 **Caption (stacked, 1 s each):** *AI Clothes Virtual Try-On* · *AI Clothes Virtual Try-On, outer layer* · *AI Hairstyle Virtual Try-On* · *AI Makeup Virtual Try-On* · *AI Hat Virtual Try-On*
 **VO:** "Then, opening night, before anything is hired. Each look is two chains of YouCam API calls: Clothes Try-On puts the rack piece on the performer, and a second Clothes call layers the coat over it. Hairstyle Try-On sets the hair direction while keeping the performer's own colour. Makeup Try-On adds the stage face. Hat Try-On adds the headwear. Every stage feeds the next."
 
 ## 1:35–2:10 · The money shot: something breaks
 **Screen:** Type into the director bar: *"The navy greatcoat has moth damage, we can't use it."* Press Send.
-Show in order: the toast (*Re-planned 1 look: Rowe, off the boat: outer Navy wool greatcoat → Naval pea coat*), the green line *↻ Re-rendering 1 of N layers. Everything else is kept.* (N depends on the hair styles chosen), Rowe's card shimmering then revealing the pea coat, the scene plot turning gold in scenes 1, 4 and 5, the rack showing the greatcoat struck through, and the Sourcing tile ticking from $0 to $40.
+Show in order: the toast (*Re-planned 1 look: Rowe, off the boat: outer Navy wool greatcoat → Naval pea coat*), the green line *↻ Re-rendering 1 of N layers. Everything else is kept.* (N depends on the hair styles chosen), Rowe's card shimmering then revealing the pea coat, the scene plot lighting up in scenes 1, 4 and 5, the rack showing the greatcoat struck through, and the Sourcing tile ticking from $0 to $40.
 **VO:** "Then reality happens. The navy coat has moth damage. One sentence. ENCORE finds every look that used it, swaps in a naval pea coat from the hire house, and re-renders one layer of one look. Not the whole cast: one layer out of all of them. The budget updates: forty dollars of two-fifty."
 
 ## 2:10–2:25 · Lock and print

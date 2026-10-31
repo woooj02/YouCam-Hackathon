@@ -10,8 +10,8 @@ export default function PrintCards() {
   return (
     <main className="mx-auto max-w-4xl px-6 py-8">
       <div className="no-print mb-6 flex items-center justify-between">
-        <Link href="/studio" className="text-sm text-muted hover:text-paper">← Studio</Link>
-        <button onClick={() => window.print()} className="rounded-full bg-gold px-5 py-2 text-sm font-medium text-ink">Print fitting cards</button>
+        <Link href="/studio" className="text-sm text-muted hover:text-fg">← Studio</Link>
+        <button onClick={() => window.print()} className="rounded-full grad px-5 py-2 text-sm font-medium text-white">Print fitting cards</button>
       </div>
       <h1 className="font-[family-name:var(--font-display)] text-3xl">{p.title}: fitting cards</h1>
       <p className="text-sm text-muted">Previews show appearance. Fit, comfort and quick-change timing are confirmed at the fitting.</p>

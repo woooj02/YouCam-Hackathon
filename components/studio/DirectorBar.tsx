@@ -14,7 +14,7 @@ const SUGGESTIONS = [
 ];
 
 export function DirectorBar() {
-  const { production: p, replay, render, status } = useStudio();
+  const { production: p, replay, render } = useStudio();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -60,15 +60,15 @@ export function DirectorBar() {
     <div className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-30 px-4 pb-4 sm:px-8">
       <div className="pointer-events-auto mx-auto max-w-3xl">
         {last ? (
-          <div className="rise mb-3 rounded-2xl border border-gold/40 bg-stage/95 p-4 shadow-2xl backdrop-blur">
+          <div className="rise mb-3 rounded-2xl border border-accent/40 bg-surface/95 p-4 shadow-2xl backdrop-blur">
             <div className="flex items-start justify-between gap-3">
               <p className="text-sm leading-relaxed">{last.reply}</p>
-              <button onClick={() => setLast(null)} className="text-xs text-muted hover:text-paper" aria-label="Dismiss">
+              <button onClick={() => setLast(null)} className="text-xs text-muted hover:text-fg" aria-label="Dismiss">
                 ✕
               </button>
             </div>
             {last.lines.length ? (
-              <ul className="mt-2 space-y-1 text-xs text-gold-soft">
+              <ul className="mt-2 space-y-1 text-xs text-accent">
                 {last.lines.map((l, i) => (
                   <li key={i} className="tick" style={{ animationDelay: `${i * 120}ms` }}>
                     ↳ {l}
@@ -77,13 +77,12 @@ export function DirectorBar() {
               </ul>
             ) : null}
             {last.rerender ? <p className="tick mt-2 text-xs text-ok">↻ {last.rerender}</p> : null}
-            {last.offline ? <p className="mt-2 text-[11px] text-muted">Offline director (no Anthropic key)</p> : null}
           </div>
         ) : null}
         {focused && !busy ? (
           <div className="mb-2 flex flex-wrap gap-2">
             {SUGGESTIONS.map((s) => (
-              <button key={s} onMouseDown={(e) => e.preventDefault()} onClick={() => send(s)} className="rounded-full border border-line bg-stage/90 px-3 py-1.5 text-xs text-muted backdrop-blur hover:border-gold hover:text-paper">
+              <button key={s} onMouseDown={(e) => e.preventDefault()} onClick={() => send(s)} className="rounded-full border border-line bg-surface/90 px-3 py-1.5 text-xs text-muted backdrop-blur hover:border-accent hover:text-fg">
                 {s}
               </button>
             ))}
@@ -94,9 +93,9 @@ export function DirectorBar() {
             e.preventDefault();
             send(text);
           }}
-          className="flex items-center gap-2 rounded-full border border-line bg-stage/95 p-1.5 pl-5 shadow-2xl backdrop-blur focus-within:border-gold"
+          className="flex items-center gap-2 rounded-full border border-line bg-surface/95 p-1.5 pl-5 shadow-2xl backdrop-blur focus-within:border-accent"
         >
-          <span className="font-[family-name:var(--font-display)] text-gold">✦</span>
+          <span className="font-[family-name:var(--font-display)] text-accent">✦</span>
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -106,11 +105,10 @@ export function DirectorBar() {
             onBlur={() => setFocused(false)}
             className="flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-muted"
           />
-          <button disabled={busy || !text.trim()} className="rounded-full bg-gold px-5 py-2 text-sm font-medium text-ink disabled:opacity-40">
+          <button disabled={busy || !text.trim()} className="rounded-full grad px-5 py-2 text-sm font-medium text-white disabled:opacity-40">
             {busy ? "…" : "Send"}
           </button>
         </form>
-        {status && !status.agent ? <p className="mt-1 text-center text-[11px] text-muted">Director running offline. Add a free GEMINI_API_KEY for full direction.</p> : null}
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ export function CastBoard({ onOpen }: { onOpen: (lookId: string) => void }) {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={perf.portraitPhoto} alt="" className="h-9 w-9 rounded-full object-cover" />
               ) : (
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-panel font-[family-name:var(--font-display)] text-gold">{perf.name[0]}</span>
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-panel font-[family-name:var(--font-display)] text-accent">{perf.name[0]}</span>
               )}
               <div>
                 <div className="font-medium">{perf.name}</div>

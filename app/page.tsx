@@ -15,8 +15,8 @@ export default function Home() {
     <main className="spotlight min-h-screen">
       <div className="mx-auto max-w-6xl px-4 pb-24 pt-10 sm:px-8">
         <nav className="flex items-center justify-between">
-          <span className="font-[family-name:var(--font-display)] text-2xl font-extrabold tracking-[0.2em] text-gold">ENCORE</span>
-          <Link href="/studio" className="rounded-full border border-line px-4 py-2 text-sm text-muted hover:border-gold hover:text-paper">
+          <span className="font-[family-name:var(--font-display)] text-2xl font-extrabold tracking-[0.2em] grad-text">ENCORE</span>
+          <Link href="/studio" className="rounded-full border border-line px-4 py-2 text-sm text-muted hover:border-accent hover:text-fg">
             Open studio
           </Link>
         </nav>
@@ -24,17 +24,17 @@ export default function Home() {
         <section className="rise mt-20 max-w-4xl">
           <p className="text-sm uppercase tracking-[0.3em] text-muted">The fitting room for an entire cast</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl font-semibold leading-[1.05] sm:text-7xl">
-            See opening night <span className="text-gold">before</span> you rent or buy the costumes.
+            See opening night <span className="text-accent">before</span> you rent or buy the costumes.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-muted">
             ENCORE plans every costume look across your cast from the rack you already have, previews each one on the real performer,
             and tells you exactly what is left to source, inside your budget.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
-            <Link href="/studio?showcase=1" className="rounded-full bg-gold px-6 py-3 font-medium text-ink shadow-[0_0_40px_rgba(232,176,75,.35)] hover:bg-gold-soft">
+            <Link href="/studio?showcase=1" className="rounded-full grad px-6 py-3 font-medium text-white shadow-[0_0_40px_rgba(210,58,116,.28)] hover:brightness-110">
               Open the showcase production
             </Link>
-            <Link href="/studio/setup" className="rounded-full border border-line px-6 py-3 text-paper hover:border-gold">
+            <Link href="/studio/setup" className="rounded-full border border-line px-6 py-3 text-fg hover:border-accent">
               Start your own production
             </Link>
           </div>
@@ -42,8 +42,8 @@ export default function Home() {
 
         <section className="mt-24 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {STEPS.map((s, i) => (
-            <div key={s.n} className="rise rounded-2xl border border-line bg-stage/80 p-5" style={{ animationDelay: `${120 + i * 90}ms` }}>
-              <div className="font-[family-name:var(--font-display)] text-3xl text-gold">{s.n}</div>
+            <div key={s.n} className="rise rounded-2xl border border-line bg-surface/80 p-5 shadow-card backdrop-blur" style={{ animationDelay: `${120 + i * 90}ms` }}>
+              <div className="font-[family-name:var(--font-display)] text-3xl text-accent">{s.n}</div>
               <h3 className="mt-3 font-semibold">{s.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted">{s.body}</p>
             </div>
@@ -53,7 +53,7 @@ export default function Home() {
         <section className="mt-16 flex flex-wrap items-center gap-2 text-sm text-muted">
           <span className="mr-2">Rendered with Perfect Corp&apos;s YouCam API:</span>
           {APIS.map((a) => (
-            <span key={a} className="rounded-full border border-line px-3 py-1 text-paper/90">{a}</span>
+            <span key={a} className="rounded-full border border-line px-3 py-1 text-fg/90">{a}</span>
           ))}
         </section>
 

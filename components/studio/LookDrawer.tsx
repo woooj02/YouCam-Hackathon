@@ -39,8 +39,8 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
   const root = (c: "body" | "portrait") => (c === "body" ? performer?.bodyPhoto : performer?.portraitPhoto);
 
   return (
-    <div className="no-print fixed inset-0 z-40 flex justify-end bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="rise scrollbar-thin h-full w-full max-w-3xl overflow-y-auto border-l border-line bg-ink p-6" onClick={(e) => e.stopPropagation()}>
+    <div className="no-print fixed inset-0 z-40 flex justify-end bg-fg/25 backdrop-blur-sm" onClick={onClose}>
+      <div className="rise scrollbar-thin h-full w-full max-w-3xl overflow-y-auto border-l border-line bg-canvas p-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-xs uppercase tracking-wider text-muted">
@@ -51,16 +51,16 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
               Scenes: {look.sceneIds.map((id) => p.scenes.find((x) => x.id === id)?.name).join(" · ")}
             </p>
           </div>
-          <button onClick={onClose} className="rounded-full border border-line px-3 py-1 text-sm text-muted hover:text-paper">
+          <button onClick={onClose} className="rounded-full border border-line px-3 py-1 text-sm text-muted hover:text-fg">
             Close
           </button>
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          <button onClick={() => render([look.id])} disabled={rendering} className="rounded-full bg-gold px-4 py-2 text-sm font-medium text-ink disabled:opacity-50">
+          <button onClick={() => render([look.id])} disabled={rendering} className="rounded-full grad px-4 py-2 text-sm font-medium text-white disabled:opacity-50">
             {s.done ? "Re-check renders" : "Render this look"}
           </button>
-          <button onClick={() => op({ type: "lock", lookId: look.id, locked: !look.locked })} className="rounded-full border border-line px-4 py-2 text-sm hover:border-gold">
+          <button onClick={() => op({ type: "lock", lookId: look.id, locked: !look.locked })} className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent">
             {look.locked ? "Unlock look" : "Approve & lock look"}
           </button>
         </div>
@@ -107,7 +107,7 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-2 text-sm text-gold">To source</div>
+                    <div className="mt-2 text-sm text-accent">To source</div>
                   )}
                   <div className="mt-2 text-[11px] text-muted">Brief: {[...(r.colors ?? []), ...r.tags].join(", ")}</div>
                 </li>
@@ -124,19 +124,19 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
               type="checkbox"
               checked={look.hair?.keepColor ?? true}
               onChange={(e) => look.hair && setHair({ ...look.hair, keepColor: e.target.checked })}
-              className="accent-[#e8b04b]"
+              className="accent-[#d23a74]"
             />
             Keep {performer?.name}&apos;s own hair colour
           </label>
           <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
-            <button onClick={() => setHair(undefined)} className={`rounded-xl border p-2 text-xs ${!look.hair ? "border-gold text-gold" : "border-line text-muted"}`}>
+            <button onClick={() => setHair(undefined)} className={`rounded-xl border p-2 text-xs ${!look.hair ? "border-accent text-accent" : "border-line text-muted"}`}>
               Their own hair
             </button>
             {(templates ?? []).slice(0, 14).map((t) => (
               <button
                 key={t.id}
                 onClick={() => setHair({ templateId: t.id, label: t.title, thumb: t.thumb, keepColor: look.hair?.keepColor ?? true })}
-                className={`overflow-hidden rounded-xl border text-xs ${look.hair?.templateId === t.id ? "border-gold text-gold" : "border-line text-muted"}`}
+                className={`overflow-hidden rounded-xl border text-xs ${look.hair?.templateId === t.id ? "border-accent text-accent" : "border-line text-muted"}`}
               >
                 {t.thumb ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -177,19 +177,19 @@ function Stage({ title, sub, img, api, units, busy, error, demo, onRedo }: { tit
         ) : !busy ? (
           <div className="flex h-full items-center justify-center p-3 text-center text-[11px] text-muted">{error ?? "Not rendered"}</div>
         ) : null}
-        {demo ? <span className="absolute left-2 top-2 rounded bg-ink/80 px-1.5 py-0.5 text-[10px] text-gold">sketch</span> : null}
+        {demo ? <span className="absolute left-2 top-2 rounded bg-white/90 shadow-sm backdrop-blur px-1.5 py-0.5 text-[10px] text-accent">sketch</span> : null}
       </div>
       <div className="mt-2 text-sm font-medium">{title}</div>
       <div className="truncate text-xs text-muted">{sub}</div>
       {api ? (
-        <div className="mt-1 text-[10px] uppercase tracking-wide text-gold/80">
+        <div className="mt-1 text-[10px] uppercase tracking-wide text-accent/80">
           {api}
           {units ? ` · ${units}u` : ""}
         </div>
       ) : null}
       {error && img ? <div className="mt-1 text-[11px] text-alarm">{error}</div> : null}
       {onRedo ? (
-        <button onClick={onRedo} className="mt-1 text-[11px] text-muted underline-offset-2 hover:text-paper hover:underline">
+        <button onClick={onRedo} className="mt-1 text-[11px] text-muted underline-offset-2 hover:text-fg hover:underline">
           Redo this layer
         </button>
       ) : null}

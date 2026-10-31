@@ -16,7 +16,7 @@ export default function Studio() {
   if (!p) {
     return (
       <main className="spotlight flex min-h-screen items-center justify-center">
-        <span className="font-[family-name:var(--font-display)] text-2xl tracking-[0.3em] text-gold">ENCORE</span>
+        <span className="font-[family-name:var(--font-display)] text-2xl tracking-[0.3em] text-accent">ENCORE</span>
       </main>
     );
   }
@@ -30,7 +30,7 @@ export default function Studio() {
     <main className="spotlight min-h-screen pb-40">
       <div className="mx-auto max-w-[1500px] space-y-6 px-4 pt-6 sm:px-8">
         {status?.demo ? (
-          <div className="no-print rounded-xl border border-gold/30 bg-gold/5 px-4 py-2 text-xs text-gold-soft">
+          <div className="no-print rounded-xl border border-accent/30 bg-accent/5 px-4 py-2 text-xs text-accent">
             Demo mode: no YouCam key is set, so renders are costume sketches. Add YOUCAM_API_KEY to render on real performer photos.
           </div>
         ) : null}

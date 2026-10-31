@@ -28,31 +28,33 @@ export function Header() {
     <header className="no-print space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <Link href="/" className="font-[family-name:var(--font-display)] text-sm font-extrabold tracking-[0.25em] text-gold">
+          <Link href="/" className="font-[family-name:var(--font-display)] text-sm font-extrabold tracking-[0.25em] grad-text">
             ENCORE
           </Link>
           <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl font-semibold sm:text-4xl">{p.title}</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted">{p.logline}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Link href="/studio/setup" className="rounded-full border border-line px-4 py-2 text-sm hover:border-gold">Cast & rack</Link>
-          <Link href="/studio/print" className="rounded-full border border-line px-4 py-2 text-sm hover:border-gold">Fitting cards</Link>
-          <button onClick={() => op({ type: "plan" })} className="rounded-full border border-line px-4 py-2 text-sm hover:border-gold">Re-plan</button>
-          <button onClick={() => exportProduction(p)} className="rounded-full px-3 py-2 text-xs text-muted hover:text-paper" title="Download this production with renders inlined, for public/showcase/production.json">
+          <Link href="/studio/setup" className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent">Cast & rack</Link>
+          <Link href="/studio/print" className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent">Fitting cards</Link>
+          <button onClick={() => op({ type: "plan" })} className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent">Re-plan</button>
+          <button onClick={() => exportProduction(p)} className="rounded-full px-3 py-2 text-xs text-muted hover:text-fg" title="Download this production with renders inlined, for public/showcase/production.json">
             Export
           </button>
           <button
             onClick={() => confirm("Start over with the showcase production? Photos, renders and changes will be replaced.") && resetToShowcase()}
-            className="rounded-full px-3 py-2 text-xs text-muted hover:text-paper"
+            className="rounded-full px-3 py-2 text-xs text-muted hover:text-fg"
           >
             Start over
           </button>
           <button
             onClick={() => render()}
             disabled={rendering || !pending.length}
-            className="rounded-full bg-gold px-5 py-2 text-sm font-medium text-ink shadow-[0_0_30px_rgba(232,176,75,.3)] disabled:opacity-50"
+            className={`rounded-full px-5 py-2 text-sm font-medium ${
+              pending.length || rendering ? "grad text-white shadow-[0_0_30px_rgba(210,58,116,.25)]" : "border border-ok/30 bg-surface text-ok"
+            } ${rendering ? "animate-pulse" : ""}`}
           >
-            {rendering ? `Rendering ${progress.done}/${progress.total}` : pending.length ? `See opening night · ${pending.length} renders` : "All looks rendered"}
+            {rendering ? `Rendering ${progress.done}/${progress.total}` : pending.length ? `See opening night · ${pending.length} renders` : "✓ All looks rendered"}
           </button>
         </div>
       </div>
@@ -71,7 +73,7 @@ export function Header() {
       </div>
 
       {naive ? (
-        <div className="rise grid gap-3 rounded-2xl border border-line bg-stage p-4 sm:grid-cols-2">
+        <div className="rise grid gap-3 rounded-2xl border border-line bg-surface shadow-card p-4 sm:grid-cols-2">
           <div>
             <div className="text-xs uppercase tracking-wider text-muted">Picking each look on its own</div>
             <p className="mt-1 text-sm">
@@ -97,12 +99,12 @@ export function Header() {
 function Stat({ label, value, bar, tone, onClick, hint, k }: { label: string; value: string; bar?: number; tone?: "ok" | "alarm"; onClick?: () => void; hint?: string; k?: number }) {
   const C = onClick ? "button" : "div";
   return (
-    <C onClick={onClick} className={`rounded-2xl border border-line bg-stage p-4 text-left ${onClick ? "hover:border-gold/60" : ""}`}>
+    <C onClick={onClick} className={`rounded-2xl border border-line bg-surface shadow-card p-4 text-left ${onClick ? "hover:border-accent/60" : ""}`}>
       <div className="text-[11px] uppercase tracking-wider text-muted">{label}</div>
       <div key={k} className={`tick mt-1 text-sm font-medium ${tone === "alarm" ? "text-alarm" : tone === "ok" ? "text-ok" : ""}`}>{value}</div>
       {bar !== undefined ? (
         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-panel">
-          <div className="h-full rounded-full bg-gold transition-all duration-700" style={{ width: `${bar}%` }} />
+          <div className="h-full rounded-full grad transition-all duration-700" style={{ width: `${bar}%` }} />
         </div>
       ) : null}
       {hint ? <div className="mt-1 text-[11px] text-muted">{hint}</div> : null}

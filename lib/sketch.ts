@@ -36,9 +36,9 @@ export function sketchFor(p: Production, look: Look, stage: StageId): string {
       ? `<path d="M128 214 L96 420 Q160 436 224 420 L192 214 Z" fill="${base}"/>`
       : `<path d="M132 230 L120 420 L152 420 L160 270 L168 420 L200 420 L188 230 Z" fill="${base ? shade(base, -0.35) : "#333"}"/>`;
     return svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 480">
-<defs><radialGradient id="g" cx="50%" cy="20%" r="80%"><stop offset="0" stop-color="#3a2c1c"/><stop offset="1" stop-color="#0d0b0a"/></radialGradient></defs>
+<defs><radialGradient id="g" cx="50%" cy="20%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#efe3ee"/></radialGradient></defs>
 <rect width="320" height="480" fill="url(#g)"/>
-<ellipse cx="160" cy="440" rx="90" ry="10" fill="#000" opacity=".45"/>
+<ellipse cx="160" cy="440" rx="90" ry="10" fill="#5a3b5c" opacity=".12"/>
 <circle cx="160" cy="92" r="30" fill="${skin}"/>
 <rect x="150" y="118" width="20" height="18" fill="${skin}"/>
 ${skirt}
@@ -54,7 +54,7 @@ ${hat ? `<path d="M124 70 Q160 40 196 70 L200 78 L120 78 Z" fill="${hat}"/><rect
   const hairColor = "#2b1d14";
   const showHat = stage === "hat" && hat;
   return svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320">
-<defs><radialGradient id="g" cx="50%" cy="30%" r="75%"><stop offset="0" stop-color="#3a2c1c"/><stop offset="1" stop-color="#0d0b0a"/></radialGradient></defs>
+<defs><radialGradient id="g" cx="50%" cy="30%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#efe3ee"/></radialGradient></defs>
 <rect width="320" height="320" fill="url(#g)"/>
 <path d="M90 300 Q160 220 230 300 Z" fill="${base ?? "#444"}"/>
 <rect x="146" y="196" width="28" height="40" fill="${face}"/>
@@ -82,5 +82,5 @@ export function swatchFor(item: Item): string {
       : item.slot === "outer"
         ? `<path d="M34 20 L50 28 L66 20 L80 30 L74 52 L68 50 L68 88 L32 88 L32 50 L26 52 L20 30 Z" fill="${c}"/><path d="M50 28 L50 88" stroke="${shade(c, -0.35)}" stroke-width="2"/>`
         : `<path d="M36 22 L64 22 L70 40 L76 86 L24 86 L30 40 Z" fill="${c}"/>`;
-  return svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#1d1813"/>${icon}</svg>`);
+  return svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#f4edf3"/>${icon}</svg>`);
 }

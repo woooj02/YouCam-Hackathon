@@ -19,9 +19,9 @@ export function LookCard({ look, onOpen, index }: { look: Look; onOpen: () => vo
     <button
       onClick={onOpen}
       key={hot ? `hot-${highlight!.at}` : look.id}
-      className={`rise group relative flex w-full flex-col overflow-hidden rounded-2xl border bg-stage text-left transition hover:-translate-y-0.5 hover:border-gold/60 ${
+      className={`rise group relative flex w-full flex-col overflow-hidden rounded-2xl border bg-surface text-left transition hover:-translate-y-0.5 hover:border-accent/60 ${
         conflicts.length ? "border-alarm/70" : "border-line"
-      } ${hot ? "glow-gold" : ""}`}
+      } ${hot ? "glow-accent" : ""}`}
       style={{ animationDelay: `${index * 70}ms` }}
     >
       <div className="relative aspect-[2/3] w-full overflow-hidden bg-panel">
@@ -33,13 +33,13 @@ export function LookCard({ look, onOpen, index }: { look: Look; onOpen: () => vo
           <div className="flex h-full items-center justify-center p-6 text-center text-xs text-muted">Not rendered yet</div>
         )}
         {s.rendering ? (
-          <span className="absolute left-3 top-3 rounded-full bg-ink/80 px-2.5 py-1 text-[11px] text-gold">Rendering…</span>
+          <span className="absolute left-3 top-3 rounded-full bg-white/90 shadow-sm backdrop-blur px-2.5 py-1 text-[11px] text-accent">Rendering…</span>
         ) : null}
-        {s.body?.demo ? <span className="absolute bottom-3 left-3 rounded bg-ink/80 px-1.5 py-0.5 text-[10px] text-gold">sketch</span> : null}
-        {look.locked ? <span className="absolute right-3 top-3 rounded-full bg-ink/80 px-2.5 py-1 text-[11px] text-ok">Locked</span> : null}
+        {s.body?.demo ? <span className="absolute bottom-3 left-3 rounded bg-white/90 shadow-sm backdrop-blur px-1.5 py-0.5 text-[10px] text-accent">sketch</span> : null}
+        {look.locked ? <span className="absolute right-3 top-3 rounded-full bg-white/90 shadow-sm backdrop-blur px-2.5 py-1 text-[11px] text-ok">Locked</span> : null}
         {faceSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={faceSrc} alt="" className={`absolute bottom-3 right-3 h-16 w-16 rounded-full border-2 border-ink object-cover shadow-xl ${s.portrait ? "curtain" : "opacity-50 grayscale"}`} />
+          <img src={faceSrc} alt="" className={`absolute bottom-3 right-3 h-16 w-16 rounded-full border-2 border-white object-cover shadow-xl ${s.portrait ? "curtain" : "opacity-50 grayscale"}`} />
         ) : null}
       </div>
       <div className="space-y-1.5 p-3">
@@ -53,7 +53,7 @@ export function LookCard({ look, onOpen, index }: { look: Look; onOpen: () => vo
             if (!it) return null;
             const changed = hot && highlight!.itemIds.includes(it.id);
             return (
-              <li key={slot} className={`truncate text-[11px] ${changed ? "tick font-medium text-gold" : "text-paper/75"}`}>
+              <li key={slot} className={`truncate text-[11px] ${changed ? "tick font-medium text-accent" : "text-fg/75"}`}>
                 {changed ? "★ " : "· "}
                 {it.name}
               </li>
@@ -61,7 +61,7 @@ export function LookCard({ look, onOpen, index }: { look: Look; onOpen: () => vo
           })}
         </ul>
         {conflicts.length ? <p className="text-xs text-alarm">{conflicts[0].message}</p> : null}
-        {gaps.length ? <p className="text-xs text-gold">Needs sourcing: {gaps.map((g) => g.need).join("; ")}</p> : null}
+        {gaps.length ? <p className="text-xs text-accent">Needs sourcing: {gaps.map((g) => g.need).join("; ")}</p> : null}
         {s.error ? <p className="text-xs text-alarm/90">{s.error}</p> : null}
       </div>
     </button>
