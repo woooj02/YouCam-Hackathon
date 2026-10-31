@@ -11,7 +11,7 @@ import { applyOp, type Op } from "./engine/ops";
 import { lightweight } from "./engine/light";
 import { usesOf } from "./engine/solver";
 import type { Production, Slot } from "./engine/types";
-import { FALLBACK, llm, MODEL } from "./ai";
+import { FALLBACK, gemini, geminiSchema, llm, MODEL, provider, type GeminiContent } from "./ai";
 
 const SYSTEM = `You are ENCORE's production director, working with a theatre costume designer.
 You change the wardrobe plan only through your tools, and you report only what the tools return:
@@ -170,6 +170,35 @@ export async function direct(production: Production, message: string, history: {
         return { error: `Unknown tool ${name}` };
     }
   };
+
+  if (provider() === "gemini") {
+    const contents: GeminiContent[] = [
+      ...history.slice(-8).map((h) => ({ role: h.role === "assistant" ? ("model" as const) : ("user" as const), parts: [{ text: h.text }] })),
+      { role: "user", parts: [{ text: message }] },
+    ];
+    const declarations = TOOLS.map((t) => ({ name: t.name, description: t.description, parameters: geminiSchema(t.input_schema) }));
+    for (let turn = 0; turn < 8; turn++) {
+      const res = await gemini({
+        systemInstruction: { parts: [{ text: SYSTEM }] },
+        contents,
+        tools: [{ functionDeclarations: declarations }],
+        generationConfig: { maxOutputTokens: 8192 },
+      });
+      const content = res.candidates?.[0]?.content;
+      if (!content?.parts?.length) return { reply: "I can only help with the wardrobe plan.", ops, affected: [...affected], offline: false };
+      contents.push({ role: "model", parts: content.parts });
+      const calls = content.parts.filter((x) => x.functionCall).map((x) => x.functionCall!);
+      if (!calls.length) {
+        const reply = content.parts.map((x) => x.text ?? "").join("\n").trim();
+        return { reply: reply || "Done.", ops, affected: [...affected], offline: false };
+      }
+      contents.push({
+        role: "user",
+        parts: calls.map((c) => ({ functionResponse: { name: c.name, response: { result: exec(c.name, c.args ?? {}) } } })),
+      });
+    }
+    return { reply: "I made the changes above; ask me to keep going if anything is left.", ops, affected: [...affected], offline: false };
+  }
 
   const messages: Anthropic.Beta.BetaMessageParam[] = [
     ...history.slice(-8).map((h) => ({ role: h.role, content: h.text })),

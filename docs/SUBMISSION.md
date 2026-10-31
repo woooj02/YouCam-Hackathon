@@ -53,7 +53,7 @@ Try-on becomes far more useful when it's attached to a decision with constraints
 - Pilots with community theatres and school drama departments.
 
 ## Built with
-YouCam API (AI Clothes Virtual Try-On, AI Hairstyle Virtual Try-On, AI Makeup Virtual Try-On, AI Hat Virtual Try-On, File API), Anthropic API, Next.js, TypeScript, Tailwind CSS, Zod, Vitest, Vercel.
+YouCam API (AI Clothes Virtual Try-On, AI Hairstyle Virtual Try-On, AI Makeup Virtual Try-On, AI Hat Virtual Try-On, File API), Gemini API, Next.js, TypeScript, Tailwind CSS, Zod, Vitest, Vercel.
 
 ## Links
 - Code: https://github.com/woooj02/YouCam-Hackathon

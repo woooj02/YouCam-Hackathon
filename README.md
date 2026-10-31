@@ -88,19 +88,19 @@ The AI does three bounded jobs (`lib/ai.ts`, `lib/director.ts`):
 - **Rack tagging:** vision plus structured output from one photo of one piece. The designer confirms it.
 - **Director:** a tool loop over the real solver (`find_items`, `mark_unavailable`, `change_requirement`, `lock_look`, `set_budget`, `production_summary`). The model never states a price, size or quantity the tools didn't return. The server returns an op log and the browser replays it on the full production; the solver is deterministic, so both sides agree.
 
-Without an Anthropic key the director runs offline and still understands "`<piece>` is unavailable" and "re-plan".
+Without a model key the director runs offline and still understands "`<piece>` is unavailable" and "re-plan".
 
 ## Run it
 
 ```bash
 npm install
-cp .env.example .env.local   # optional: add YOUCAM_API_KEY and ANTHROPIC_API_KEY
+cp .env.example .env.local   # optional: add YOUCAM_API_KEY and GEMINI_API_KEY
 npm run dev                  # http://localhost:3000
 ```
 
 - **No keys:** demo mode. Planning, replanning, the scene plot and the basket all work; renders are clearly labelled costume sketches.
 - **YouCam key:** real renders. Add performer photos and rack photos in *Cast & rack*.
-- **Anthropic key:** brief breakdown, photo tagging and the full director.
+- **Gemini key** (free from Google AI Studio) or Anthropic key: brief breakdown, photo tagging and the full director.
 
 Checks: `npm run check` (typecheck and unit tests), `npm run eval` (planner evaluation), and the live API test (about 9 units):
 

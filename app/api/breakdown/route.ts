@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import { FALLBACK, hasLLM, llm, MODEL } from "@/lib/ai";
+import { hasLLM, structured } from "@/lib/ai";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -44,24 +43,17 @@ the brief doesn't need it. Tags are short lowercase words a wardrobe team would 
 Never invent cast members or scenes the brief doesn't imply. List genuine ambiguities as questions.`;
 
 export async function POST(req: Request) {
-  if (!hasLLM()) return NextResponse.json({ error: "no_key", message: "Add ANTHROPIC_API_KEY to break down a new brief." }, { status: 503 });
+  if (!hasLLM()) return NextResponse.json({ error: "no_key", message: "Add GEMINI_API_KEY (free) or ANTHROPIC_API_KEY to break down a new brief." }, { status: 503 });
   try {
     const { brief } = (await req.json()) as { brief?: string };
     if (!brief || brief.trim().length < 40) {
       return NextResponse.json({ error: "bad_request", message: "Write a few sentences about the show first." }, { status: 400 });
     }
-    const res = await llm().beta.messages.parse({
-      model: MODEL,
-      max_tokens: 16000,
-      ...FALLBACK,
-      output_config: { effort: "medium", format: betaZodOutputFormat(Breakdown) },
-      system: SYSTEM,
-      messages: [{ role: "user", content: brief.slice(0, 8000) }],
-    });
-    if (res.stop_reason === "refusal" || !res.parsed_output) {
+    const breakdown = await structured(Breakdown, { system: SYSTEM, text: brief.slice(0, 8000), effort: "medium", maxTokens: 16000 });
+    if (!breakdown) {
       return NextResponse.json({ error: "no_breakdown", message: "Couldn't break that brief down. Try describing the scenes and cast plainly." }, { status: 422 });
     }
-    return NextResponse.json({ breakdown: res.parsed_output });
+    return NextResponse.json({ breakdown });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "ai_error", message: "The breakdown service is busy. Try again in a moment." }, { status: 502 });

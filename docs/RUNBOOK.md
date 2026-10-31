@@ -4,7 +4,7 @@ Everything in the repo already works in demo mode. What's left needs your keys, 
 
 ## 1. Keys (15 min)
 - YouCam: redeem the hackathon code (1,000 units) at yce.perfectcorp.com, then create an API key.
-- Anthropic: an API key for the breakdown, rack tagging and the director.
+- Gemini: a free API key from Google AI Studio (aistudio.google.com/apikey) for the breakdown, rack tagging and the director. An Anthropic key also works.
 - `cp .env.example .env.local` and fill in both.
 
 ## 2. Gate: prove layered try-on on real photos (1 hour, about 9 units)
@@ -37,7 +37,7 @@ Three adults who agree in writing to appear in a public video. Rename Maya, Jona
 Budget: 6 looks × up to 5 stages × 1–2 units, plus retries and rehearsals, is roughly 150–250 of your 1,000 units.
 
 ## 6. Deploy (30 min)
-Import the repo on Vercel, add `YOUCAM_API_KEY` and `ANTHROPIC_API_KEY`, deploy. Keep it up through judging (Nov 20). If you're worried about units, set `ENCORE_DEMO=1` on Vercel after recording: the public app stays fully clickable on sketches.
+Import the repo on Vercel, add `YOUCAM_API_KEY` and `GEMINI_API_KEY`, deploy. Keep it up through judging (Nov 20). If you're worried about units, set `ENCORE_DEMO=1` on Vercel after recording: the public app stays fully clickable on sketches.
 
 ## 7. Record (3 hours, with retakes)
 Follow `docs/VIDEO_SCRIPT.md`. Upload to YouTube as Public.

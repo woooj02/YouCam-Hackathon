@@ -110,7 +110,7 @@ export function DirectorBar() {
             {busy ? "…" : "Send"}
           </button>
         </form>
-        {status && !status.agent ? <p className="mt-1 text-center text-[11px] text-muted">Director running offline. Add ANTHROPIC_API_KEY for full direction.</p> : null}
+        {status && !status.agent ? <p className="mt-1 text-center text-[11px] text-muted">Director running offline. Add a free GEMINI_API_KEY for full direction.</p> : null}
       </div>
     </div>
   );

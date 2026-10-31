@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import { FALLBACK, hasLLM, llm, MODEL } from "@/lib/ai";
+import { hasLLM, structured } from "@/lib/ai";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -18,30 +17,21 @@ const Tag = z.object({
 
 /** Rack intake: a photo of one piece becomes an editable rack tag. The designer confirms it. */
 export async function POST(req: Request) {
-  if (!hasLLM()) return NextResponse.json({ error: "no_key", message: "Add ANTHROPIC_API_KEY to auto-tag photos, or tag by hand." }, { status: 503 });
+  if (!hasLLM()) return NextResponse.json({ error: "no_key", message: "Add GEMINI_API_KEY (free) or ANTHROPIC_API_KEY to auto-tag photos, or tag by hand." }, { status: 503 });
   try {
     const { image } = (await req.json()) as { image?: string };
     const m = image && /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(image);
     if (!m) return NextResponse.json({ error: "bad_request", message: "Send one JPEG or PNG photo." }, { status: 400 });
-    const res = await llm().beta.messages.parse({
-      model: MODEL,
-      max_tokens: 4000,
-      ...FALLBACK,
-      output_config: { effort: "low", format: betaZodOutputFormat(Tag) },
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: m[1] as "image/jpeg" | "image/png" | "image/webp", data: m[2] } },
-            { type: "text", text: "Tag this piece for a theatre costume rack. Describe only what you can see." },
-          ],
-        },
-      ],
+    const tag = await structured(Tag, {
+      text: "Tag this piece for a theatre costume rack. Describe only what you can see.",
+      image: { mimeType: m[1] as "image/jpeg" | "image/png" | "image/webp", data: m[2] },
+      effort: "low",
+      maxTokens: 4000,
     });
-    if (res.stop_reason === "refusal" || !res.parsed_output) {
+    if (!tag) {
       return NextResponse.json({ error: "no_tag", message: "Couldn't read that photo. Tag it by hand." }, { status: 422 });
     }
-    return NextResponse.json({ tag: res.parsed_output });
+    return NextResponse.json({ tag });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "ai_error", message: "Tagging is busy. Tag by hand or retry." }, { status: 502 });
