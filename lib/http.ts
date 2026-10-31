@@ -9,7 +9,8 @@ const HINTS: Record<string, string> = {
   error_face_parsing: "Try a brighter spot, facing a window if you can.",
   exceed_max_filesize: "That photo is over 10MB. Try a smaller one.",
   rate_limited: "Lots of requests right now. Give it a few seconds.",
-  missing_catalog_image: "This product photo isn't in the catalog yet.",
+  missing_rack_photo: "This piece has no photo yet. Add one in Rack intake.",
+  error_no_human: "We couldn't find a person in the photo. Use a full-body shot.",
 };
 
 export function errorResponse(err: unknown) {

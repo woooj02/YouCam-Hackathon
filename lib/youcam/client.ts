@@ -139,3 +139,8 @@ export async function runToCompletion(
   }
   return { status: "error", code: "timeout", message: `${feature} did not finish in time` };
 }
+
+/** Remaining unit balance, straight from the account (no units spent). */
+export async function getCredits(): Promise<unknown> {
+  return api("/s2s/v1.0/client/credit");
+}
