@@ -28,7 +28,11 @@ type Ctx = {
   rendering: boolean;
   progress: { done: number; total: number };
   unitsSpent: number;
-  resetToShowcase: () => void;
+  resetToShowcase: () => Promise<void>;
+  /** Put every piece back on the rack and re-plan, keeping photos and renders. For rehearsing the demo. */
+  restoreRack: () => void;
+  /** Drop a stage's render and every later stage in its chain, then render the look again. */
+  redo: (lookId: string, keys: string[]) => void;
 };
 
 const StoreCtx = createContext<Ctx | null>(null);
@@ -36,6 +40,18 @@ const KEY = "production:v1";
 const FILES_KEY = "fileIds:v1";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** A production exported after a real render session, if one is deployed with the app. */
+async function bundledShowcase(): Promise<Production | undefined> {
+  try {
+    const res = await fetch("/showcase/production.json");
+    if (!res.ok) return undefined;
+    const p = (await res.json()) as Production;
+    return p.looks?.length ? p : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 export function StudioProvider({ children }: { children: ReactNode }) {
   const [production, setP] = useState<Production | null>(null);
@@ -63,7 +79,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
       const forceShowcase = new URLSearchParams(location.search).has("showcase");
       const saved = forceShowcase ? undefined : await idbGet<Production>(KEY);
       fileIds.current = (await idbGet<Record<string, string>>(FILES_KEY)) ?? {};
-      const p = saved ?? applyOp(showcaseProduction(), { type: "plan" }).production;
+      const p = saved ?? (await bundledShowcase()) ?? applyOp(showcaseProduction(), { type: "plan" }).production;
       ref.current = p;
       setP(p);
       try {
@@ -201,15 +217,42 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     [runStage],
   );
 
-  const resetToShowcase = useCallback(() => {
-    const p = applyOp(showcaseProduction(), { type: "plan" }).production;
+  const resetToShowcase = useCallback(async () => {
+    const p = (await bundledShowcase()) ?? applyOp(showcaseProduction(), { type: "plan" }).production;
     ref.current = p;
     setP(p);
   }, []);
 
+  const restoreRack = useCallback(() => {
+    const cur = ref.current;
+    if (!cur) return;
+    const back = {
+      ...cur,
+      inventory: cur.inventory.map((i) => ({ ...i, available: true })),
+      shop: cur.shop.map((i) => ({ ...i, available: true })),
+      looks: cur.looks.map((l) => ({ ...l, locked: false })),
+      plan: null,
+    };
+    const p = applyOp(back, { type: "plan" }).production;
+    ref.current = p;
+    setP(p);
+  }, []);
+
+  const redo = useCallback(
+    (lookId: string, keys: string[]) => {
+      setProduction((prev) => {
+        const renders = { ...prev.renders };
+        for (const k of keys) delete renders[k];
+        return { ...prev, renders };
+      });
+      setTimeout(() => render([lookId]), 50);
+    },
+    [render, setProduction],
+  );
+
   const value = useMemo<Ctx>(
-    () => ({ production, status, setProduction, op, replay, highlight, flash, render, rendering, progress, unitsSpent, resetToShowcase }),
-    [production, status, setProduction, op, replay, highlight, flash, render, rendering, progress, unitsSpent, resetToShowcase],
+    () => ({ production, status, setProduction, op, replay, highlight, flash, render, rendering, progress, unitsSpent, resetToShowcase, restoreRack, redo }),
+    [production, status, setProduction, op, replay, highlight, flash, render, rendering, progress, unitsSpent, resetToShowcase, restoreRack, redo],
   );
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>;
 }

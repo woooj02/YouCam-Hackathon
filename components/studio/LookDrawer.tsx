@@ -9,7 +9,7 @@ import { swatchFor } from "@/lib/sketch";
 type Template = { id: string; title: string; thumb: string };
 
 export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () => void }) {
-  const { production: p, setProduction, op, render, rendering } = useStudio();
+  const { production: p, setProduction, op, render, rendering, redo } = useStudio();
   const [templates, setTemplates] = useState<Template[] | null>(null);
 
   useEffect(() => {
@@ -70,8 +70,9 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
             <h3 className="text-xs uppercase tracking-wider text-muted">{c === "body" ? "Costume chain" : "Hair, makeup & headwear chain"}</h3>
             <div className="scrollbar-thin mt-3 flex gap-3 overflow-x-auto pb-2">
               <Stage title={c === "body" ? "Full-body photo" : "Close-up photo"} img={root(c)} sub={performer?.name ?? ""} error={root(c) ? undefined : "Add a photo in Cast & rack"} />
-              {chain(c).map(({ spec, record }) => (
+              {chain(c).map(({ spec, record }, i, all) => (
                 <Stage
+                  onRedo={record?.status === "done" || record?.status === "error" ? () => redo(look.id, all.slice(i).map((x) => x.spec.key)) : undefined}
                   key={spec.key}
                   title={spec.stage === "base" ? "Costume" : spec.stage === "outer" ? "Outer layer" : spec.stage === "hair" ? "Hairstyle" : spec.stage === "makeup" ? "Makeup" : "Headwear"}
                   sub={spec.label}
@@ -165,7 +166,7 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
   );
 }
 
-function Stage({ title, sub, img, api, units, busy, error, demo }: { title: string; sub: string; img?: string; api?: string; units?: number; busy?: boolean; error?: string; demo?: boolean }) {
+function Stage({ title, sub, img, api, units, busy, error, demo, onRedo }: { title: string; sub: string; img?: string; api?: string; units?: number; busy?: boolean; error?: string; demo?: boolean; onRedo?: () => void }) {
   return (
     <div className="w-44 shrink-0">
       <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-line bg-panel">
@@ -187,6 +188,11 @@ function Stage({ title, sub, img, api, units, busy, error, demo }: { title: stri
         </div>
       ) : null}
       {error && img ? <div className="mt-1 text-[11px] text-alarm">{error}</div> : null}
+      {onRedo ? (
+        <button onClick={onRedo} className="mt-1 text-[11px] text-muted underline-offset-2 hover:text-paper hover:underline">
+          Redo this layer
+        </button>
+      ) : null}
     </div>
   );
 }

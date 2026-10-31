@@ -220,6 +220,13 @@ function Rack() {
     }));
   }
 
+  const rename = (id: string, name: string) =>
+    setProduction((prev) => ({
+      ...prev,
+      inventory: prev.inventory.map((i) => (i.id === id ? { ...i, name } : i)),
+      shop: prev.shop.map((i) => (i.id === id ? { ...i, name } : i)),
+    }));
+
   const input = "w-full rounded-lg border border-line bg-panel px-3 py-1.5 text-sm outline-none focus:border-gold";
   return (
     <div className="space-y-8">
@@ -272,7 +279,12 @@ function Rack() {
                   <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={(e) => replacePhoto(it.id, e.target.files?.[0])} />
                 </label>
                 <div className="min-w-0 flex-1 text-sm">
-                  <div className="truncate">{it.name}</div>
+                  <input
+                    value={it.name}
+                    onChange={(e) => rename(it.id, e.target.value)}
+                    className="w-full truncate rounded bg-transparent outline-none focus:bg-panel"
+                    aria-label="Piece name"
+                  />
                   <div className="truncate text-[11px] text-muted">
                     {SLOT_LABEL[it.slot]} · {it.sizes.join("/")} · {SOURCE_LABEL[it.source]}{it.cost ? ` · ${money(p!, it.cost)}` : ""}
                     {it.image?.startsWith("data:") || it.image?.startsWith("http") ? "" : " · needs a photo"}

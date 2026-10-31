@@ -5,9 +5,10 @@ import { useStudio } from "@/lib/client/store";
 import { money } from "@/lib/client/view";
 import { estimateUnits, pendingStages } from "@/lib/engine/render";
 import { naivePlan } from "@/lib/engine/solver";
+import { exportProduction } from "@/lib/client/export";
 
 export function Header() {
-  const { production: p, op, render, rendering, progress, unitsSpent, status, resetToShowcase } = useStudio();
+  const { production: p, op, render, rendering, progress, unitsSpent, status, resetToShowcase, restoreRack } = useStudio();
   const [balance, setBalance] = useState<number | null>(null);
   const [check, setCheck] = useState(false);
 
@@ -37,6 +38,15 @@ export function Header() {
           <Link href="/studio/setup" className="rounded-full border border-line px-4 py-2 text-sm hover:border-gold">Cast & rack</Link>
           <Link href="/studio/print" className="rounded-full border border-line px-4 py-2 text-sm hover:border-gold">Fitting cards</Link>
           <button onClick={() => op({ type: "plan" })} className="rounded-full border border-line px-4 py-2 text-sm hover:border-gold">Re-plan</button>
+          <button onClick={() => exportProduction(p)} className="rounded-full px-3 py-2 text-xs text-muted hover:text-paper" title="Download this production with renders inlined, for public/showcase/production.json">
+            Export
+          </button>
+          <button
+            onClick={() => confirm("Start over with the showcase production? Photos, renders and changes will be replaced.") && resetToShowcase()}
+            className="rounded-full px-3 py-2 text-xs text-muted hover:text-paper"
+          >
+            Start over
+          </button>
           <button
             onClick={() => render()}
             disabled={rendering || !pending.length}
@@ -57,7 +67,7 @@ export function Header() {
           hint="Compare with look-by-look"
         />
         <Stat label="YouCam units" value={status?.demo ? "Demo mode · 0 spent" : `${unitsSpent} this session${balance !== null ? ` · ${balance} left` : ""}`} hint={pending.length ? `~${estimateUnits(pending)} to render the rest` : undefined} />
-        <Stat label="Looks" value={`${p.looks.length} looks · ${p.performers.length} performers · ${p.scenes.length} scenes`} onClick={() => confirm("Reset to the showcase production? Your changes will be replaced.") && resetToShowcase()} hint="Reset showcase" />
+        <Stat label="Looks" value={`${p.looks.length} looks · ${p.performers.length} performers · ${p.scenes.length} scenes`} onClick={restoreRack} hint="Restore rack & re-plan (keeps photos and renders)" />
       </div>
 
       {naive ? (
