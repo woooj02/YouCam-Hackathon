@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0d0b0a;
+  --color-stage: #15110e;
+  --color-panel: #1c1712;
+  --color-line: #2e261e;
+  --color-paper: #f3ece2;
+  --color-muted: #a99d8c;
+  --color-gold: #e8b04b;
+  --color-gold-soft: #f3d28e;
+  --color-alarm: #e5534b;
+  --color-ok: #6cc08b;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+html, body { background: var(--color-ink); color: var(--color-paper); }
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+
+.spotlight {
+  background:
+    radial-gradient(1200px 500px at 50% -120px, rgba(232, 176, 75, 0.16), transparent 70%),
+    radial-gradient(800px 400px at 85% 10%, rgba(232, 176, 75, 0.06), transparent 70%),
+    var(--color-ink);
+}
+
+@keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+.shimmer {
+  background: linear-gradient(90deg, #1c1712 0%, #2e261e 40%, #3a2f22 50%, #2e261e 60%, #1c1712 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes glow-gold { 0% { box-shadow: 0 0 0 0 rgba(232,176,75,.0); } 25% { box-shadow: 0 0 0 3px rgba(232,176,75,.9), 0 0 40px rgba(232,176,75,.45); } 100% { box-shadow: 0 0 0 0 rgba(232,176,75,0); } }
+.glow-gold { animation: glow-gold 2.6s ease-out 1; }
+
+@keyframes glow-alarm { 0%, 100% { box-shadow: 0 0 0 0 rgba(229,83,75,0); } 50% { box-shadow: 0 0 0 2px rgba(229,83,75,.9), 0 0 24px rgba(229,83,75,.4); } }
+.glow-alarm { animation: glow-alarm 1.2s ease-in-out 2; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+.rise { animation: rise .6s cubic-bezier(.2,.8,.2,1) both; }
+
+@keyframes curtain { from { clip-path: inset(0 50% 0 50%); opacity: .3; } to { clip-path: inset(0 0 0 0); opacity: 1; } }
+.curtain { animation: curtain .9s cubic-bezier(.2,.8,.2,1) both; }
+
+@keyframes tick { 0% { transform: translateY(-4px); opacity: .2; } 100% { transform: none; opacity: 1; } }
+.tick { animation: tick .45s ease-out both; }
+
+.scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #2e261e; border-radius: 8px; }
+
+@media print {
+  html, body { background: #fff !important; color: #111 !important; }
+  .no-print { display: none !important; }
+  .print-card { break-inside: avoid; page-break-inside: avoid; }
+}

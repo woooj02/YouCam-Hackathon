@@ -8,22 +8,10 @@
 import "server-only";
 import type Anthropic from "@anthropic-ai/sdk";
 import { applyOp, type Op } from "./engine/ops";
+import { lightweight } from "./engine/light";
 import { usesOf } from "./engine/solver";
 import type { Production, Slot } from "./engine/types";
 import { claude, FALLBACK, MODEL } from "./claude";
-
-/** Strip photos and renders: the director reasons about the plan, not pixels. */
-export function lightweight(p: Production): Production {
-  const strip = <T extends { image?: string }>(x: T) => ({ ...x, image: x.image ? "photo" : undefined });
-  return {
-    ...p,
-    performers: p.performers.map((x) => ({ ...x, bodyPhoto: undefined, portraitPhoto: undefined })),
-    inventory: p.inventory.map(strip),
-    shop: p.shop.map(strip),
-    renders: {},
-    history: p.history.slice(-10),
-  };
-}
 
 const SYSTEM = `You are ENCORE's production director, working with a theatre costume designer.
 You change the wardrobe plan only through your tools, and you report only what the tools return:
