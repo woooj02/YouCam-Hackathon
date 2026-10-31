@@ -37,9 +37,9 @@ export function showcaseProduction(): Production {
     budget: 250,
     currency: "$",
     performers: [
-      { id: "p-maya", name: "Maya", size: "S", photoVersion: 0 },
-      { id: "p-jonah", name: "Jonah", size: "L", photoVersion: 0 },
-      { id: "p-priya", name: "Priya", size: "M", photoVersion: 0 },
+      { id: "p-maya", name: "Maya", size: "S", photoVersion: 0, hatFit: "female" },
+      { id: "p-jonah", name: "Jonah", size: "L", photoVersion: 0, hatFit: "male" },
+      { id: "p-priya", name: "Priya", size: "M", photoVersion: 0, hatFit: "female" },
     ],
     roles: [
       { id: "r-elsie", name: "Elsie Hart", performerId: "p-maya", summary: "The keeper's daughter. Practical by day, luminous at the party." },

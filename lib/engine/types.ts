@@ -43,6 +43,8 @@ export type Performer = {
   portraitPhoto?: string;
   /** Bumped whenever a photo changes, so renders re-key without hashing megabytes. */
   photoVersion: number;
+  /** Which cut the Hat Try-On fits headwear to. */
+  hatFit?: "male" | "female";
 };
 
 export type Role = { id: string; name: string; performerId: string; summary: string };

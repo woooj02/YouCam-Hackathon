@@ -137,6 +137,10 @@ function Cast() {
               <select value={perf.size} onChange={(e) => update(perf.id, { size: e.target.value })} className="rounded-lg border border-line bg-panel px-2 text-sm">
                 {["XS", "S", "M", "L", "XL", "XXL"].map((s) => <option key={s}>{s}</option>)}
               </select>
+              <select aria-label="Hat fit" title="Hat fit" value={perf.hatFit ?? "female"} onChange={(e) => update(perf.id, { hatFit: e.target.value as "male" | "female" })} className="rounded-lg border border-line bg-panel px-2 text-sm">
+                <option value="female">Women&apos;s hats</option>
+                <option value="male">Men&apos;s hats</option>
+              </select>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
               {(["bodyPhoto", "portraitPhoto"] as const).map((k) => (

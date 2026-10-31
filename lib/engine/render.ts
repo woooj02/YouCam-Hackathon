@@ -90,9 +90,10 @@ export function stagesForLook(p: Production, look: Look): StageSpec[] {
   }
   const hat = item(assigned.hat);
   if (hat) {
-    const key = hash(`${parent ?? faceRoot}|hat|${imageRef(hat)}`);
+    const fit = perf.hatFit ?? "female";
+    const key = hash(`${parent ?? faceRoot}|hat|${imageRef(hat)}|${fit}`);
     out.push({ key, lookId: look.id, stage: "hat", chain: "portrait", parentKey: parent, feature: "hat", label: hat.name, units: UNIT_COST.hat,
-      job: { feature: "hat", ref: hat.image } });
+      job: { feature: "hat", ref: hat.image, gender: fit } });
   }
   return out;
 }
