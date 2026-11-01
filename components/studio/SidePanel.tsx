@@ -4,7 +4,7 @@ import { useStudio } from "@/lib/client/store";
 import { money, SLOT_LABEL, SOURCE_LABEL, itemById } from "@/lib/client/view";
 import { usesOf } from "@/lib/engine/solver";
 import type { Item } from "@/lib/engine/types";
-import { swatchFor } from "@/lib/sketch";
+import { ItemImage } from "./ItemImage";
 
 type Tab = "rack" | "basket" | "activity";
 
@@ -48,8 +48,7 @@ function Rack({ onLost }: { onLost: (item: Item) => void }) {
               const hot = highlight && Date.now() - highlight.at < 4000 && highlight.itemIds.includes(it.id);
               return (
                 <li key={it.id} className={`flex items-center gap-3 rounded-xl p-2 ${hot ? "glow-accent" : ""} ${it.available ? "hover:bg-panel" : "opacity-50"}`}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={it.image?.startsWith("data:") || it.image?.startsWith("http") ? it.image : swatchFor(it)} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
+                  <ItemImage item={it} className="h-11 w-11 shrink-0 rounded-lg object-cover" />
                   <div className="min-w-0 flex-1">
                     <div className={`truncate text-sm ${it.available ? "" : "line-through"}`}>{it.name}</div>
                     <div className="truncate text-[11px] text-muted">
@@ -95,6 +94,7 @@ function Basket() {
           const hot = highlight && Date.now() - highlight.at < 4000 && highlight.itemIds.includes(l.itemId);
           return (
             <li key={l.itemId} className={`rise rounded-xl border border-line p-3 ${hot ? "glow-accent" : ""}`}>
+              <ItemImage item={it} className="mb-2 h-24 w-full rounded-lg bg-panel object-contain" />
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-sm">{it.name}</span>
                 <span className="text-sm">{money(p, l.total)}</span>

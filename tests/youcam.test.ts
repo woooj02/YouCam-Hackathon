@@ -5,6 +5,11 @@ import { normaliseTemplates } from "@/lib/youcam/templates";
 import liveTemplates from "./fixtures/youcam/hair-templates.json";
 
 describe("YouCam request contracts", () => {
+  it("preserves deliberate makeup strength and zero foundation glow", () => {
+    const effects = makeupEffects({ label: "Soft day face", lip: { color: "b66b66", texture: "satin", intensity: 25 }, foundation: { color: "dbb79f", coverage: 35, glow: 0 } });
+    expect(effects[0]).toMatchObject({ palettes: [{ glowIntensity: 0, coverageIntensity: 35 }] });
+    expect(effects[1]).toMatchObject({ palettes: [{ color: "#b66b66", colorIntensity: 25 }] });
+  });
   it("uses the published skin-smoothing fields and preserves zero strength", () => {
     // https://docs.perfectcorp.com/reference/makeup_vto/v1.0
     expect(makeupEffects({ label: "No smoothing", smooth: 0 })).toEqual([

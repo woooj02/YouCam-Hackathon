@@ -7,7 +7,7 @@ import { money, SLOT_LABEL, SOURCE_LABEL } from "@/lib/client/view";
 import { applyBreakdown, type BreakdownData } from "@/lib/breakdown";
 import { applyOp } from "@/lib/engine/ops";
 import type { GarmentCategory, Item, ItemSource, Slot } from "@/lib/engine/types";
-import { swatchFor } from "@/lib/sketch";
+import { ItemImage } from "@/components/studio/ItemImage";
 
 type Tab = "brief" | "cast" | "rack";
 
@@ -126,7 +126,8 @@ function Cast() {
     const url = await fileToDataUrl(file, kind === "bodyPhoto" ? 1600 : 1200);
     setProduction((prev) => ({
       ...prev,
-      performers: prev.performers.map((x) => (x.id === id ? { ...x, [kind]: url, photoVersion: x.photoVersion + 1 } : x)),
+      notice: "Performer references have been updated. Check each look before approving it.",
+      performers: prev.performers.map((x) => (x.id === id ? { ...x, [kind]: url, reference: "provided", bodyFraming: undefined, photoVersion: x.photoVersion + 1 } : x)),
     }));
   }
 
@@ -286,8 +287,7 @@ function Rack() {
             {items.map((it) => (
               <li key={it.id} className="flex items-center gap-3 rounded-xl border border-line bg-surface p-2">
                 <label className="relative h-16 w-14 shrink-0 cursor-pointer overflow-hidden rounded-lg" title="Replace photo">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={it.image?.startsWith("data:") || it.image?.startsWith("http") ? it.image : swatchFor(it)} alt="" className="h-full w-full object-cover" />
+                  <ItemImage item={it} className="h-full w-full object-cover" />
                   <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={(e) => replacePhoto(it.id, e.target.files?.[0])} />
                 </label>
                 <div className="min-w-0 flex-1 text-sm">
@@ -299,7 +299,7 @@ function Rack() {
                   />
                   <div className="truncate text-[11px] text-muted">
                     {SLOT_LABEL[it.slot]} · {it.sizes.join("/")} · {SOURCE_LABEL[it.source]}{it.cost ? ` · ${money(p!, it.cost)}` : ""}
-                    {it.image?.startsWith("data:") || it.image?.startsWith("http") ? "" : " · needs a photo"}
+                    {it.image ? "" : " · needs a photo"}
                   </div>
                 </div>
               </li>

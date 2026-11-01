@@ -62,7 +62,7 @@ export function stagesForLook(p: Production, look: Look): StageSpec[] {
 
   // Body chain.
   let parent: string | undefined;
-  const bodyRoot = `body:${perf.id}:${perf.photoVersion}`;
+  const bodyRoot = `body:${p.id}:${perf.id}:${perf.photoVersion}`;
   const base = item(assigned.base);
   if (base) {
     const key = hash(`${bodyRoot}|base|${imageRef(base)}|${base.garmentCategory}`);
@@ -79,7 +79,7 @@ export function stagesForLook(p: Production, look: Look): StageSpec[] {
 
   // Portrait chain.
   parent = undefined;
-  const faceRoot = `face:${perf.id}:${perf.photoVersion}`;
+  const faceRoot = `face:${p.id}:${perf.id}:${perf.photoVersion}`;
   if (look.hair) {
     const key = hash(`${faceRoot}|hair|${look.hair.templateId}|${look.hair.keepColor}`);
     out.push({ key, lookId: look.id, stage: "hair", chain: "portrait", feature: "hair-transfer", label: look.hair.label, units: UNIT_COST["hair-transfer"],
@@ -99,10 +99,22 @@ export function allStages(p: Production): StageSpec[] {
 }
 
 /** Stages with no finished render under their current key, in dependency order. */
-export function pendingStages(p: Production, lookIds?: string[]): StageSpec[] {
-  return allStages(p).filter(
-    (s) => (!lookIds || lookIds.includes(s.lookId)) && p.renders[s.key]?.status !== "done",
-  );
+export function pendingStages(p: Production, lookIds?: string[], live = false): StageSpec[] {
+  const stages = allStages(p).filter((s) => (!lookIds || lookIds.includes(s.lookId)) &&
+    (p.renders[s.key]?.status !== "done" || (live && p.renders[s.key]?.demo)));
+  return [...new Map(stages.map((stage) => [stage.key, stage])).values()];
+}
+
+export type RenderImpact = { total: number; changedKeys: string[]; cachedKeys: string[]; kept: number; lookIds: string[] };
+
+/** Compare actual inputs, independently of whether the replacement is already cached. */
+export function renderImpact(before: Production, after: Production): RenderImpact {
+  const prior = new Map(allStages(before).map((stage) => [`${stage.lookId}:${stage.stage}`, stage.key]));
+  const stages = allStages(after);
+  const changed = stages.filter((stage) => prior.get(`${stage.lookId}:${stage.stage}`) !== stage.key);
+  const changedKeys = [...new Set(changed.map((stage) => stage.key))];
+  const total = new Set(stages.map((stage) => stage.key)).size;
+  return { total, changedKeys, cachedKeys: changedKeys.filter((key) => after.renders[key]?.status === "done"), kept: total - changedKeys.length, lookIds: [...new Set(changed.map((stage) => stage.lookId))] };
 }
 
 /** The latest finished image for each chain of a look, for the cast board. */

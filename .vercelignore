@@ -1,0 +1,9 @@
+.local/
+.env*
+.aws/
+.agents/
+.codex/
+captures/
+.shots/
+*.pem
+*.key

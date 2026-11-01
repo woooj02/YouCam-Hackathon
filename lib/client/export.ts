@@ -1,33 +1,40 @@
-/**
- * Export a fully rendered production as one JSON file with every image
- * inlined. Commit it as public/showcase/production.json and the deployed
- * showcase opens with the real cast renders, no key needed to view them.
- */
 import type { Production } from "../engine/types";
+import { allStages } from "../engine/render";
+import { imageDataUrl } from "./images";
 
-async function inline(url: string | undefined): Promise<string | undefined> {
-  if (!url || url.startsWith("data:")) return url;
-  const res = await fetch(`/api/image?url=${encodeURIComponent(url)}`);
-  if (!res.ok) return url;
-  const blob = await res.blob();
-  return await new Promise((resolve) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result));
-    r.readAsDataURL(blob);
-  });
+/** Keep the active render graph valid when portable image data changes its input keys. */
+export async function portableProduction(p: Production, inline = imageDataUrl): Promise<Production> {
+  const cache = new Map<string, Promise<string>>();
+  const image = (url?: string) => {
+    if (!url) return Promise.resolve(undefined);
+    if (!cache.has(url)) cache.set(url, inline(url));
+    return cache.get(url)!;
+  };
+  const performers = [];
+  for (const performer of p.performers) performers.push({ ...performer, bodyPhoto: await image(performer.bodyPhoto), portraitPhoto: await image(performer.portraitPhoto) });
+  const inventory = [], shop = [];
+  for (const item of p.inventory) inventory.push({ ...item, image: await image(item.image) });
+  for (const item of p.shop) shop.push({ ...item, image: await image(item.image) });
+  const out: Production = { ...p, performers, inventory, shop, renders: {} };
+  const oldStages = allStages(p), newStages = allStages(out);
+  for (const stage of newStages) {
+    const original = oldStages.find((s) => s.lookId === stage.lookId && s.stage === stage.stage);
+    const record = original && p.renders[original.key];
+    if (!record || record.status !== "done" || !record.url) continue;
+    const { taskId: _taskId, creationPending: _pending, ...finished } = record;
+    out.renders[stage.key] = { ...finished, key: stage.key, url: await image(record.url) };
+  }
+  return out;
 }
 
+/** Download a self-contained production. Publishing performer photos is a separate choice. */
 export async function exportProduction(p: Production): Promise<void> {
-  const renders: Production["renders"] = {};
-  for (const [k, rec] of Object.entries(p.renders)) {
-    if (rec.status !== "done") continue;
-    renders[k] = { ...rec, url: await inline(rec.url) };
-  }
-  const out: Production = { ...p, renders };
+  const out = await portableProduction(p);
   const blob = new Blob([JSON.stringify(out)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "production.json";
-  a.click();
-  URL.revokeObjectURL(a.href);
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "production.json";
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

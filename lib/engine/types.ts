@@ -45,6 +45,9 @@ export type Performer = {
   photoVersion: number;
   /** Which cut the Hat Try-On fits headwear to. */
   hatFit?: "male" | "female";
+  reference?: "provided" | "fictional";
+  /** Display framing only; the source photo and render are unchanged. */
+  bodyFraming?: { zoom: number; x: number; y: number };
 };
 
 export type Role = { id: string; name: string; performerId: string; summary: string };
@@ -54,8 +57,8 @@ export type Scene = { id: string; name: string; order: number };
 export type Requirement = { slot: Slot; tags: string[]; colors?: string[]; optional?: boolean };
 
 export type MakeupSpec = {
-  lip?: { color: string; texture: "matte" | "satin" | "gloss" };
-  foundation?: { color: string; coverage: number };
+  lip?: { color: string; texture: "matte" | "satin" | "gloss"; intensity?: number };
+  foundation?: { color: string; coverage: number; glow?: number };
   smooth?: number;
   label: string;
 };
@@ -71,6 +74,7 @@ export type Look = {
   hair?: HairSpec;
   makeup?: MakeupSpec;
   locked: boolean;
+  direction?: string;
 };
 
 export type Assignment = Record<string, Partial<Record<Slot, string>>>;
@@ -112,6 +116,8 @@ export type RenderRecord = {
   demo?: boolean;
   startedAt?: number;
   finishedAt?: number;
+  units?: number;
+  creationPending?: boolean;
 };
 
 export type StageId = "base" | "outer" | "hair" | "makeup" | "hat";
@@ -136,4 +142,5 @@ export type Production = {
   plan: Plan | null;
   renders: Record<string, RenderRecord>;
   history: HistoryEvent[];
+  notice?: string;
 };

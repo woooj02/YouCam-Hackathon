@@ -8,7 +8,7 @@ When something breaks ("the navy greatcoat has moth damage"), ENCORE re-plans on
 
 Built for the **YouCam API Skin AI & eCommerce VTO Hackathon** (eCommerce VTO track).
 
-Open the included production at `/studio?showcase=1` after starting the app.
+Open `/studio?showcase=1&public=1` after starting the app. The included demo has three clearly labelled fictional performers, 20 rack and catalogue photos, six complete looks and 23 saved YouCam render layers. You can inspect every result and try the $40 coat repair without any API key or new unit spend.
 
 ## The problem
 
@@ -19,15 +19,15 @@ Small productions (community theatre, schools, fringe companies) dress a whole c
 - every hire and purchase comes out of one small budget;
 - and nobody sees the finished looks until the fitting, when changing course costs the most.
 
-Costume software already tracks stock, measurements and scene plots. What it can't do is show the planned looks on the actual performers before anything is hired or bought, and keep that plan feasible when the rack changes.
+ENCORE connects the shared inventory and scene plot to performer previews, priced sourcing needs and targeted repairs when the rack changes.
 
 ## What ENCORE does
 
 1. **Set up the cast.** The included one-act, *The Lantern Keepers*, has prepared scenes, roles and six costume looks. Add performer photos and sizes, and save the show's brief alongside the plan.
 2. **Photograph the rack.** Add each piece's name, slot, colours, tags, sizes, quantity and whether it's owned, on hire, or for sale. Manual entry works without a model key.
 3. **Plan the whole cast at once.** A constraint solver assigns pieces to every look: never more wearers in a scene than the rack holds, only sizes that fit, never over budget. Anything it can't fill becomes a sourcing need, not a hidden double-booking.
-4. **See opening night.** Each look is rendered on the performer in two YouCam chains (below). The cast board fills with complete looks.
-5. **Re-plan in one sentence.** Tell the director what changed. Only affected looks change; locked looks never do; only changed layers re-render.
+4. **See opening night.** Each look is rendered on the performer in two YouCam chains (below). The cast board has costume and styling views. A before/after slider isolates each layer, with the exact hair and makeup direction shown beside the result.
+5. **Re-plan in one sentence.** Tell the director what changed. Only affected looks change; locked looks remain fixed; only changed layers re-render. The prepared coat repair changes one of 23 layers and reuses the other 22. Its saved public preview needs no API call; a live rehearsal also confirmed that rendering the replacement costs two units.
 6. **Take it to the fitting.** Printable fitting cards per performer: pieces, sources, hair and makeup direction, handoffs to rehearse.
 
 ## YouCam API usage
@@ -51,7 +51,7 @@ portrait:  close-up photo  ─▶ AI Hairstyle Virtual Try-On (hair_color "src")
 Engineering details that matter for a real deployment:
 
 - **Content-keyed render graph.** Every stage's key hashes its own inputs plus its parent's key (`lib/engine/render.ts`). Swap a coat and only that stage and the stages after it re-key, so in the showcase a lost coat changes one outer layer.
-- **Saved-task resumption.** Task ids are stored with render records so polling can resume after a reload. The YouCam API has no idempotency key; interruption before an id is saved can still leave an uncertain creation outcome.
+- **Saved-task resumption.** Task ids are stored before polling, interrupted tasks resume after a reload, and poll errors keep the id for retry. An interrupted creation with no returned id is held for inspection rather than automatically submitted again. Finished images are saved with the production so signed URL expiry does not erase the preview.
 - **Errors arrive as HTTP 200.** Engine failures come back as `task_status: "error"` with a stringified tuple; they're parsed into messages a person can act on ("Use a full-body shot").
 - **The key stays server-side.** The browser only talks to our routes in `app/api/youcam/`.
 - **Upload once.** Performer photos are uploaded once per photo version and reused by `file_id`; rack photos are cached per server instance.
@@ -84,7 +84,7 @@ With a separately configured model key, the code supports three bounded jobs (`l
 - **Rack tagging:** vision plus structured output from one photo of one piece. The designer confirms it.
 - **Director:** a tool loop over the real solver (`find_items`, `mark_unavailable`, `change_requirement`, `lock_look`, `set_budget`, `production_summary`). The model never states a price, size or quantity the tools didn't return. The server returns an op log and the browser replays it on the full production; the solver is deterministic, so both sides agree.
 
-Without a model key, the director uses deterministic commands and still understands "the navy greatcoat has moth damage", "`<piece>` is unavailable" and "re-plan". Planning, manual rack intake, YouCam rendering, locks and fitting cards need no language-model service.
+Without a model key, the director uses deterministic commands: "the navy greatcoat has moth damage", "set the budget to $30", "lock Elsie’s masquerade look", "unlock Elsie’s masquerade look", "the navy greatcoat has been repaired" and "re-plan". Planning, manual rack intake, YouCam rendering, locks and fitting cards need no language-model service.
 
 ## Run it
 
@@ -97,7 +97,7 @@ cp .env.example .env.local   # only if you do not already have this file
 npm run dev                  # http://localhost:3000
 ```
 
-- **No keys:** demo mode. Planning, replanning, the scene plot and the basket all work; renders are clearly labelled costume sketches.
+- **No keys:** the included saved YouCam previews, coat repair, planning, scene plot, budget, locks and fitting cards all work. Newly requested renders use clearly labelled costume sketches.
 - **YouCam key:** real renders. Add performer photos and rack photos in *Cast & rack*. The matching `YOUCAM_API_SECRET_KEY` enables the account balance check: V1 account endpoints require an exchanged access token, while V2 render endpoints accept the API key directly.
 - **Optional model key:** assisted brief breakdown, photo tagging and broader director commands. Provider access and billing are separate from the YouCam allowance.
 
@@ -117,9 +117,9 @@ npm run smoke -- --body full.jpg --face face.jpg --garment dress.jpg --outer coa
 
 - Previews support appearance decisions. Physical fittings establish fit, comfort and movement.
 - Hairstyle renders show a direction for the wig or styling team; they don't certify a specific wig.
-- Sizes, quantities, prices and changeover notes come from what the wardrobe team enters. The showcase partner catalogue and its prices are fictional.
+- Sizes, quantities, prices and changeover notes come from what the wardrobe team enters. The supplied demo cast, garments and partner catalogue are illustrative; prices and sizes are fictional. Replace them with consenting performers and actual stock before making production decisions.
 - In the no-model workflow, photos stay in the browser (IndexedDB) and go to the YouCam API to render. Optional assisted rack tagging also sends the selected rack photo to the configured model provider. Only photograph adults who have agreed to it.
-- A live smoke test verified costume → outerwear and hairstyle → makeup on a consenting performer's photos with temporary garment references. Sanitized API response shapes are in `tests/fixtures/youcam/`; source photos, signed URLs and output images stay out of version control.
+- A live smoke test verified costume → outerwear and hairstyle → makeup on a consenting performer's photos with temporary garment references. Sanitized API response shapes are in `tests/fixtures/youcam/`; personal source photos, personal output images, signed URLs and task identifiers stay out of version control. Only the fictional demo assets and their saved previews are included.
 - The Hat API completed successfully but regenerated the outfit, scene and face. Headwear is therefore planned for the physical fitting and excluded from cast previews. The isolated smoke check remains available to evaluate future API changes.
 
 ## Project layout
@@ -127,10 +127,12 @@ npm run smoke -- --body full.jpg --face face.jpg --garment dress.jpg --outer coa
 ```
 app/                 landing, studio, setup, fitting cards, API routes
 app/api/youcam/      upload, run, task, templates, credits (server-side key)
-app/api/director     AI tool loop over the solver
+app/api/director     deterministic commands; optional model tool loop
 lib/engine/          types, solver, ops, render graph (pure, unit-tested)
 lib/youcam/          YouCam client, request bodies, result parsing
 lib/showcase.ts      The Lantern Keepers, an original one-act written for the demo
+public/showcase/     fictional cast and completed, portable demo previews
+public/rack/         unbranded garment references for every catalogue item
 scripts/             eval.ts (planner benchmark), smoke.ts (live API test)
 docs/EVAL.md         reproducible planner benchmark and its limits
 ```

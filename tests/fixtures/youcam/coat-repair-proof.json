@@ -1,0 +1,13 @@
+{
+  "director": "deterministic",
+  "costBefore": 0,
+  "costAfter": 40,
+  "changed": 1,
+  "kept": 22,
+  "total": 23,
+  "affected": [
+    "l-rowe-sea"
+  ],
+  "submittedTasks": 1,
+  "units": 2
+}

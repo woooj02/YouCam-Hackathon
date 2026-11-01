@@ -236,14 +236,47 @@ export async function direct(production: Production, message: string, history: {
 }
 
 /**
- * No model key: understand the one sentence every show eventually says,
- * "<piece> is gone", so the replanning demo works offline too.
+ * Common production changes also work without a model key.
  */
 export function directOffline(production: Production, message: string): DirectorResult {
   const p = lightweight(production);
   const m = message.toLowerCase();
+  const budget = m.match(/\bbudget\b[^\d$]*(?:\$\s*)?(\d[\d,]*(?:\.\d{1,2})?)/) ?? m.match(/\$\s*(\d[\d,]*(?:\.\d{1,2})?)\s*(?:sourcing\s+)?budget\b/);
+  if (budget) {
+    const amount = Number(budget[1].replaceAll(",", ""));
+    if (Number.isFinite(amount) && amount <= 1_000_000) {
+      const operation: Op = { type: "budget", budget: amount };
+      const result = applyOp(p, operation);
+      return { reply: result.summary, ops: [operation], affected: result.affected, offline: true };
+    }
+  }
+  if (/\b(lock|unlock|approve)\b/.test(m)) {
+    const words = m.replace(/[^a-z0-9]+/g, " ").split(" ").filter((word) => word.length > 2 && !["look", "the", "lock", "unlock", "approve", "director", "approved"].includes(word));
+    const matches = p.looks.map((look) => {
+      const role = p.roles.find((r) => r.id === look.roleId);
+      const name = `${look.name} ${role?.name ?? ""}`.toLowerCase();
+      return { look, score: words.filter((word) => name.includes(word)).length };
+    }).filter((match) => match.score > 0).sort((a, b) => b.score - a.score);
+    if (matches.length && matches[0].score > (matches[1]?.score ?? 0)) {
+      const operation: Op = { type: "lock", lookId: matches[0].look.id, locked: !/\bunlock\b/.test(m) };
+      const result = applyOp(p, operation);
+      return { reply: result.summary, ops: [operation], affected: result.affected, offline: true };
+    }
+    return { reply: "Name the look to approve or unlock, for example: \"Lock Elsie's masquerade look\".", ops: [], affected: [], offline: true };
+  }
+  if (/\b(restored?|repaired|found)\b|back on the rack|available again/.test(m)) {
+    const best = findItems(p, m)[0];
+    if (best && !best.available) {
+      const operation: Op = { type: "restore", itemId: best.id };
+      const result = applyOp(p, operation);
+      return { reply: result.summary, ops: [operation], affected: result.affected, offline: true };
+    }
+    if (best) return { reply: `${best.name} is already available. Say "re-plan" to use it.`, ops: [], affected: [], offline: true };
+  }
   if (/(unavailable|gone|lost|missing|torn|ripped|damage|stain|broke|fell through|can't use|cannot use|isn't coming|not coming)/.test(m)) {
-    const best = findItems(p, m).find((i) => i.available && i.used_by.length) ?? findItems(p, m).find((i) => i.available);
+    const candidates = findItems(p, m);
+    if (candidates[0] && !candidates[0].available) return { reply: `${candidates[0].name} is already unavailable. The current plan is kept.`, ops: [], affected: [], offline: true };
+    const best = candidates.find((i) => i.available && i.used_by.length) ?? candidates.find((i) => i.available);
     if (best) {
       const r = applyOp(p, { type: "unavailable", itemId: best.id, reason: "reported by the designer" });
       return { reply: r.summary, ops: [{ type: "unavailable", itemId: best.id, reason: "reported by the designer" }], affected: r.affected, offline: true };
@@ -253,5 +286,5 @@ export function directOffline(production: Production, message: string): Director
     const r = applyOp(p, { type: "plan" });
     return { reply: r.summary, ops: [{ type: "plan" }], affected: r.affected, offline: true };
   }
-  return { reply: "Tell me which piece is damaged, missing or unavailable, or say \"re-plan\" to rebuild the cast's plan.", ops: [], affected: [], offline: true };
+  return { reply: "Name a damaged or missing piece, set a sourcing budget, approve or unlock a named look, or say \"re-plan\".", ops: [], affected: [], offline: true };
 }

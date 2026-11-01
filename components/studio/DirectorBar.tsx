@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useStudio } from "@/lib/client/store";
 import { describeChanges } from "@/lib/engine/ops";
 import { lightweight } from "@/lib/engine/light";
-import { allStages, pendingStages } from "@/lib/engine/render";
+import { pendingStages, renderImpact } from "@/lib/engine/render";
 
 type Turn = { role: "user" | "assistant"; text: string };
 
@@ -12,10 +12,9 @@ const SUGGESTIONS = [
   "Lock Elsie's masquerade look, the director approved it",
   "Our sourcing budget just dropped to $30",
 ];
-const BASIC_SUGGESTIONS = [SUGGESTIONS[0], "Re-plan the cast"];
 
 export function DirectorBar() {
-  const { production: p, replay, render, status } = useStudio();
+  const { production: p, replay, render, status, rendering } = useStudio();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -29,7 +28,7 @@ export function DirectorBar() {
   }, [last]);
 
   async function send(message: string) {
-    if (!p || !message.trim() || busy) return;
+    if (!p || !message.trim() || busy || rendering) return;
     setBusy(true);
     setText("");
     setLast(null);
@@ -45,8 +44,9 @@ export function DirectorBar() {
       const lines = results.flatMap((r) => describeChanges(r.production, r.changes));
       const after = results[results.length - 1]?.production;
       const affectedLooks = [...new Set(results.flatMap((r) => r.affected))];
-      const redo = after && affectedLooks.length ? pendingStages(after, affectedLooks).length : 0;
-      const rerender = after && redo ? `Re-rendering ${redo} of ${allStages(after).length} layers. Everything else is kept.` : undefined;
+      const redo = after && affectedLooks.length ? pendingStages(after, affectedLooks, !status?.demo).length : 0;
+      const impact = after && renderImpact(p, after);
+      const rerender = impact?.changedKeys.length ? `${impact.changedKeys.length} of ${impact.total} layers changed; ${impact.kept} kept. ${redo ? `Updating ${redo} layer${redo === 1 ? "" : "s"}.` : "Saved previews reused; no new units."}` : undefined;
       setLast({ reply: j.reply, lines, offline: j.offline, rerender });
       setTurns((t) => [...t, { role: "user" as const, text: message }, { role: "assistant" as const, text: j.reply }].slice(-12));
       if (affectedLooks.length) setTimeout(() => render(affectedLooks), 600);
@@ -82,7 +82,7 @@ export function DirectorBar() {
         ) : null}
         {focused && !busy ? (
           <div className="mb-2 flex flex-wrap gap-2">
-            {(status?.agent ? SUGGESTIONS : BASIC_SUGGESTIONS).map((s) => (
+            {SUGGESTIONS.map((s) => (
               <button key={s} onMouseDown={(e) => e.preventDefault()} onClick={() => send(s)} className="rounded-full border border-line bg-surface/90 px-3 py-1.5 text-xs text-muted backdrop-blur hover:border-accent hover:text-fg">
                 {s}
               </button>
@@ -100,13 +100,13 @@ export function DirectorBar() {
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={busy ? "Re-planning…" : "Tell ENCORE what changed…"}
-            disabled={busy}
+            placeholder={busy ? "Re-planning…" : rendering ? "Updating the changed layers…" : "Tell ENCORE what changed…"}
+            disabled={busy || rendering}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             className="flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-muted"
           />
-          <button disabled={busy || !text.trim()} className="rounded-full grad px-5 py-2 text-sm font-medium text-white disabled:opacity-40">
+          <button disabled={busy || rendering || !text.trim()} className="rounded-full grad px-5 py-2 text-sm font-medium text-white disabled:opacity-40">
             {busy ? "…" : "Send"}
           </button>
         </form>

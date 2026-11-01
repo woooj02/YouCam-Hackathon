@@ -1,55 +1,41 @@
 "use client";
-/**
- * Studio state: the production, op replay, highlights for animations, and the
- * render queue. Task ids are written into the production before polling, so a
- * reload resumes in-flight renders instead of paying for them twice (the
- * YouCam API has no idempotency key).
- */
+/** Production state, deterministic planner changes and a resumable render queue. */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { applyOp, type Op, type OpResult } from "../engine/ops";
-import { pendingStages, type StageSpec } from "../engine/render";
+import { pendingStages, renderImpact, type RenderImpact, type StageSpec } from "../engine/render";
 import type { Production, RenderRecord } from "../engine/types";
 import { showcaseProduction } from "../showcase";
 import { sketchFor } from "../sketch";
 import { idbGet, idbSet } from "./idb";
+import { imageDataUrl } from "./images";
 
 type Status = { demo: boolean; agent: boolean };
 export type Highlight = { lookIds: string[]; itemIds: string[]; at: number };
-
+export type ChangeReport = RenderImpact & { at: number; summary: string; changes: OpResult["changes"] };
 type Ctx = {
-  production: Production | null;
-  status: Status | null;
+  production: Production | null; status: Status | null;
   setProduction: (p: Production | ((prev: Production) => Production)) => void;
-  op: (op: Op) => OpResult | null;
-  replay: (ops: Op[]) => OpResult[];
-  highlight: Highlight | null;
+  op: (op: Op) => OpResult | null; replay: (ops: Op[]) => OpResult[];
+  highlight: Highlight | null; changeReport: ChangeReport | null;
   flash: (h: Omit<Highlight, "at">) => void;
-  render: (lookIds?: string[]) => void;
-  rendering: boolean;
-  progress: { done: number; total: number };
-  unitsSpent: number;
-  resetToShowcase: () => Promise<void>;
-  /** Put every piece back on the rack and re-plan, keeping photos and renders. For rehearsing the demo. */
-  restoreRack: () => void;
-  /** Drop a stage's render and every later stage in its chain, then render the look again. */
+  render: (lookIds?: string[]) => void; rendering: boolean;
+  progress: { done: number; total: number }; unitsSpent: number;
+  resetToShowcase: () => Promise<void>; restoreRack: () => void;
   redo: (lookId: string, keys: string[]) => void;
 };
-
 const StoreCtx = createContext<Ctx | null>(null);
-const KEY = "production:v1";
-const FILES_KEY = "fileIds:v1";
-
+const KEY = "production:v1", FILES_KEY = "fileIds:v1";
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** A production exported after a real render session, if one is deployed with the app. */
 async function bundledShowcase(): Promise<Production | undefined> {
-  try {
-    const res = await fetch("/showcase/production.json");
-    if (!res.ok) return undefined;
-    const p = (await res.json()) as Production;
-    return p.looks?.length ? p : undefined;
-  } catch {
-    return undefined;
+  const publicOnly = new URLSearchParams(location.search).has("public");
+  for (const url of publicOnly ? ["/showcase/production.json"] : ["/api/showcase", "/showcase/production.json"]) {
+    try {
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) continue;
+      const production = await response.json() as Production;
+      if (production.looks?.length) return production;
+    } catch { /* Continue to the next available bundle. */ }
   }
 }
 
@@ -57,208 +43,210 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   const [production, setP] = useState<Production | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
   const [highlight, setHighlight] = useState<Highlight | null>(null);
+  const [changeReport, setChangeReport] = useState<ChangeReport | null>(null);
   const [rendering, setRendering] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [unitsSpent, setUnitsSpent] = useState(0);
   const ref = useRef<Production | null>(null);
   const fileIds = useRef<Record<string, string>>({});
+  const uploading = useRef(new Map<string, Promise<string>>());
   const inflight = useRef(new Set<string>());
   const queueRun = useRef(false);
+  const resumed = useRef(false);
 
   const setProduction = useCallback((next: Production | ((prev: Production) => Production)) => {
-    setP((prev) => {
-      const value = typeof next === "function" ? (prev ? next(prev) : prev) : next;
-      ref.current = value;
-      return value;
-    });
+    const current = ref.current;
+    if (!current && typeof next === "function") return;
+    const value = typeof next === "function" ? next(current!) : next;
+    ref.current = value;
+    setP(value);
   }, []);
 
-  // Load: ?showcase=1 forces the sample production; otherwise the saved one.
   useEffect(() => {
+    let active = true;
     (async () => {
-      const forceShowcase = new URLSearchParams(location.search).has("showcase");
-      const saved = forceShowcase ? undefined : await idbGet<Production>(KEY);
-      fileIds.current = (await idbGet<Record<string, string>>(FILES_KEY)) ?? {};
-      const p = saved ?? (await bundledShowcase()) ?? applyOp(showcaseProduction(), { type: "plan" }).production;
-      ref.current = p;
-      setP(p);
+      const force = new URLSearchParams(location.search).has("showcase");
+      const saved = force ? undefined : await idbGet<Production>(KEY);
+      fileIds.current = await idbGet<Record<string, string>>(FILES_KEY) ?? {};
+      const p = saved ?? await bundledShowcase() ?? applyOp(showcaseProduction(), { type: "plan" }).production;
+      if (!active) return;
+      ref.current = p; setP(p);
+      void idbSet(KEY, p);
       try {
-        setStatus(await (await fetch("/api/status")).json());
-      } catch {
-        setStatus({ demo: true, agent: false });
-      }
+        const next = await (await fetch("/api/status")).json();
+        if (active) setStatus(next);
+      } catch { if (active) setStatus({ demo: true, agent: false }); }
     })();
+    return () => { active = false; };
   }, []);
 
-  // Persist, debounced.
   useEffect(() => {
     if (!production) return;
-    const t = setTimeout(() => idbSet(KEY, production), 400);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => { void idbSet(KEY, production); }, 400);
+    return () => clearTimeout(timer);
   }, [production]);
 
   const flash = useCallback((h: Omit<Highlight, "at">) => setHighlight({ ...h, at: Date.now() }), []);
+  const op = useCallback((operation: Op) => {
+    const current = ref.current;
+    if (!current) return null;
+    const result = applyOp(current, operation);
+    setProduction(result.production);
+    void idbSet(KEY, result.production);
+    const impact = renderImpact(current, result.production);
+    if (impact.changedKeys.length) setChangeReport({ ...impact, at: Date.now(), summary: result.summary, changes: result.changes });
+    const itemIds = result.changes.flatMap((change) => [change.from, change.to].filter(Boolean) as string[]);
+    if ("itemId" in operation) itemIds.push(operation.itemId);
+    flash({ lookIds: result.affected, itemIds });
+    return result;
+  }, [flash, setProduction]);
+  const replay = useCallback((ops: Op[]) => ops.map(op).filter((result): result is OpResult => result !== null), [op]);
 
-  const op = useCallback(
-    (o: Op) => {
-      const cur = ref.current;
-      if (!cur) return null;
-      const r = applyOp(cur, o);
-      ref.current = r.production;
-      setP(r.production);
-      const itemIds = r.changes.flatMap((c) => [c.from, c.to].filter(Boolean) as string[]);
-      if ("itemId" in o) itemIds.push(o.itemId);
-      flash({ lookIds: r.affected, itemIds });
-      return r;
-    },
-    [flash],
-  );
-
-  const replay = useCallback((ops: Op[]) => ops.map((o) => op(o)).filter((r): r is OpResult => r !== null), [op]);
-
-  const putRecord = useCallback((rec: RenderRecord) => {
-    setProduction((prev) => ({ ...prev, renders: { ...prev.renders, [rec.key]: rec } }));
+  const putRecord = useCallback((record: RenderRecord) => {
+    const current = ref.current!;
+    const next = { ...current, renders: { ...current.renders, [record.key]: record } };
+    setProduction(next);
+    return next;
   }, [setProduction]);
 
-  const runStage = useCallback(
-    async (spec: StageSpec) => {
-      const p = ref.current!;
-      const look = p.looks.find((l) => l.id === spec.lookId)!;
-      const prior = p.renders[spec.key];
-      const base: RenderRecord = { key: spec.key, lookId: spec.lookId, stage: spec.stage, status: "running", startedAt: Date.now() };
-      const fail = (error: string) => putRecord({ ...base, status: "error", error, finishedAt: Date.now() });
+  const ensureFile = useCallback(async (image: string, key: string) => {
+    if (fileIds.current[key]) return fileIds.current[key];
+    const pending = uploading.current.get(key);
+    if (pending) return pending;
+    const promise = (async () => {
+      const source = await imageDataUrl(image);
+      const response = await fetch("/api/youcam/upload", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: source }) });
+      const body = await response.json();
+      if (!response.ok || !body.fileId) throw new Error(body.message ?? "Upload failed");
+      fileIds.current[key] = body.fileId;
+      await idbSet(FILES_KEY, fileIds.current);
+      return body.fileId as string;
+    })();
+    uploading.current.set(key, promise);
+    try { return await promise; } finally { uploading.current.delete(key); }
+  }, []);
 
+  const runStage = useCallback(async (spec: StageSpec) => {
+    const p = ref.current!, look = p.looks.find((item) => item.id === spec.lookId)!;
+    const prior = p.renders[spec.key];
+    let taskId = prior?.taskId;
+    let creationPending = prior?.creationPending ?? false;
+    const base: RenderRecord = { key: spec.key, lookId: spec.lookId, stage: spec.stage, status: "running", startedAt: prior?.startedAt ?? Date.now() };
+    const persist = async (record: RenderRecord) => { await idbSet(KEY, putRecord(record)); };
+    const fail = async (error: string, terminal = false) => {
+      await persist({ ...base, taskId: terminal ? undefined : taskId, creationPending, status: "error", error, finishedAt: Date.now() });
+    };
+    try {
       if (status?.demo) {
-        putRecord(base);
-        await sleep(700 + Math.random() * 1100);
-        putRecord({ ...base, status: "done", url: sketchFor(ref.current!, look, spec.stage), demo: true, finishedAt: Date.now() });
+        putRecord(base); await sleep(700);
+        await persist({ ...base, status: "done", url: sketchFor(ref.current!, look, spec.stage), demo: true, units: 0, finishedAt: Date.now() });
         return;
       }
-
-      let taskId = prior?.status === "running" ? prior.taskId : undefined;
+      if (creationPending && !taskId) return await fail("The last request may have started. Check the account activity before choosing Redo this layer.");
+      putRecord({ ...base, taskId });
       if (!taskId) {
         const body: Record<string, unknown> = { job: spec.job };
         if (spec.parentKey) {
-          const parent = p.renders[spec.parentKey];
-          if (!parent?.url || parent.demo) return fail("Waiting on the previous stage");
-          body.srcUrl = parent.url;
+          const parent = ref.current!.renders[spec.parentKey];
+          if (!parent?.url || parent.demo) return await fail("Waiting on the previous stage");
+          if (/^https:\/\//.test(parent.url)) body.srcUrl = parent.url;
+          else body.fileId = await ensureFile(parent.url, `render:${p.id}:${parent.key}`);
         } else {
-          const role = p.roles.find((r) => r.id === look.roleId);
-          const perf = p.performers.find((x) => x.id === role?.performerId);
-          const photo = spec.chain === "body" ? perf?.bodyPhoto : perf?.portraitPhoto;
-          if (!perf || !photo) return fail(`Add a ${spec.chain === "body" ? "full-body" : "close-up"} photo of ${perf?.name ?? "this performer"} in Setup`);
-          const fk = `${perf.id}:${perf.photoVersion}:${spec.chain}`;
-          if (!fileIds.current[fk]) {
-            const up = await fetch("/api/youcam/upload", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: photo }) });
-            const uj = await up.json();
-            if (!up.ok) return fail(uj.message ?? "Upload failed");
-            fileIds.current[fk] = uj.fileId;
-            idbSet(FILES_KEY, fileIds.current);
-          }
-          body.fileId = fileIds.current[fk];
+          const role = p.roles.find((item) => item.id === look.roleId);
+          const performer = p.performers.find((item) => item.id === role?.performerId);
+          const photo = spec.chain === "body" ? performer?.bodyPhoto : performer?.portraitPhoto;
+          if (!performer || !photo) return await fail(`Add a ${spec.chain === "body" ? "full-body" : "close-up"} photo of ${performer?.name ?? "this performer"} in Cast & rack`);
+          body.fileId = await ensureFile(photo, `photo:${p.id}:${performer.id}:${performer.photoVersion}:${spec.chain}`);
         }
-        const res = await fetch("/api/youcam/run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-        const j = await res.json();
-        if (!res.ok) return fail(j.message ?? "Couldn't start the render");
-        taskId = j.taskId as string;
-        setUnitsSpent((u) => u + spec.units);
+        creationPending = true;
+        await persist({ ...base, creationPending });
+        const response = await fetch("/api/youcam/run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+        const created = await response.json();
+        if (!response.ok) { creationPending = response.status >= 500; return await fail(created.message ?? "Couldn't start the render"); }
+        if (created.demo) {
+          creationPending = false;
+          return await persist({ ...base, status: "done", demo: true, units: 0, url: sketchFor(ref.current!, look, spec.stage), finishedAt: Date.now() });
+        }
+        if (!created.taskId) return await fail("The server returned no task id. Check activity before retrying.");
+        taskId = created.taskId; creationPending = false;
       }
-      putRecord({ ...base, taskId });
-
-      const deadline = Date.now() + 120_000;
+      // Persist the task id before polling; errors and timeouts keep it for resumption.
+      await persist({ ...base, taskId, creationPending: false });
+      const deadline = Date.now() + 180_000;
       while (Date.now() < deadline) {
-        await sleep(2000);
-        const res = await fetch(`/api/youcam/task?feature=${spec.feature}&taskId=${encodeURIComponent(taskId)}`);
-        const j = await res.json();
-        if (!res.ok) return fail(j.message ?? "Lost track of the render");
-        if (j.status === "success") return putRecord({ ...base, taskId, status: "done", url: j.url, finishedAt: Date.now() });
-        if (j.status === "error") return fail(j.message ?? j.code);
+        await sleep(3000);
+        const response = await fetch(`/api/youcam/task?feature=${spec.feature}&taskId=${encodeURIComponent(taskId!)}`);
+        const state = await response.json();
+        if (response.status === 429) continue;
+        if (!response.ok) return await fail(state.message ?? "Connection interrupted. Render again to resume this task.");
+        if (state.status === "success" && state.url) {
+          // Signed result URLs expire. Keep finished pixels with the production.
+          const url = await imageDataUrl(state.url);
+          setUnitsSpent((units) => units + spec.units);
+          return await persist({ ...base, taskId, status: "done", url, demo: false, units: spec.units, finishedAt: Date.now() });
+        }
+        if (state.status === "error") return await fail(state.message ?? state.code, true);
       }
-      fail("Timed out. Try again.");
-    },
-    [putRecord, status],
-  );
+      await fail("Still processing. Render again to resume this task.");
+    } catch (error) { await fail(error instanceof Error ? error.message : "Render interrupted. Try again to resume."); }
+  }, [ensureFile, putRecord, status]);
 
-  const render = useCallback(
-    (lookIds?: string[]) => {
-      if (queueRun.current) return;
-      queueRun.current = true;
-      setRendering(true);
-      (async () => {
-        const total = pendingStages(ref.current!, lookIds).length;
-        setProgress({ done: 0, total });
-        let done = 0;
-        const attempted = new Set<string>();
+  const render = useCallback((lookIds?: string[]) => {
+    if (!ref.current || !status || queueRun.current) return;
+    queueRun.current = true; setRendering(true);
+    void (async () => {
+      const total = pendingStages(ref.current!, lookIds, !status.demo).length;
+      let done = 0;
+      const attempted = new Set<string>();
+      setProgress({ done, total });
+      try {
         for (;;) {
-          const p = ref.current!;
-          const pending = pendingStages(p, lookIds).filter((s) => !inflight.current.has(s.key) && !attempted.has(s.key));
-          const ready = pending.filter((s) => !s.parentKey || p.renders[s.parentKey]?.status === "done");
+          const current = ref.current!;
+          const pending = pendingStages(current, lookIds, !status.demo).filter((stage) => !inflight.current.has(stage.key) && !attempted.has(stage.key));
+          const ready = pending.filter((stage) => !stage.parentKey || (current.renders[stage.parentKey]?.status === "done" && (status.demo || !current.renders[stage.parentKey]?.demo)));
           if (!ready.length && !inflight.current.size) break;
-          const batch = ready.slice(0, Math.max(0, 4 - inflight.current.size));
-          if (!batch.length) {
-            await sleep(250);
-            continue;
-          }
-          for (const s of batch) {
-            inflight.current.add(s.key);
-            attempted.add(s.key);
-            runStage(s).finally(() => {
-              inflight.current.delete(s.key);
-              done++;
-              setProgress({ done, total });
-            });
+          for (const stage of ready.slice(0, Math.max(0, 3 - inflight.current.size))) {
+            inflight.current.add(stage.key); attempted.add(stage.key);
+            void runStage(stage).catch((error) => {
+              putRecord({ ...ref.current!.renders[stage.key], key: stage.key, lookId: stage.lookId, stage: stage.stage, status: "error", error: error instanceof Error ? error.message : "Render interrupted" });
+            }).finally(() => { inflight.current.delete(stage.key); done++; setProgress({ done, total: Math.max(total, done) }); });
           }
           await sleep(150);
         }
-        queueRun.current = false;
-        setRendering(false);
-      })();
-    },
-    [runStage],
-  );
+      } finally { queueRun.current = false; setRendering(false); }
+    })();
+  }, [putRecord, runStage, status]);
+
+  useEffect(() => {
+    if (!production || !status || resumed.current) return;
+    resumed.current = true;
+    const interrupted = pendingStages(production, undefined, !status.demo).filter((stage) => {
+      const record = production.renders[stage.key];
+      return record?.status === "running" && record.taskId;
+    });
+    if (interrupted.length) render([...new Set(interrupted.map((stage) => stage.lookId))]);
+  }, [production, render, status]);
 
   const resetToShowcase = useCallback(async () => {
-    const p = (await bundledShowcase()) ?? applyOp(showcaseProduction(), { type: "plan" }).production;
-    ref.current = p;
-    setP(p);
-  }, []);
-
+    if (queueRun.current) return;
+    setProduction(await bundledShowcase() ?? applyOp(showcaseProduction(), { type: "plan" }).production);
+    setChangeReport(null); setHighlight(null);
+  }, [setProduction]);
   const restoreRack = useCallback(() => {
-    const cur = ref.current;
-    if (!cur) return;
-    const back = {
-      ...cur,
-      inventory: cur.inventory.map((i) => ({ ...i, available: true })),
-      shop: cur.shop.map((i) => ({ ...i, available: true })),
-      looks: cur.looks.map((l) => ({ ...l, locked: false })),
-      plan: null,
-    };
-    const p = applyOp(back, { type: "plan" }).production;
-    ref.current = p;
-    setP(p);
-  }, []);
+    const current = ref.current;
+    if (!current || queueRun.current) return;
+    const restored = { ...current, inventory: current.inventory.map((item) => ({ ...item, available: true })), shop: current.shop.map((item) => ({ ...item, available: true })), looks: current.looks.map((look) => ({ ...look, locked: false })), plan: null };
+    const next = applyOp(restored, { type: "plan" }).production;
+    setProduction(next); void idbSet(KEY, next); setChangeReport(null); setHighlight(null);
+  }, [setProduction]);
+  const redo = useCallback((lookId: string, keys: string[]) => {
+    if (queueRun.current) return;
+    setProduction((current) => { const renders = { ...current.renders }; for (const key of keys) delete renders[key]; return { ...current, renders }; });
+    render([lookId]);
+  }, [render, setProduction]);
 
-  const redo = useCallback(
-    (lookId: string, keys: string[]) => {
-      setProduction((prev) => {
-        const renders = { ...prev.renders };
-        for (const k of keys) delete renders[k];
-        return { ...prev, renders };
-      });
-      setTimeout(() => render([lookId]), 50);
-    },
-    [render, setProduction],
-  );
-
-  const value = useMemo<Ctx>(
-    () => ({ production, status, setProduction, op, replay, highlight, flash, render, rendering, progress, unitsSpent, resetToShowcase, restoreRack, redo }),
-    [production, status, setProduction, op, replay, highlight, flash, render, rendering, progress, unitsSpent, resetToShowcase, restoreRack, redo],
-  );
+  const value = useMemo<Ctx>(() => ({ production, status, setProduction, op, replay, highlight, changeReport, flash, render, rendering, progress, unitsSpent, resetToShowcase, restoreRack, redo }),
+    [production, status, setProduction, op, replay, highlight, changeReport, flash, render, rendering, progress, unitsSpent, resetToShowcase, restoreRack, redo]);
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>;
 }
-
-export function useStudio(): Ctx {
-  const ctx = useContext(StoreCtx);
-  if (!ctx) throw new Error("useStudio must be used inside StudioProvider");
-  return ctx;
-}
+export function useStudio(): Ctx { const value = useContext(StoreCtx); if (!value) throw new Error("useStudio must be used inside StudioProvider"); return value; }

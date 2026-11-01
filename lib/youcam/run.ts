@@ -4,6 +4,7 @@
  * body and creates the task. Shared by the API routes and the director agent.
  */
 import "server-only";
+import { createHash } from "node:crypto";
 import { buildBody, type Job } from "./bodies";
 import { createTask, isDemoMode, uploadImage, YouCamError } from "./client";
 import { FEATURES } from "./features";
@@ -22,7 +23,8 @@ export function dataUrlToBytes(dataUrl: string): { bytes: ArrayBuffer; contentTy
 
 async function resolveRef(ref: string, origin: string): Promise<Record<string, string>> {
   if (/^https:\/\//.test(ref)) return { ref_file_url: ref };
-  const cached = refCache.get(ref.length > 200 ? `${ref.length}:${ref.slice(-120)}` : ref);
+  const cacheKey = createHash("sha256").update(ref).digest("hex");
+  const cached = refCache.get(cacheKey);
   if (cached) return { ref_file_id: cached };
   let bytes: ArrayBuffer;
   let contentType: string;
@@ -37,7 +39,7 @@ async function resolveRef(ref: string, origin: string): Promise<Record<string, s
     throw new YouCamError("A garment reference must be a photo, a rack path or an https URL", "bad_ref");
   }
   const fileId = await uploadImage(bytes, contentType, "garment.jpg");
-  refCache.set(ref.length > 200 ? `${ref.length}:${ref.slice(-120)}` : ref, fileId);
+  refCache.set(cacheKey, fileId);
   return { ref_file_id: fileId };
 }
 

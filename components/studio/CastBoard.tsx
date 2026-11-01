@@ -1,12 +1,21 @@
 "use client";
 import { useStudio } from "@/lib/client/store";
 import { LookCard } from "./LookCard";
+import { useState } from "react";
 
 export function CastBoard({ onOpen }: { onOpen: (lookId: string) => void }) {
   const { production: p } = useStudio();
+  const [view, setView] = useState<"costume" | "styling">("costume");
   if (!p) return null;
   let i = 0;
   return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div><h2 className="font-[family-name:var(--font-display)] text-2xl">Cast fitting room</h2><p className="mt-1 text-xs text-muted">Compare each performer's costume and styling directions.</p></div>
+        <div className="flex rounded-full border border-line bg-surface p-1" role="group" aria-label="Cast board view">
+          {(["costume", "styling"] as const).map((mode) => <button key={mode} onClick={() => setView(mode)} aria-pressed={view === mode} className={`rounded-full px-4 py-2 text-xs ${view === mode ? "grad text-white" : "text-muted"}`}>{mode === "costume" ? "Costumes" : "Hair & makeup"}</button>)}
+        </div>
+      </div>
     <div className="grid gap-6 lg:grid-cols-3">
       {p.performers.map((perf) => {
         const roles = p.roles.filter((r) => r.performerId === perf.id);
@@ -23,16 +32,17 @@ export function CastBoard({ onOpen }: { onOpen: (lookId: string) => void }) {
               <div>
                 <div className="font-medium">{perf.name}</div>
                 <div className="text-xs text-muted">{roles.map((r) => r.name).join(" · ")} · size {perf.size}</div>
+                <div className="mt-0.5 text-[10px] text-muted">{perf.reference === "fictional" ? "Fictional demo performer" : perf.reference === "provided" ? "Your supplied photos" : ""}</div>
               </div>
             </header>
             <div className="grid grid-cols-2 gap-3">
               {looks.map((l) => (
-                <LookCard key={l.id} look={l} index={i++} onOpen={() => onOpen(l.id)} />
+                <LookCard key={l.id} look={l} index={i++} onOpen={() => onOpen(l.id)} view={view} />
               ))}
             </div>
           </section>
         );
       })}
-    </div>
+    </div></div>
   );
 }

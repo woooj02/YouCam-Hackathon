@@ -15,6 +15,7 @@ export default function PrintCards() {
       </div>
       <h1 className="font-[family-name:var(--font-display)] text-3xl">{p.title}: fitting cards</h1>
       <p className="text-sm text-muted">Previews show appearance. Fit, comfort and quick-change timing are confirmed at the fitting.</p>
+      {p.notice ? <p className="mt-2 text-xs text-muted">{p.notice}</p> : null}
       {p.performers.map((perf) => {
         const roles = p.roles.filter((r) => r.performerId === perf.id);
         const looks = p.looks.filter((l) => roles.some((r) => r.id === l.roleId));
@@ -36,6 +37,7 @@ export default function PrintCards() {
                   <div className="text-sm">
                     <h3 className="font-[family-name:var(--font-display)] text-xl">{l.name}</h3>
                     <p className="text-muted">Scenes: {l.sceneIds.map((id) => { const sc = p.scenes.find((x) => x.id === id); return sc ? `${sc.order}. ${sc.name}` : id; }).join(" · ")}</p>
+                    {l.direction ? <p className="mt-2 text-xs text-muted">{l.direction}</p> : null}
                     <table className="mt-3 w-full">
                       <tbody>
                         {l.requirements.map((r) => {
@@ -44,7 +46,7 @@ export default function PrintCards() {
                             <tr key={r.slot} className="border-t border-line/60">
                               <td className="py-1.5 pr-3 text-muted">{SLOT_LABEL[r.slot]}</td>
                               <td className="py-1.5">{it ? it.name : <em>To source: {[...(r.colors ?? []), ...r.tags].join(", ")}</em>}</td>
-                              <td className="py-1.5 text-right text-muted">{it ? `${SOURCE_LABEL[it.source]}${it.cost ? ` · ${money(p, it.cost)}` : ""}` : ""}</td>
+                              <td className="py-1.5 text-right text-muted">{it ? <>{SOURCE_LABEL[it.source]}{it.cost ? ` · ${money(p, it.cost)}` : ""}{it.vendor ? <span className="block text-xs">{it.vendor}</span> : null}</> : ""}</td>
                             </tr>
                           );
                         })}
@@ -56,6 +58,7 @@ export default function PrintCards() {
                       <div className="font-medium">At the fitting</div>
                       <ul className="mt-1 list-disc pl-4">
                         <li>Check fit and movement in every piece.</li>
+                        {a.hat ? <li>Fit headwear in person; it is excluded from the preview.</li> : null}
                         {soft.map((c, i) => <li key={i}>{c.message}: rehearse the handoff.</li>)}
                         {l.locked ? <li>Look approved and locked.</li> : null}
                       </ul>

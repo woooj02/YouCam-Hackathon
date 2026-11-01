@@ -8,8 +8,8 @@ const hex = z.string().regex(/^#?[0-9A-Fa-f]{6}$/, "expected #RRGGBB");
 
 export const Makeup = z.object({
   label: z.string(),
-  lip: z.object({ color: hex, texture: z.enum(["matte", "satin", "gloss"]) }).optional(),
-  foundation: z.object({ color: hex, coverage: z.number().min(0).max(100) }).optional(),
+  lip: z.object({ color: hex, texture: z.enum(["matte", "satin", "gloss"]), intensity: z.number().int().min(0).max(100).optional() }).optional(),
+  foundation: z.object({ color: hex, coverage: z.number().min(0).max(100), glow: z.number().int().min(0).max(100).optional() }).optional(),
   smooth: z.number().min(0).max(100).optional(),
 });
 
@@ -42,7 +42,7 @@ export function makeupEffects(m: z.infer<typeof Makeup>): Record<string, unknown
   if (m.foundation) {
     effects.push({
       category: "foundation",
-      palettes: [{ color: h(m.foundation.color), colorIntensity: 50, glowIntensity: 20, coverageIntensity: m.foundation.coverage }],
+      palettes: [{ color: h(m.foundation.color), colorIntensity: 50, glowIntensity: m.foundation.glow ?? 20, coverageIntensity: m.foundation.coverage }],
     });
   }
   if (m.lip) {
@@ -53,7 +53,7 @@ export function makeupEffects(m: z.infer<typeof Makeup>): Record<string, unknown
         {
           color: h(m.lip.color),
           texture: m.lip.texture,
-          colorIntensity: 70,
+          colorIntensity: m.lip.intensity ?? 70,
           ...(m.lip.texture === "gloss" ? { gloss: 60, transparencyIntensity: 20 } : {}),
         },
       ],

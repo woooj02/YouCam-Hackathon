@@ -1,4 +1,8 @@
 import Link from "next/link";
+import showcase from "@/public/showcase/production.json";
+import type { Production } from "@/lib/engine/types";
+import { lookImages } from "@/lib/engine/render";
+import { replanWithout } from "@/lib/engine/solver";
 
 const STEPS = [
   { n: "01", title: "Meet the cast", body: "Start with The Lantern Keepers: three performers, six looks and five scenes. Add your cast photos, sizes and costume direction." },
@@ -11,6 +15,10 @@ const STEPS = [
 const APIS = ["AI Clothes Virtual Try-On", "AI Hairstyle Virtual Try-On", "AI Makeup Virtual Try-On"];
 
 export default function Home() {
+  const production = showcase as Production;
+  const repaired = replanWithout(production, "i-navy-coat").production;
+  const originalCoat = lookImages(production, "l-rowe-sea").body?.url;
+  const replacementCoat = lookImages(repaired, "l-rowe-sea").body?.url;
   return (
     <main className="spotlight min-h-screen">
       <div className="mx-auto max-w-6xl px-4 pb-24 pt-10 sm:px-8">
@@ -31,7 +39,7 @@ export default function Home() {
             and tells you exactly what is left to source, inside your budget.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
-            <Link href="/studio?showcase=1" className="rounded-full grad px-6 py-3 font-medium text-white shadow-[0_0_40px_rgba(210,58,116,.28)] hover:brightness-110">
+            <Link href="/studio?showcase=1&public=1" className="rounded-full grad px-6 py-3 font-medium text-white shadow-[0_0_40px_rgba(210,58,116,.28)] hover:brightness-110">
               Open the showcase production
             </Link>
             <Link href="/studio/setup" className="rounded-full border border-line px-6 py-3 text-fg hover:border-accent">
@@ -40,7 +48,44 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mt-24 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <section className="mt-14" aria-label="Rendered showcase cast">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div><h2 className="font-[family-name:var(--font-display)] text-3xl">One rack. Three performers. Six looks.</h2><p className="mt-2 text-sm text-muted">The Lantern Keepers · fictional demo cast · real YouCam try-on results</p></div>
+            <Link href="/studio?showcase=1&public=1" className="text-sm text-accent hover:underline">Inspect the whole plan →</Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {production.looks.map((look) => {
+              const images = lookImages(production, look.id);
+              return <article key={look.id} className="overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
+                <div className="relative aspect-[2/3] overflow-hidden bg-panel">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {images.body?.url ? <img src={images.body.url} alt={`${look.name}: costume preview`} className="h-full w-full object-cover" /> : null}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {images.portrait?.url ? <img src={images.portrait.url} alt={`${look.name}: styling preview`} className="absolute bottom-2 right-2 h-16 w-16 rounded-full border-2 border-white object-cover shadow-lg" /> : null}
+                </div>
+                <div className="p-3"><h3 className="font-[family-name:var(--font-display)] text-base leading-tight">{look.name}</h3><p className="mt-2 text-[11px] text-muted">{look.hair?.label}</p></div>
+              </article>;
+            })}
+          </div>
+        </section>
+
+        <section className="mt-14 grid items-center gap-8 rounded-3xl border border-line bg-surface p-6 shadow-card sm:grid-cols-2 sm:p-8">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-accent">The whole production keeps moving</p>
+            <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl">“The navy greatcoat has moth damage.”</h2>
+            <p className="mt-4 leading-relaxed text-muted">Rowe gets a naval pea coat from Footlights Costume Hire. The basket becomes $40 of $250. One of 23 render layers changes; the other 22 are kept.</p>
+            <p className="mt-3 text-xs text-muted">Try the repair in the showcase. Its saved replacement preview works without an API key.</p>
+            <Link href="/studio?showcase=1&public=1" className="mt-6 inline-block rounded-full grad px-5 py-3 text-sm font-medium text-white">Try the coat repair →</Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {[{ image: originalCoat, label: "Before · rack · $0" }, { image: replacementCoat, label: "After · hire · $40" }].map((item) => <figure key={item.label}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={item.image} alt={item.label} className="aspect-[3/4] w-full rounded-xl bg-panel object-cover" /><figcaption className="mt-2 text-center text-xs text-muted">{item.label}</figcaption>
+            </figure>)}
+          </div>
+        </section>
+
+        <section className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {STEPS.map((s, i) => (
             <div key={s.n} className="rise rounded-2xl border border-line bg-surface/80 p-5 shadow-card backdrop-blur" style={{ animationDelay: `${120 + i * 90}ms` }}>
               <div className="font-[family-name:var(--font-display)] text-3xl text-accent">{s.n}</div>

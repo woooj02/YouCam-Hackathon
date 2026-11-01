@@ -6,18 +6,22 @@
  * arrive as HTTP 200 with task_status "error" and a stringified tuple.
  */
 import "server-only";
-import { FEATURES, type FeatureId } from "./features";
-import { accountAccessToken, YouCamAuthError } from "./auth";
+import { FEATURES, type FeatureId } from "./features.ts";
+import { accountAccessToken, YouCamAuthError } from "./auth.ts";
 
 export const YOUCAM_BASE = "https://yce-api-01.makeupar.com";
 
 export class YouCamError extends Error {
+  readonly code: string;
+  readonly status?: number;
   constructor(
     message: string,
-    readonly code: string,
-    readonly status?: number,
+    code: string,
+    status?: number,
   ) {
     super(message);
+    this.code = code;
+    this.status = status;
   }
 }
 
@@ -119,10 +123,12 @@ export async function getTask(feature: FeatureId, taskId: string): Promise<TaskS
   return parseTaskBody(body);
 }
 
-export async function listTemplates(feature: FeatureId, pageSize = 20): Promise<unknown> {
+export async function listTemplates(feature: FeatureId, pageSize = 20, startingToken?: string): Promise<unknown> {
   const path = FEATURES[feature].templatePath;
   if (!path) throw new YouCamError(`${feature} has no templates`, "no_templates");
-  return api(`${path}?page_size=${pageSize}`);
+  const query = new URLSearchParams({ page_size: String(Math.max(1, Math.min(20, pageSize))) });
+  if (startingToken) query.set("starting_token", startingToken);
+  return api(`${path}?${query}`);
 }
 
 /** Server-side wait, for the agent's tools (UI routes poll from the client instead). */
