@@ -49,7 +49,7 @@ export function LookCard({ look, onOpen, index, view = "costume" }: { look: Look
         <h3 className="font-[family-name:var(--font-display)] text-base leading-tight">{look.name}</h3>
         {view === "styling" ? <p className="text-[11px] text-accent">{look.hair?.label ?? "Own hair"} · {look.makeup?.label ?? "No makeup direction"}</p> : null}
         <p className="text-[11px] text-muted">
-          {role?.name} · scenes {look.sceneIds.map((id) => p.scenes.find((x) => x.id === id)?.order).join(", ")}
+          {role?.name} · scene{look.sceneIds.length === 1 ? "" : "s"} {look.sceneIds.map((id) => p.scenes.find((x) => x.id === id)?.order).join(", ")}
         </p>
         <ul className="space-y-0.5">
           {(["base", "outer", "hat"] as const).map((slot) => {

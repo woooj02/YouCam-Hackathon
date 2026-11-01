@@ -35,7 +35,7 @@ export function CastBoard({ onOpen }: { onOpen: (lookId: string) => void }) {
                 <div className="mt-0.5 text-[10px] text-muted">{perf.reference === "fictional" ? "Fictional demo performer" : perf.reference === "provided" ? "Your supplied photos" : ""}</div>
               </div>
             </header>
-            <div className="grid grid-cols-2 gap-3">
+            <div className={`grid gap-3 ${looks.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
               {looks.map((l) => (
                 <LookCard key={l.id} look={l} index={i++} onOpen={() => onOpen(l.id)} view={view} />
               ))}

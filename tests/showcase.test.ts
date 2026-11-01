@@ -9,13 +9,14 @@ import type { Production } from "@/lib/engine/types";
 const showcase = (): Production => JSON.parse(readFileSync("public/showcase/production.json", "utf8"));
 
 describe("the complete public showcase", () => {
-  it("ships a fictional cast, every rack photo and 23 actual completed layers", () => {
+  it("ships the Gatsby cast, every rack photo and 12 actual completed layers", () => {
     const p = showcase();
     expect(p.performers).toHaveLength(3);
     expect(p.performers.every((performer) => performer.reference === "fictional")).toBe(true);
-    expect(p.looks).toHaveLength(6);
-    expect(new Set(p.looks.map((look) => look.hair?.templateId)).size).toBe(6);
-    expect(allStages(p)).toHaveLength(23);
+    expect(p.title).toBe("The Great Gatsby");
+    expect(p.looks).toHaveLength(3);
+    expect(new Set(p.looks.map((look) => look.hair?.templateId)).size).toBe(3);
+    expect(allStages(p)).toHaveLength(12);
     expect(pendingStages(p, undefined, true)).toEqual([]);
     expect(p.plan?.gaps).toEqual([]);
     expect(p.plan?.conflicts.filter((c) => c.severity === "hard")).toEqual([]);
@@ -38,13 +39,13 @@ describe("the complete public showcase", () => {
 
   it("demonstrates the shared-rack conflict and a one-layer $40 repair without a key", () => {
     const p = showcase();
-    expect(naivePlan(p).conflicts.some((c) => c.kind === "double-booked" && c.itemId === "i-navy-coat")).toBe(true);
-    const repaired = replanWithout(p, "i-navy-coat");
+    expect(naivePlan(p).conflicts.some((c) => c.kind === "double-booked" && c.itemId === "g-black-jacket")).toBe(true);
+    const repaired = replanWithout(p, "g-black-jacket");
     const impact = renderImpact(p, repaired.production);
-    expect(repaired.changes).toEqual([{ lookId: "l-rowe-sea", slot: "outer", from: "i-navy-coat", to: "x-pea-coat" }]);
+    expect(repaired.changes).toEqual([{ lookId: "l-gatsby", slot: "outer", from: "g-black-jacket", to: "g-ivory-jacket" }]);
     expect(p.plan?.cost).toBe(0);
     expect(repaired.production.plan?.cost).toBe(40);
-    expect(impact).toMatchObject({ total: 23, kept: 22, lookIds: ["l-rowe-sea"] });
+    expect(impact).toMatchObject({ total: 12, kept: 11, lookIds: ["l-gatsby"] });
     expect(impact.changedKeys).toHaveLength(1);
     expect(impact.cachedKeys).toEqual(impact.changedKeys);
     expect(pendingStages(repaired.production, undefined, true)).toEqual([]);
@@ -52,8 +53,9 @@ describe("the complete public showcase", () => {
 
   it("scopes roots to a production and bills a shared hairstyle only once", () => {
     const p = showcase();
-    const first = p.looks[0], second = p.looks[1];
-    second.hair = first.hair;
+    const first = p.looks[0], second = structuredClone(first);
+    second.id = "l-gatsby-encore";
+    p.looks.push(second);
     p.renders = {};
     const one = stagesForLook(p, first).find((stage) => stage.stage === "hair")!;
     const two = stagesForLook(p, second).find((stage) => stage.stage === "hair")!;

@@ -1,0 +1,55 @@
+import type { Item, Production } from "./engine/types";
+import { gatsbyAssets as assets } from "./gatsby-assets.ts";
+
+/** A small, illustrative party-scene wardrobe for the Gatsby demonstration. */
+export function gatsbyProduction(): Production {
+  const owned = (item: Omit<Item, "source" | "cost" | "available">): Item => ({ ...item, source: "owned", cost: 0, available: true });
+  return {
+    id: "gatsby-party-v1",
+    title: "The Great Gatsby",
+    logline: "The party scene · Three actors · One $250 costume budget",
+    brief: "A Gatsby-inspired 1920s party scene. Dress Gatsby, Daisy and Nick as distinct characters in one coherent evening wardrobe. Use the owned rack before hiring. Gatsby and Nick initially want the same black dinner jacket, but it is one physical piece. Daisy wears an emerald beaded dress, silver shawl, sculpted waves and a wine lip. A damaged jacket must change only the affected look and slot.",
+    notice: "Fictional demo performers. Gatsby-inspired costume study. Catalogue prices and sizes are illustrative.",
+    budget: 250,
+    currency: "$",
+    performers: [
+      { id: "p-gatsby", name: "Jonah", size: "L", photoVersion: 1, reference: "fictional", hatFit: "male", bodyPhoto: "/showcase/cast/actor-rowe-body-ffee8181b5.jpg", portraitPhoto: "/showcase/cast/actor-rowe-face-f37a49a0ae.jpg" },
+      { id: "p-daisy", name: "Maya", size: "S", photoVersion: 1, reference: "fictional", hatFit: "female", bodyPhoto: "/showcase/cast/actor-maya-body-0f65103d66.jpg", portraitPhoto: "/showcase/cast/actor-maya-face-e413a42e34.jpg" },
+      { id: "p-nick", name: "Noah", size: "M", photoVersion: 1, reference: "fictional", hatFit: "male", bodyPhoto: assets.nickBody, portraitPhoto: assets.nickFace },
+    ],
+    roles: [
+      { id: "r-gatsby", name: "Jay Gatsby", performerId: "p-gatsby", summary: "The host: polished evening tailoring and a swept hairstyle." },
+      { id: "r-daisy", name: "Daisy Buchanan", performerId: "p-daisy", summary: "Emerald beadwork, silver shoulders, sculpted waves and a darker lip." },
+      { id: "r-nick", name: "Nick Carraway", performerId: "p-nick", summary: "Understated charcoal evening tailoring and a neat short hairstyle." },
+    ],
+    scenes: [{ id: "party", name: "Gatsby’s party", order: 1 }],
+    looks: [
+      { id: "l-gatsby", roleId: "r-gatsby", name: "Gatsby, the host", sceneIds: ["party"], locked: false,
+        direction: "A sharp satin-lapel dinner jacket over a white evening shirt and black trousers. Swept evening hair, with an understated stage finish.",
+        requirements: [{ slot: "base", tags: ["formal", "shirt", "trousers"], colors: ["white", "black"] }, { slot: "outer", tags: ["dinner", "jacket", "satin", "lapel"], colors: ["black", "ivory"] }],
+        hair: { templateId: "male_wavy_undercut", label: "Swept evening undercut", keepColor: true },
+        makeup: { label: "Understated evening stage finish", foundation: { color: "#b7896c", coverage: 18, glow: 5 }, smooth: 5 } },
+      { id: "l-daisy", roleId: "r-daisy", name: "Daisy, the party", sceneIds: ["party"], locked: false,
+        direction: "1920s evening glamour: emerald beads, a silver shoulder wrap, sculpted waves and a deep wine lip.",
+        requirements: [{ slot: "base", tags: ["gown", "evening", "1920s", "beaded"], colors: ["emerald", "green"] }, { slot: "outer", tags: ["shawl", "evening"], colors: ["silver"] }],
+        hair: { templateId: "female_retro_brown_waves", label: "1920s sculpted evening waves", keepColor: true },
+        makeup: { label: "Party: wine lip, soft matte complexion", lip: { color: "#7e1831", texture: "matte", intensity: 80 }, foundation: { color: "#dbb79f", coverage: 35, glow: 8 }, smooth: 10 } },
+      { id: "l-nick", roleId: "r-nick", name: "Nick, the guest", sceneIds: ["party"], locked: false,
+        direction: "An understated evening jacket over a white shirt and black trousers. Neat cropped hair and natural skin texture.",
+        requirements: [{ slot: "base", tags: ["formal", "shirt", "trousers"], colors: ["white", "black"] }, { slot: "outer", tags: ["dinner", "jacket", "satin", "lapel"], colors: ["black", "charcoal"] }],
+        hair: { templateId: "male_textured_crop", label: "Neat short party hairstyle", keepColor: true },
+        makeup: { label: "Natural evening finish", foundation: { color: "#d3b69b", coverage: 10, glow: 3 }, smooth: 0 } },
+    ],
+    inventory: [
+      owned({ id: "g-evening-base", name: "White evening shirt & black trousers", slot: "base", garmentCategory: "full_body", colors: ["white", "black"], tags: ["formal", "shirt", "trousers", "1920s"], sizes: ["M", "L"], qty: 2, image: assets["formal-base"] }),
+      owned({ id: "g-black-jacket", name: "Black satin-lapel dinner jacket", slot: "outer", garmentCategory: "outer", colors: ["black"], tags: ["dinner", "jacket", "satin", "lapel", "formal"], sizes: ["M", "L"], qty: 1, image: assets["black-dinner-jacket"] }),
+      owned({ id: "g-charcoal-jacket", name: "Charcoal evening jacket", slot: "outer", garmentCategory: "outer", colors: ["charcoal"], tags: ["dinner", "jacket", "lapel", "wool"], sizes: ["M"], qty: 1, image: assets["charcoal-dinner-jacket"] }),
+      owned({ id: "g-emerald-dress", name: "Emerald beaded party dress", slot: "base", garmentCategory: "full_body", colors: ["emerald", "green"], tags: ["gown", "evening", "1920s", "beaded", "dress"], sizes: ["S", "M"], qty: 1, image: assets["emerald-gown"] }),
+      owned({ id: "g-silver-shawl", name: "Silver evening shawl", slot: "outer", garmentCategory: "outer", colors: ["silver"], tags: ["shawl", "evening", "chiffon"], sizes: ["OS"], qty: 1, image: "/rack/silver-shawl-ff92543caa.jpg" }),
+    ],
+    shop: [{ id: "g-ivory-jacket", name: "Ivory dinner jacket", slot: "outer", garmentCategory: "outer", colors: ["ivory"], tags: ["dinner", "jacket", "lapel", "formal"], sizes: ["L"], qty: 1, source: "rental", cost: 40, vendor: "Footlights Costume Hire", image: assets["ivory-dinner-jacket"], available: true }],
+    plan: null,
+    renders: {},
+    history: [],
+  };
+}

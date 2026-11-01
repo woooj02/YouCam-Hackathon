@@ -39,7 +39,7 @@ function Rack({ onLost }: { onLost: (item: Item) => void }) {
   const groups = (["base", "outer", "hat"] as const).map((slot) => ({ slot, items: p.inventory.filter((i) => i.slot === slot) }));
   return (
     <div className="space-y-5">
-      {groups.map(({ slot, items }) => (
+      {groups.filter((group) => group.items.length).map(({ slot, items }) => (
         <div key={slot}>
           <h4 className="mb-2 text-xs uppercase tracking-wider text-muted">{SLOT_LABEL[slot]}</h4>
           <ul className="space-y-1.5">
@@ -52,7 +52,7 @@ function Rack({ onLost }: { onLost: (item: Item) => void }) {
                   <div className="min-w-0 flex-1">
                     <div className={`truncate text-sm ${it.available ? "" : "line-through"}`}>{it.name}</div>
                     <div className="truncate text-[11px] text-muted">
-                      {it.sizes.join("/")} · {it.available ? (uses.length ? `on ${uses.length} look${uses.length > 1 ? "s" : ""}` : "spare") : "unavailable"}
+                      {it.sizes.join("/")} · {it.qty} on rack · {it.available ? (uses.length ? `on ${uses.length} look${uses.length > 1 ? "s" : ""}` : "spare") : "unavailable"}
                     </div>
                   </div>
                   {it.available ? (

@@ -55,7 +55,7 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
             </div>
             <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl">{look.name}</h2>
             <p className="mt-1 text-sm text-muted">
-              Scenes: {look.sceneIds.map((id) => p.scenes.find((x) => x.id === id)?.name).join(" · ")}
+              Scene{look.sceneIds.length === 1 ? "" : "s"}: {look.sceneIds.map((id) => p.scenes.find((x) => x.id === id)?.name).join(" · ")}
             </p>
           </div>
           <button onClick={onClose} className="rounded-full border border-line px-3 py-1 text-sm text-muted hover:text-fg">

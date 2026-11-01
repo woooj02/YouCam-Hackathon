@@ -7,12 +7,6 @@ import { pendingStages, renderImpact } from "@/lib/engine/render";
 
 type Turn = { role: "user" | "assistant"; text: string };
 
-const SUGGESTIONS = [
-  "The navy greatcoat has moth damage, we can't use it",
-  "Lock Elsie's masquerade look, the director approved it",
-  "Our sourcing budget just dropped to $30",
-];
-
 export function DirectorBar() {
   const { production: p, replay, render, status, rendering } = useStudio();
   const [text, setText] = useState("");
@@ -20,6 +14,14 @@ export function DirectorBar() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [last, setLast] = useState<{ reply: string; lines: string[]; offline: boolean; rerender?: string } | null>(null);
   const [focused, setFocused] = useState(false);
+  const firstLook = p?.looks[0];
+  const outerId = firstLook && p?.plan?.assignment[firstLook.id]?.outer;
+  const piece = p && [...p.inventory, ...p.shop].find((item) => item.id === outerId);
+  const suggestions = [
+    piece ? `${piece.name} is damaged, we can't use it` : "Re-plan the cast",
+    firstLook ? `Lock ${firstLook.name}, the director approved it` : "Re-plan the cast",
+    "Our sourcing budget just dropped to $30",
+  ];
 
   useEffect(() => {
     if (!last) return;
@@ -82,8 +84,8 @@ export function DirectorBar() {
         ) : null}
         {focused && !busy ? (
           <div className="mb-2 flex flex-wrap gap-2">
-            {SUGGESTIONS.map((s) => (
-              <button key={s} onMouseDown={(e) => e.preventDefault()} onClick={() => send(s)} className="rounded-full border border-line bg-surface/90 px-3 py-1.5 text-xs text-muted backdrop-blur hover:border-accent hover:text-fg">
+            {suggestions.map((s, i) => (
+              <button key={i} onMouseDown={(e) => e.preventDefault()} onClick={() => send(s)} className="rounded-full border border-line bg-surface/90 px-3 py-1.5 text-xs text-muted backdrop-blur hover:border-accent hover:text-fg">
                 {s}
               </button>
             ))}

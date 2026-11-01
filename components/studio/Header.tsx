@@ -74,7 +74,7 @@ export function Header() {
           hint="Compare with look-by-look"
         />
         <Stat label="YouCam units" value={status?.demo ? Object.values(p.renders).some((record) => record.status === "done" && !record.demo) ? "Saved previews · 0 new units" : "Sketches · 0 spent" : `${unitsSpent} this session${balance !== null ? ` · ${balance} left` : ""}`} hint={pending.length ? `~${estimateUnits(pending)} to render the rest` : undefined} />
-        <Stat label="Looks" value={`${p.looks.length} looks · ${p.performers.length} performers · ${p.scenes.length} scenes`} onClick={restoreRack} hint="Restore rack & re-plan (keeps photos and renders)" />
+        <Stat label="Looks" value={`${p.looks.length} looks · ${p.performers.length} performers · ${p.scenes.length} scene${p.scenes.length === 1 ? "" : "s"}`} onClick={restoreRack} hint="Restore rack & re-plan (keeps photos and renders)" />
       </div>
       {error ? <p role="alert" className="text-sm text-alarm">{error}</p> : null}
       {budgetOpen ? <form onSubmit={(event) => { event.preventDefault(); op({ type: "budget", budget: Number(budget) }); setBudgetOpen(false); }} className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-surface p-3 text-sm"><label>Shared sourcing budget {p.currency}<input type="number" min={0} max={1000000} required value={budget} onChange={(event) => setBudget(event.target.value)} className="ml-2 w-28 rounded-lg border border-line bg-panel px-3 py-1.5" /></label><button disabled={rendering} className="rounded-full grad px-4 py-2 text-white disabled:opacity-40">Update & re-plan</button></form> : null}

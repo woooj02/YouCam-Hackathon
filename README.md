@@ -4,11 +4,11 @@
 
 ENCORE is a fitting room for an entire cast. A costume designer gives it the show, the cast and the rack they already have. ENCORE plans every look across every scene from that rack, renders each look on the real performers with the YouCam API (costume, outer layer, hairstyle and makeup), and lists exactly what is left to hire or buy, inside the budget. Headwear remains in the wardrobe plan and fitting cards.
 
-When something breaks ("the navy greatcoat has moth damage"), ENCORE re-plans only the looks that used it, re-renders only the layers that changed, and updates the sourcing basket.
+When something breaks ("Gatsby’s black dinner jacket is damaged"), ENCORE re-plans only the looks that used it, re-renders only the layers that changed, and updates the sourcing basket.
 
 Built for the **YouCam API Skin AI & eCommerce VTO Hackathon** (eCommerce VTO track).
 
-Open `/studio?showcase=1&public=1` after starting the app. The included demo has three clearly labelled fictional performers, 20 rack and catalogue photos, six complete looks and 23 saved YouCam render layers. You can inspect every result and try the $40 coat repair without any API key or new unit spend.
+Open `/studio?showcase=1&public=1` after starting the app. The included demo has three clearly labelled fictional performers, six rack and catalogue references, three complete looks and 12 saved YouCam render layers. You can inspect every result and try the $40 jacket repair without any API key or new unit spend.
 
 ## The problem
 
@@ -23,11 +23,11 @@ ENCORE connects the shared inventory and scene plot to performer previews, price
 
 ## What ENCORE does
 
-1. **Set up the cast.** The included one-act, *The Lantern Keepers*, has prepared scenes, roles and six costume looks. Add performer photos and sizes, and save the show's brief alongside the plan.
+1. **Set up the cast.** The included Gatsby-inspired party scene has three fictional performers, three roles and three distinct costume looks. Add performer photos and sizes, and save the show's brief alongside the plan.
 2. **Photograph the rack.** Add each piece's name, slot, colours, tags, sizes, quantity and whether it's owned, on hire, or for sale. Manual entry works without a model key.
 3. **Plan the whole cast at once.** A constraint solver assigns pieces to every look: never more wearers in a scene than the rack holds, only sizes that fit, never over budget. Anything it can't fill becomes a sourcing need, not a hidden double-booking.
 4. **See opening night.** Each look is rendered on the performer in two YouCam chains (below). The cast board has costume and styling views. A before/after slider isolates each layer, with the exact hair and makeup direction shown beside the result.
-5. **Re-plan in one sentence.** Tell the director what changed. Only affected looks change; locked looks remain fixed; only changed layers re-render. The prepared coat repair changes one of 23 layers and reuses the other 22. Its saved public preview needs no API call; a live rehearsal also confirmed that rendering the replacement costs two units.
+5. **Re-plan in one sentence.** Tell the director what changed. Only affected looks change; locked looks remain fixed; only changed layers re-render. The prepared jacket repair changes one of 12 layers and reuses the other 11. Its saved public preview needs no API call; a live rehearsal also confirmed that rendering the replacement costs two units.
 6. **Take it to the fitting.** Printable fitting cards per performer: pieces, sources, hair and makeup direction, handoffs to rehearse.
 
 ## YouCam API usage
@@ -84,7 +84,7 @@ With a separately configured model key, the code supports three bounded jobs (`l
 - **Rack tagging:** vision plus structured output from one photo of one piece. The designer confirms it.
 - **Director:** a tool loop over the real solver (`find_items`, `mark_unavailable`, `change_requirement`, `lock_look`, `set_budget`, `production_summary`). The model never states a price, size or quantity the tools didn't return. The server returns an op log and the browser replays it on the full production; the solver is deterministic, so both sides agree.
 
-Without a model key, the director uses deterministic commands: "the navy greatcoat has moth damage", "set the budget to $30", "lock Elsie’s masquerade look", "unlock Elsie’s masquerade look", "the navy greatcoat has been repaired" and "re-plan". Planning, manual rack intake, YouCam rendering, locks and fitting cards need no language-model service.
+Without a model key, the director uses deterministic commands: "Gatsby’s black dinner jacket is damaged", "set the budget to $30", "lock Daisy’s look", "unlock Daisy’s look", "the black dinner jacket has been repaired" and "re-plan". Planning, manual rack intake, YouCam rendering, locks and fitting cards need no language-model service.
 
 ## Run it
 
@@ -97,7 +97,7 @@ cp .env.example .env.local   # only if you do not already have this file
 npm run dev                  # http://localhost:3000
 ```
 
-- **No keys:** the included saved YouCam previews, coat repair, planning, scene plot, budget, locks and fitting cards all work. Newly requested renders use clearly labelled costume sketches.
+- **No keys:** the included saved YouCam previews, jacket repair, planning, scene plot, budget, locks and fitting cards all work. Newly requested renders use clearly labelled costume sketches.
 - **YouCam key:** real renders. Add performer photos and rack photos in *Cast & rack*. The matching `YOUCAM_API_SECRET_KEY` enables the account balance check: V1 account endpoints require an exchanged access token, while V2 render endpoints accept the API key directly.
 - **Optional model key:** assisted brief breakdown, photo tagging and broader director commands. Provider access and billing are separate from the YouCam allowance.
 
@@ -130,7 +130,8 @@ app/api/youcam/      upload, run, task, templates, credits (server-side key)
 app/api/director     deterministic commands; optional model tool loop
 lib/engine/          types, solver, ops, render graph (pure, unit-tested)
 lib/youcam/          YouCam client, request bodies, result parsing
-lib/showcase.ts      The Lantern Keepers, an original one-act written for the demo
+lib/gatsby.ts        Gatsby-inspired party scene used in the public showcase
+lib/showcase.ts      original multi-scene production for planner fixtures and evaluation
 public/showcase/     fictional cast and completed, portable demo previews
 public/rack/         unbranded garment references for every catalogue item
 scripts/             eval.ts (planner benchmark), smoke.ts (live API test)
@@ -139,4 +140,4 @@ docs/EVAL.md         reproducible planner benchmark and its limits
 
 ## License
 
-MIT. The showcase script, characters and catalogue are original to this project.
+MIT. The demo is an independent Gatsby-inspired costume study; it is not affiliated with any film or stage production. Performers, garment references and catalogue prices are illustrative.

@@ -16,7 +16,7 @@ import { directOffline } from "@/lib/director";
 import { replanWithout } from "@/lib/engine/solver";
 import { pendingStages } from "@/lib/engine/render";
 
-const initial = (): Production => JSON.parse(readFileSync("public/showcase/production.json", "utf8"));
+const initial = (): Production => JSON.parse(readFileSync("tests/fixtures/lantern-production.json", "utf8"));
 let root: Root;
 let current: ReturnType<typeof useStudio>;
 function Observe() { current = useStudio(); return null; }

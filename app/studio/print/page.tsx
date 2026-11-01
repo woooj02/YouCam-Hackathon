@@ -36,7 +36,7 @@ export default function PrintCards() {
                   </div>
                   <div className="text-sm">
                     <h3 className="font-[family-name:var(--font-display)] text-xl">{l.name}</h3>
-                    <p className="text-muted">Scenes: {l.sceneIds.map((id) => { const sc = p.scenes.find((x) => x.id === id); return sc ? `${sc.order}. ${sc.name}` : id; }).join(" · ")}</p>
+                    <p className="text-muted">Scene{l.sceneIds.length === 1 ? "" : "s"}: {l.sceneIds.map((id) => { const sc = p.scenes.find((x) => x.id === id); return sc ? `${sc.order}. ${sc.name}` : id; }).join(" · ")}</p>
                     {l.direction ? <p className="mt-2 text-xs text-muted">{l.direction}</p> : null}
                     <table className="mt-3 w-full">
                       <tbody>

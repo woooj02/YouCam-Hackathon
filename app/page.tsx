@@ -5,7 +5,7 @@ import { lookImages } from "@/lib/engine/render";
 import { replanWithout } from "@/lib/engine/solver";
 
 const STEPS = [
-  { n: "01", title: "Meet the cast", body: "Start with The Lantern Keepers: three performers, six looks and five scenes. Add your cast photos, sizes and costume direction." },
+  { n: "01", title: "Meet the cast", body: "Explore a Gatsby-inspired party: three performers, three distinct looks and one shared budget. Add your cast photos, sizes and costume direction." },
   { n: "02", title: "Photograph your rack", body: "Add each piece with its tags, sizes, quantity and cost. Plan with owned pieces and a priced catalogue of hire and resale options." },
   { n: "03", title: "Plan the whole cast at once", body: "One coat can't be on two people in the same scene. ENCORE allocates the rack across every look, inside your budget." },
   { n: "04", title: "See opening night", body: "Costume, outer layer, hair and makeup, rendered on your actual performers with the YouCam API. Headwear stays on the fitting checklist." },
@@ -16,9 +16,9 @@ const APIS = ["AI Clothes Virtual Try-On", "AI Hairstyle Virtual Try-On", "AI Ma
 
 export default function Home() {
   const production = showcase as Production;
-  const repaired = replanWithout(production, "i-navy-coat").production;
-  const originalCoat = lookImages(production, "l-rowe-sea").body?.url;
-  const replacementCoat = lookImages(repaired, "l-rowe-sea").body?.url;
+  const repaired = replanWithout(production, "g-black-jacket").production;
+  const originalCoat = lookImages(production, "l-gatsby").body?.url;
+  const replacementCoat = lookImages(repaired, "l-gatsby").body?.url;
   return (
     <main className="spotlight min-h-screen">
       <div className="mx-auto max-w-6xl px-4 pb-24 pt-10 sm:px-8">
@@ -50,10 +50,10 @@ export default function Home() {
 
         <section className="mt-14" aria-label="Rendered showcase cast">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-            <div><h2 className="font-[family-name:var(--font-display)] text-3xl">One rack. Three performers. Six looks.</h2><p className="mt-2 text-sm text-muted">The Lantern Keepers · fictional demo cast · real YouCam try-on results</p></div>
+            <div><h2 className="font-[family-name:var(--font-display)] text-3xl">One party. Three characters. One shared rack.</h2><p className="mt-2 text-sm text-muted">Gatsby-inspired costume study · fictional demo cast · real YouCam try-on results</p></div>
             <Link href="/studio?showcase=1&public=1" className="text-sm text-accent hover:underline">Inspect the whole plan →</Link>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {production.looks.map((look) => {
               const images = lookImages(production, look.id);
               return <article key={look.id} className="overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
@@ -72,10 +72,10 @@ export default function Home() {
         <section className="mt-14 grid items-center gap-8 rounded-3xl border border-line bg-surface p-6 shadow-card sm:grid-cols-2 sm:p-8">
           <div>
             <p className="text-xs uppercase tracking-wider text-accent">The whole production keeps moving</p>
-            <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl">“The navy greatcoat has moth damage.”</h2>
-            <p className="mt-4 leading-relaxed text-muted">Rowe gets a naval pea coat from Footlights Costume Hire. The basket becomes $40 of $250. One of 23 render layers changes; the other 22 are kept.</p>
+            <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl">“Gatsby&apos;s black dinner jacket is damaged.”</h2>
+            <p className="mt-4 leading-relaxed text-muted">Gatsby gets an ivory dinner jacket from Footlights Costume Hire. The basket becomes $40 of $250. One of 12 render layers changes; the other 11 are kept.</p>
             <p className="mt-3 text-xs text-muted">Try the repair in the showcase. Its saved replacement preview works without an API key.</p>
-            <Link href="/studio?showcase=1&public=1" className="mt-6 inline-block rounded-full grad px-5 py-3 text-sm font-medium text-white">Try the coat repair →</Link>
+            <Link href="/studio?showcase=1&public=1" className="mt-6 inline-block rounded-full grad px-5 py-3 text-sm font-medium text-white">Try the jacket repair →</Link>
           </div>
           <div className="grid grid-cols-2 gap-3">
             {[{ image: originalCoat, label: "Before · rack · $0" }, { image: replacementCoat, label: "After · hire · $40" }].map((item) => <figure key={item.label}>
