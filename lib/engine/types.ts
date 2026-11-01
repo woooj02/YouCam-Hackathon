@@ -10,7 +10,7 @@ export const SLOTS: Slot[] = ["base", "outer", "hat"];
 /** Clothes VTO garment categories (YouCam cloth-v4 `garment_category`). */
 export type GarmentCategory = "upper_body" | "lower_body" | "full_body" | "outer" | "auto";
 
-export type ItemSource = "owned" | "rental" | "shop";
+export type ItemSource = "owned" | "rental" | "shop" | "secondhand";
 
 export type Item = {
   id: string;
@@ -23,7 +23,7 @@ export type Item = {
   sizes: string[];
   qty: number;
   source: ItemSource;
-  /** owned: 0; rental: fee per unit for the run; shop: price per unit. */
+  /** owned: 0; rental: fee per unit for the run; shop / secondhand: price per unit. */
   cost: number;
   vendor?: string;
   /** Reference photo used for try-on (data URL, /public path, or https URL). */
@@ -95,7 +95,7 @@ export type Assignment = Record<string, Partial<Record<Slot, string>>>;
 export type Gap = { lookId: string; slot: Slot; need: string };
 
 export type Conflict = {
-  kind: "double-booked" | "over-budget" | "tight-handoff" | "size";
+  kind: "double-booked" | "over-budget" | "tight-handoff" | "quick-change" | "size";
   itemId?: string;
   lookIds: string[];
   sceneId?: string;

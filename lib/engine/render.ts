@@ -98,16 +98,17 @@ export function stagesForLook(p: Production, look: Look): StageSpec[] {
   }
   const clothedKey = parent;
 
-  // Portrait chain.
+  // Portrait chain. With a complete look and no close-up photo, styling lives on the complete look only.
   parent = undefined;
+  const portrait = !(p.completeLook && !perf.portraitPhoto);
   const faceRoot = `face:${p.id}:${perf.id}:${perf.photoVersion}`;
-  if (look.hair) {
+  if (portrait && look.hair) {
     const key = hash(`${faceRoot}|hair|${look.hair.templateId}|${look.hair.keepColor}`);
     out.push({ key, lookId: look.id, stage: "hair", chain: "portrait", feature: "hair-transfer", label: look.hair.label, units: UNIT_COST["hair-transfer"],
       job: { feature: "hair-transfer", templateId: look.hair.templateId, hairColor: look.hair.keepColor ? "src" : "ref" } });
     parent = key;
   }
-  if (look.makeup) {
+  if (portrait && look.makeup) {
     const key = hash(`${parent ?? faceRoot}|makeup|${JSON.stringify(look.makeup)}`);
     out.push({ key, lookId: look.id, stage: "makeup", chain: "portrait", parentKey: parent, feature: "makeup-vto", label: look.makeup.label, units: UNIT_COST["makeup-vto"],
       job: { feature: "makeup-vto", makeup: look.makeup } });

@@ -1,21 +1,31 @@
 "use client";
 import { useStudio } from "@/lib/client/store";
 import { LookCard } from "./LookCard";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { CastWall } from "./CastWall";
+
+type View = "costume" | "styling" | "wall";
 
 export function CastBoard({ onOpen }: { onOpen: (lookId: string) => void }) {
   const { production: p } = useStudio();
-  const [view, setView] = useState<"costume" | "styling">("costume");
+  const [view, setView] = useState<View>("costume");
+  const many = (p?.looks.length ?? 0) > 8;
+  useEffect(() => {
+    const asked = new URLSearchParams(location.search).get("view");
+    if (asked === "wall" || asked === "styling" || asked === "costume") setView(asked);
+    else if (many) setView("wall");
+  }, [many]);
   if (!p) return null;
   let i = 0;
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><h2 className="font-[family-name:var(--font-display)] text-2xl">Cast fitting room</h2><p className="mt-1 text-xs text-muted">Compare each performer's costume and styling directions.</p></div>
+        <div><h2 className="font-[family-name:var(--font-display)] text-2xl">Cast fitting room</h2><p className="mt-1 text-xs text-muted">{view === "wall" ? `Every look in the show: ${p.looks.length} looks on ${p.performers.length} performers.` : "Compare each performer's costume and styling directions."}</p></div>
         <div className="flex rounded-full border border-line bg-surface p-1" role="group" aria-label="Cast board view">
-          {(["costume", "styling"] as const).map((mode) => <button key={mode} onClick={() => setView(mode)} aria-pressed={view === mode} className={`rounded-full px-4 py-2 text-xs ${view === mode ? "grad text-white" : "text-muted"}`}>{mode === "costume" ? "Costumes" : "Hair & makeup"}</button>)}
+          {(["wall", "costume", "styling"] as const).map((mode) => <button key={mode} onClick={() => setView(mode)} aria-pressed={view === mode} className={`rounded-full px-4 py-2 text-xs ${view === mode ? "grad text-white" : "text-muted"}`}>{mode === "wall" ? "Cast wall" : mode === "costume" ? "Costumes" : "Hair & makeup"}</button>)}
         </div>
       </div>
+      {view === "wall" ? <CastWall onOpen={onOpen} /> : (
     <div className="grid gap-6 lg:grid-cols-3">
       {p.performers.map((perf) => {
         const roles = p.roles.filter((r) => r.performerId === perf.id);
@@ -37,12 +47,12 @@ export function CastBoard({ onOpen }: { onOpen: (lookId: string) => void }) {
             </header>
             <div className={`grid gap-3 ${looks.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
               {looks.map((l) => (
-                <LookCard key={l.id} look={l} index={i++} onOpen={() => onOpen(l.id)} view={view} />
+                <LookCard key={l.id} look={l} index={i++} onOpen={() => onOpen(l.id)} view={view === "styling" ? "styling" : "costume"} />
               ))}
             </div>
           </section>
         );
       })}
-    </div></div>
+    </div>)}</div>
   );
 }

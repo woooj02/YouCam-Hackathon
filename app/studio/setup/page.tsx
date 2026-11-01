@@ -267,7 +267,7 @@ function Rack() {
           <input placeholder="Sizes (S/M or OS)" value={form.sizes} onChange={(e) => setForm({ ...form, sizes: e.target.value })} className={input} />
           <input type="number" min={1} value={form.qty} onChange={(e) => setForm({ ...form, qty: Number(e.target.value) })} className={input} />
           <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value as ItemSource })} className={input}>
-            {(["owned", "rental", "shop"] as ItemSource[]).map((s) => <option key={s} value={s}>{SOURCE_LABEL[s]}</option>)}
+            {(["owned", "rental", "shop", "secondhand"] as ItemSource[]).map((s) => <option key={s} value={s}>{SOURCE_LABEL[s]}</option>)}
           </select>
           {form.source !== "owned" ? (
             <input type="number" min={0} placeholder="Cost" value={form.cost} onChange={(e) => setForm({ ...form, cost: Number(e.target.value) })} className={input} />
@@ -280,7 +280,7 @@ function Rack() {
         </div>
       </div>
 
-      {[{ title: "On the rack", items: p!.inventory }, { title: "Partner catalogue (hire and buy)", items: p!.shop }].map(({ title, items }) => (
+      {[{ title: "On the rack", items: p!.inventory }, { title: "Partner catalogue (hire, buy, secondhand)", items: p!.shop }].map(({ title, items }) => (
         <div key={title}>
           <h3 className="mb-3 text-xs uppercase tracking-wider text-muted">{title}</h3>
           <ul className="grid gap-2 sm:grid-cols-2">

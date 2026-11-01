@@ -155,7 +155,33 @@ export function audit(p: Production, assignment: Assignment): Conflict[] {
       wearers.set(itemId, [...(wearers.get(itemId) ?? []), { lookId, perf: ctx.performerOf.get(lookId), orders }]);
     }
   }
+  // Soft: one performer in two different looks in back-to-back scenes is a quick change to rehearse.
+  const byPerformer = new Map<string, { look: Look; orders: number[] }[]>();
+  for (const look of p.looks) {
+    const perf = ctx.performerOf.get(look.id);
+    if (!perf) continue;
+    byPerformer.set(perf, [...(byPerformer.get(perf) ?? []), { look, orders: look.sceneIds.map((s) => order.get(s) ?? 0) }]);
+  }
+  for (const [perfId, looks] of byPerformer) {
+    for (const x of looks) {
+      for (const y of looks) {
+        const pair = x.orders.flatMap((a) => y.orders.filter((b) => b === a + 1).map((b) => [a, b]))[0];
+        if (x.look.id === y.look.id || !pair) continue;
+        // Same pieces in both looks: nothing to change.
+        if (JSON.stringify(assignment[x.look.id] ?? {}) === JSON.stringify(assignment[y.look.id] ?? {}) && Object.keys(assignment[x.look.id] ?? {}).length) continue;
+        const name = p.performers.find((perf) => perf.id === perfId)?.name ?? perfId;
+        out.push({
+          kind: "quick-change",
+          lookIds: [x.look.id, y.look.id],
+          message: `Quick change for ${name}: ${x.look.name} to ${y.look.name} between scenes ${pair[0]} and ${pair[1]}`,
+          severity: "soft",
+        });
+      }
+    }
+  }
   for (const [itemId, ws] of wearers) {
+    // With a unit per performer, nobody has to hand anything over.
+    if (new Set(ws.map((w) => w.perf)).size <= (ctx.items.get(itemId)?.qty ?? 1)) continue;
     for (let i = 0; i < ws.length; i++) {
       for (let j = i + 1; j < ws.length; j++) {
         if (ws[i].perf === ws[j].perf) continue;

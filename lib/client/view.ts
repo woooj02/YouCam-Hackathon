@@ -26,6 +26,6 @@ export const conflictsFor = (p: Production, lookId: string) => (p.plan?.conflict
 export const gapsFor = (p: Production, lookId: string) => (p.plan?.gaps ?? []).filter((g) => g.lookId === lookId);
 
 export const SLOT_LABEL = { base: "Costume", outer: "Outer layer", hat: "Headwear" } as const;
-export const SOURCE_LABEL = { owned: "On the rack", rental: "Hire", shop: "Buy" } as const;
+export const SOURCE_LABEL = { owned: "On the rack", rental: "Hire", shop: "Buy", secondhand: "Secondhand" } as const;
 
 export const money = (p: Production, n: number) => `${p.currency}${Math.round(n).toLocaleString()}`;

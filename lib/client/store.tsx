@@ -28,11 +28,17 @@ const StoreCtx = createContext<Ctx | null>(null);
 const KEY = "production:v1", FILES_KEY = "fileIds:v1";
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** Which public showcase this tab loaded: "1" is the Gatsby party, any other slug is /showcase/<slug>/. */
+let showcaseName = "1";
+export const showcaseUrl = (name: string) => (/^[a-z0-9-]+$/.test(name) && name !== "1" ? `/showcase/${name}/production.json` : "/showcase/production.json");
+
 async function bundledShowcase(): Promise<Production | undefined> {
   const params = new URLSearchParams(location.search);
-  const publicOnly = params.has("public");
+  showcaseName = params.get("showcase") || showcaseName;
+  const publicOnly = params.has("public") || showcaseName !== "1";
   const rehearsal = params.has("film") ? "/api/showcase?take=film" : "/api/showcase";
-  for (const url of publicOnly ? ["/showcase/production.json"] : [rehearsal, "/showcase/production.json"]) {
+  const bundle = showcaseUrl(showcaseName);
+  for (const url of publicOnly ? [bundle] : [rehearsal, bundle]) {
     try {
       const response = await fetch(url, { cache: "no-store" });
       if (!response.ok) continue;

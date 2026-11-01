@@ -40,7 +40,10 @@ export default function Home() {
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
             <Link href="/studio?showcase=1&public=1" className="rounded-full grad px-6 py-3 font-medium text-white shadow-[0_0_40px_rgba(210,58,116,.28)] hover:brightness-110">
-              Open the showcase production
+              Open the Gatsby party (3 performers)
+            </Link>
+            <Link href="/studio?showcase=midsummer&public=1&view=wall" className="rounded-full border border-accent/50 px-6 py-3 text-fg hover:border-accent">
+              Open A Midsummer Night&apos;s Dream (10 performers)
             </Link>
             <Link href="/studio/setup" className="rounded-full border border-line px-6 py-3 text-fg hover:border-accent">
               Start your own production
