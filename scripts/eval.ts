@@ -70,7 +70,7 @@ function synth(seed: number): Production {
   };
 }
 
-const N = Number(process.argv[2] ?? 200);
+const N = Number(process.argv.slice(2).find((a) => /^\d+$/.test(a)) ?? 200);
 const rows = { naive: { double: 0, over: 0, gaps: 0, feasible: 0, ms: 0, score: 0 }, encore: { double: 0, over: 0, gaps: 0, feasible: 0, ms: 0, score: 0 } };
 let looks = 0;
 for (let seed = 1; seed <= N; seed++) {
@@ -90,6 +90,12 @@ for (let seed = 1; seed <= N; seed++) {
 }
 
 const pct = (n: number) => `${((100 * n) / N).toFixed(1)}%`;
+if (process.argv.includes("--write")) {
+  // The studio's plan check reads this file, so the numbers on screen are the benchmark's, not typed in.
+  const { writeFileSync } = await import("node:fs");
+  const summary = { productions: N, looks, seeds: `1..${N}`, feasible: { naive: rows.naive.feasible / N, encore: rows.encore.feasible / N }, doubleBookings: { naive: rows.naive.double, encore: rows.encore.double }, overBudget: { naive: rows.naive.over / N, encore: rows.encore.over / N } };
+  writeFileSync("lib/eval-result.json", JSON.stringify(summary, null, 2) + "\n");
+}
 console.log(`Synthetic productions: ${N} (${looks} looks, 3-6 performers, 4-7 scenes, seeded 1..${N})\n`);
 console.log("| Planner | Feasible plans | Double-bookings (total) | Over budget | Unfilled slots | Avg solve time |");
 console.log("|---|---|---|---|---|---|");

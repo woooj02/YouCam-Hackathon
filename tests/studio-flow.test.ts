@@ -96,7 +96,9 @@ describe("the complete studio journey", () => {
     expect(location.search).not.toContain("showcase");
     expect(document.querySelectorAll("h3")).toHaveLength(6);
     expect(document.body.textContent).toContain("All looks rendered");
-    expect(document.body.textContent).toContain("Navy wool greatcoat is on 2 people");
+    expect(document.body.textContent).toContain("Same scene. The rack has 1.");
+    expect(document.body.textContent).toContain("Navy wool greatcoat on 2 performers in “The Harbour at Dusk”");
+    expect(document.body.textContent).toContain("Synthetic benchmark, 200 generated productions: look-by-look plans are feasible 24.5% of the time, ENCORE 100.0%.");
     await click(button("Hair & makeup"));
     expect(document.querySelector('img[alt="Elsie, the masquerade: hair and makeup on Maya"]') ?? document.querySelector('img[alt*="Elsie, the masquerade: hair and makeup"]')).not.toBeNull();
     await click(button("Elsie, the masquerade"));

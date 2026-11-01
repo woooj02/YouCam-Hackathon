@@ -1,0 +1,17 @@
+{
+  "productions": 200,
+  "looks": 1144,
+  "seeds": "1..200",
+  "feasible": {
+    "naive": 0.245,
+    "encore": 1
+  },
+  "doubleBookings": {
+    "naive": 317,
+    "encore": 0
+  },
+  "overBudget": {
+    "naive": 0.255,
+    "encore": 0
+  }
+}
