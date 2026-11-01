@@ -92,12 +92,13 @@ Without a model key, the director uses deterministic commands and still understa
 nvm use                      # Node 22; install it with nvm install if needed
 npm install
 cp .env.example .env.local   # only if you do not already have this file
-# Add YOUCAM_API_KEY for real renders; leave model keys blank.
+# Add YOUCAM_API_KEY for real renders and YOUCAM_API_SECRET_KEY for the balance.
+# Leave model keys blank.
 npm run dev                  # http://localhost:3000
 ```
 
 - **No keys:** demo mode. Planning, replanning, the scene plot and the basket all work; renders are clearly labelled costume sketches.
-- **YouCam key:** real renders. Add performer photos and rack photos in *Cast & rack*.
+- **YouCam key:** real renders. Add performer photos and rack photos in *Cast & rack*. The matching `YOUCAM_API_SECRET_KEY` enables the account balance check: V1 account endpoints require an exchanged access token, while V2 render endpoints accept the API key directly.
 - **Optional model key:** assisted brief breakdown, photo tagging and broader director commands. Provider access and billing are separate from the YouCam allowance.
 
 Checks: `npm run check` (typecheck and unit tests), `npm run eval` (planner evaluation), then the YouCam preflight (balance and hair templates; creates no render tasks):

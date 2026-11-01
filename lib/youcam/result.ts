@@ -26,6 +26,19 @@ export function findImageUrl(results: unknown): string | undefined {
 /** Pull a numeric balance out of the credit endpoint's response. */
 export function findBalance(body: unknown): number | undefined {
   if (body === null || typeof body !== "object") return undefined;
+  const results = (body as Record<string, unknown>).results;
+  if (Array.isArray(results)) {
+    let total = 0;
+    for (const entry of results) {
+      if (!entry || typeof entry !== "object") return undefined;
+      const row = entry as Record<string, unknown>;
+      if (typeof row.expiry === "number" && row.expiry <= Date.now()) continue;
+      const amount = typeof row.amount_dec === "number" ? row.amount_dec : row.amount;
+      if (typeof amount !== "number" || !Number.isFinite(amount)) return undefined;
+      total += amount;
+    }
+    return Math.round(total * 100) / 100;
+  }
   for (const [k, v] of Object.entries(body as Record<string, unknown>)) {
     if (typeof v === "number" && /credit|amount|balance|unit/i.test(k)) return v;
     const nested = findBalance(v);

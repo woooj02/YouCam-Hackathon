@@ -1,0 +1,43 @@
+{
+  "status": 200,
+  "data": {
+    "next_token": "[redacted]",
+    "templates": [
+      {
+        "id": "male_short_curly",
+        "thumb": "https://example.com/redacted-image.jpg",
+        "title": "Short Curly",
+        "category_name": "Male",
+        "keep_users_color": false
+      },
+      {
+        "id": "female_sleek_middle_part",
+        "thumb": "https://example.com/redacted-image.jpg",
+        "title": "Sleek Middle Part",
+        "category_name": "Female",
+        "keep_users_color": true
+      },
+      {
+        "id": "female_blunt_bob",
+        "thumb": "https://example.com/redacted-image.jpg",
+        "title": "Blunt Bob",
+        "category_name": "Female",
+        "keep_users_color": true
+      },
+      {
+        "id": "female_s_wave_brunette",
+        "thumb": "https://example.com/redacted-image.jpg",
+        "title": "S-Wave Brunette",
+        "category_name": "Female",
+        "keep_users_color": false
+      },
+      {
+        "id": "female_combover",
+        "thumb": "https://example.com/redacted-image.jpg",
+        "title": "Combover",
+        "category_name": "Female",
+        "keep_users_color": true
+      }
+    ]
+  }
+}

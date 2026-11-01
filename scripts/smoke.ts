@@ -7,6 +7,7 @@ import { buildBody, type Job } from "../lib/youcam/bodies.ts";
 import { FEATURES, type FeatureId } from "../lib/youcam/features.ts";
 import { findBalance, findImageUrl } from "../lib/youcam/result.ts";
 import { normaliseTemplates } from "../lib/youcam/templates.ts";
+import { accountAccessToken } from "../lib/youcam/auth.ts";
 
 const BASE = "https://yce-api-01.makeupar.com";
 const LOCAL = ".local/youcam-smoke";
@@ -55,9 +56,10 @@ function fixture(name: string, body: unknown) {
 }
 
 async function api(path: string, init?: RequestInit): Promise<Body> {
+  const token = path === "/s2s/v1.0/client/credit" ? await accountAccessToken() : process.env.YOUCAM_API_KEY?.trim();
   const res = await fetch(`${BASE}${path}`, {
     ...init,
-    headers: { Authorization: `Bearer ${process.env.YOUCAM_API_KEY}`, "Content-Type": "application/json", ...init?.headers },
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", ...init?.headers },
     signal: AbortSignal.timeout(30_000),
   });
   const body = await res.json() as Body;
@@ -154,13 +156,16 @@ async function main() {
 
   // Abort before uploads or paid task creation if auth/templates are not ready.
   const credits = await api("/s2s/v1.0/client/credit");
-  console.log("Balance before:", findBalance(credits) ?? JSON.stringify(credits.data ?? credits));
+  const balance = findBalance(credits);
+  console.log("Balance before:", balance ?? "unrecognized balance response");
   const templates = await api(`${FEATURES["hair-transfer"].templatePath}?page_size=5`);
   fixture("hair-templates", templates);
   const first = normaliseTemplates(templates)[0];
   if (!first) throw new Error(`No hair templates found; inspect ${LOCAL}/hair-templates.json`);
   console.log("Hair template:", first.id, first.title);
   if (args.preflight) return console.log("Preflight passed. No uploads or render tasks created.");
+  if (balance === undefined) throw new Error("Could not confirm the unit balance; check the API Console before rendering.");
+  if (balance < 9) throw new Error(`The account has ${balance} units; the full smoke test needs about 9. Redeem the included allowance before rendering.`);
 
   const body = await upload(args.body!);
   const garment = await upload(args.garment!);

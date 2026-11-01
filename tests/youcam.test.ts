@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildBody, makeupEffects } from "@/lib/youcam/bodies";
-import { findImageUrl } from "@/lib/youcam/result";
+import { findBalance, findImageUrl } from "@/lib/youcam/result";
 import { normaliseTemplates } from "@/lib/youcam/templates";
+import liveTemplates from "./fixtures/youcam/hair-templates.json";
 
 describe("YouCam request contracts", () => {
   it("uses the published skin-smoothing fields and preserves zero strength", () => {
@@ -19,6 +20,23 @@ describe("YouCam request contracts", () => {
 });
 
 describe("YouCam response handling", () => {
+  it("parses the sanitized live hair-template fixture", () => {
+    const templates = normaliseTemplates(liveTemplates);
+    expect(templates).toHaveLength(5);
+    expect(templates[0]).toMatchObject({ id: "male_short_curly", title: "Short Curly" });
+  });
+
+  it("sums unexpired grants using decimal balances and recognizes an empty account", () => {
+    expect(findBalance({ status: 200, results: [] })).toBe(0);
+    expect(findBalance({ status: 200, results: [
+      { amount: 10, amount_dec: 10.04, expiry: Date.now() + 60_000 },
+      { amount: 20, expiry: Date.now() + 60_000 },
+      { amount: 50, amount_dec: 0, expiry: Date.now() + 60_000 },
+      { amount_dec: 1000, expiry: 1 },
+    ] })).toBe(30.04);
+    expect(findBalance({ results: [{ id: 1 }] })).toBeUndefined();
+  });
+
   it("normalizes current and legacy template shapes and ignores malformed entries", () => {
     expect(normaliseTemplates({ data: { templates: [{ id: "waves", title: "Waves", thumb: "https://example.com/waves.jpg" }] } })).toEqual([
       { id: "waves", title: "Waves", thumb: "https://example.com/waves.jpg" },

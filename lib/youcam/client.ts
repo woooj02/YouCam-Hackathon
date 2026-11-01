@@ -7,6 +7,7 @@
  */
 import "server-only";
 import { FEATURES, type FeatureId } from "./features";
+import { accountAccessToken, YouCamAuthError } from "./auth";
 
 export const YOUCAM_BASE = "https://yce-api-01.makeupar.com";
 
@@ -21,7 +22,7 @@ export class YouCamError extends Error {
 }
 
 function apiKey(): string {
-  const key = process.env.YOUCAM_API_KEY;
+  const key = process.env.YOUCAM_API_KEY?.trim();
   if (!key) throw new YouCamError("YOUCAM_API_KEY is not set", "no_key");
   return key;
 }
@@ -30,11 +31,11 @@ export function isDemoMode(): boolean {
   return !process.env.YOUCAM_API_KEY || process.env.ENCORE_DEMO === "1";
 }
 
-async function api(path: string, init?: RequestInit): Promise<unknown> {
+async function api(path: string, init?: RequestInit, token = apiKey()): Promise<unknown> {
   const res = await fetch(`${YOUCAM_BASE}${path}`, {
     ...init,
     headers: {
-      Authorization: `Bearer ${apiKey()}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
       ...init?.headers,
     },
@@ -142,5 +143,10 @@ export async function runToCompletion(
 
 /** Remaining unit balance, straight from the account (no units spent). */
 export async function getCredits(): Promise<unknown> {
-  return api("/s2s/v1.0/client/credit");
+  try {
+    return await api("/s2s/v1.0/client/credit", undefined, await accountAccessToken());
+  } catch (error) {
+    if (error instanceof YouCamAuthError) throw new YouCamError(error.message, error.code, error.status);
+    throw error;
+  }
 }
