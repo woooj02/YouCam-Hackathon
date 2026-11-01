@@ -5,6 +5,7 @@ import { money, SLOT_LABEL, SOURCE_LABEL, itemById } from "@/lib/client/view";
 import { usesOf } from "@/lib/engine/solver";
 import type { Item } from "@/lib/engine/types";
 import { ItemImage } from "./ItemImage";
+import { plural } from "@/lib/plural";
 
 type Tab = "rack" | "basket" | "activity";
 
@@ -52,7 +53,7 @@ function Rack({ onLost }: { onLost: (item: Item) => void }) {
                   <div className="min-w-0 flex-1">
                     <div className={`truncate text-sm ${it.available ? "" : "line-through"}`}>{it.name}</div>
                     <div className="truncate text-[11px] text-muted">
-                      {it.sizes.join("/")} · {it.qty} on rack · {it.available ? (uses.length ? `on ${uses.length} look${uses.length > 1 ? "s" : ""}` : "spare") : "unavailable"}
+                      {it.sizes.join("/")} · {it.qty} on rack · {it.available ? (uses.length ? `on ${plural(uses.length, "look")}` : "spare") : "unavailable"}
                     </div>
                   </div>
                   {it.available ? (

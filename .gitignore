@@ -14,3 +14,8 @@ captures/
 AGENTS.md
 *.pem
 *.key
+
+# Editor swap and lock files (nano/vim), e.g. ..env.local.swp
+*.swp
+*.swo
+.*.sw?

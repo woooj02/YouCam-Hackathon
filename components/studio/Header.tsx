@@ -6,6 +6,7 @@ import { money } from "@/lib/client/view";
 import { estimateUnits, pendingStages } from "@/lib/engine/render";
 import { naivePlan } from "@/lib/engine/solver";
 import { exportProduction } from "@/lib/client/export";
+import { plural } from "@/lib/plural";
 
 export function Header() {
   const { production: p, op, render, rendering, progress, unitsSpent, status, resetToShowcase, restoreRack } = useStudio();
@@ -59,7 +60,7 @@ export function Header() {
               pending.length || rendering ? "grad text-white shadow-[0_0_30px_rgba(210,58,116,.25)]" : "border border-ok/30 bg-surface text-ok"
             } ${rendering ? "animate-pulse" : ""}`}
           >
-            {rendering ? `Rendering ${progress.done}/${progress.total}` : pending.length ? `See opening night · ${pending.length} renders` : "✓ All looks rendered"}
+            {rendering ? `Rendering ${progress.done}/${progress.total}` : pending.length ? `See opening night · ${plural(pending.length, "render")}` : "✓ All looks rendered"}
           </button>
         </div>
       </div>
@@ -68,13 +69,13 @@ export function Header() {
         <Stat label="Sourcing" value={`${money(p, p.plan?.cost ?? 0)} / ${money(p, p.budget)}`} bar={pct} k={p.plan?.cost} onClick={() => { setBudget(String(p.budget)); setBudgetOpen(!budgetOpen); }} hint="Edit shared budget" />
         <Stat
           label="Plan check"
-          value={hard.length ? `${hard.length} conflict${hard.length > 1 ? "s" : ""}` : `0 conflicts · ${p.plan?.gaps.length ?? 0} gaps`}
+          value={hard.length ? plural(hard.length, "conflict") : `0 conflicts · ${plural(p.plan?.gaps.length ?? 0, "gap")}`}
           tone={hard.length ? "alarm" : "ok"}
           onClick={() => setCheck((c) => !c)}
           hint="Compare with look-by-look"
         />
         <Stat label="YouCam units" value={status?.demo ? Object.values(p.renders).some((record) => record.status === "done" && !record.demo) ? "Saved previews · 0 new units" : "Sketches · 0 spent" : `${unitsSpent} this session${balance !== null ? ` · ${balance} left` : ""}`} hint={pending.length ? `~${estimateUnits(pending)} to render the rest` : undefined} />
-        <Stat label="Looks" value={`${p.looks.length} looks · ${p.performers.length} performers · ${p.scenes.length} scene${p.scenes.length === 1 ? "" : "s"}`} onClick={restoreRack} hint="Restore rack & re-plan (keeps photos and renders)" />
+        <Stat label="Looks" value={`${plural(p.looks.length, "look")} · ${plural(p.performers.length, "performer")} · ${plural(p.scenes.length, "scene")}`} onClick={restoreRack} hint="Restore rack & re-plan (keeps photos and renders)" />
       </div>
       {error ? <p role="alert" className="text-sm text-alarm">{error}</p> : null}
       {budgetOpen ? <form onSubmit={(event) => { event.preventDefault(); op({ type: "budget", budget: Number(budget) }); setBudgetOpen(false); }} className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-surface p-3 text-sm"><label>Shared sourcing budget {p.currency}<input type="number" min={0} max={1000000} required value={budget} onChange={(event) => setBudget(event.target.value)} className="ml-2 w-28 rounded-lg border border-line bg-panel px-3 py-1.5" /></label><button disabled={rendering} className="rounded-full grad px-4 py-2 text-white disabled:opacity-40">Update & re-plan</button></form> : null}
@@ -84,7 +85,7 @@ export function Header() {
           <div>
             <div className="text-xs uppercase tracking-wider text-muted">Picking each look on its own</div>
             <p className="mt-1 text-sm">
-              {naive.conflicts.filter((c) => c.severity === "hard").length} hard conflicts · {money(p, naive.cost)}
+              {plural(naive.conflicts.filter((c) => c.severity === "hard").length, "hard conflict")} · {money(p, naive.cost)}
             </p>
             <ul className="mt-2 space-y-1 text-xs text-alarm">
               {naive.conflicts.filter((c) => c.severity === "hard").slice(0, 3).map((c, i) => <li key={i}>{c.message}</li>)}
@@ -93,7 +94,7 @@ export function Header() {
           <div>
             <div className="text-xs uppercase tracking-wider text-muted">ENCORE, whole cast at once</div>
             <p className="mt-1 text-sm">
-              {hard.length} hard conflicts · {money(p, p.plan?.cost ?? 0)} · {p.plan?.nodes.toLocaleString()} options weighed in {p.plan?.ms} ms
+              {plural(hard.length, "hard conflict")} · {money(p, p.plan?.cost ?? 0)} · {plural(p.plan?.nodes ?? 0, "option")} weighed in {p.plan?.ms} ms
             </p>
             <p className={`mt-2 text-xs ${hard.length || p.plan?.gaps.length ? "text-accent" : "text-ok"}`}>{hard.length ? "Resolve the flagged conflicts before approving this plan." : p.plan?.gaps.length ? "Unavailable pieces are listed as sourcing needs, ready for the wardrobe team." : "Every piece is on one person per scene, and the plan fits the budget."}</p>
           </div>

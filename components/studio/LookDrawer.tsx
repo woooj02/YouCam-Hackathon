@@ -5,6 +5,7 @@ import { itemById, lookState, money, performerOf, SLOT_LABEL, SOURCE_LABEL } fro
 import { API_NAME } from "@/lib/engine/render";
 import type { HairSpec } from "@/lib/engine/types";
 import { ImageComparison } from "./ImageComparison";
+import { plural } from "@/lib/plural";
 import { ItemImage } from "./ItemImage";
 
 type Template = { id: string; title: string; thumb: string };
@@ -75,7 +76,7 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
               {[{ id: "costume", title: "Complete costume" }, ...s.stages.filter((stage) => stage.spec.stage !== "base").map(({ spec }) => ({ id: spec.stage, title: spec.stage === "outer" ? "Outer layer only" : spec.stage === "hair" ? "Hair only" : "Makeup only" }))].map((option) => <button key={option.id} onClick={() => setSelected(option.id)} aria-pressed={selected === option.id} className={`rounded-xl border px-3 py-3 text-left text-sm ${selected === option.id ? "border-accent bg-accent/5 text-accent" : "border-line text-muted hover:border-accent"}`}>{option.title}</button>)}
             </div>
             <p className="mt-4 text-xs leading-relaxed text-muted">Costume and close-up styling use separate source photos. Compare a single layer to see exactly what it changed.</p>
-            {selectedStage ? <p className="mt-3 text-[11px] text-accent">{API_NAME[selectedStage.spec.feature]} · {selectedStage.spec.units} units per new render</p> : null}
+            {selectedStage ? <p className="mt-3 text-[11px] text-accent">{API_NAME[selectedStage.spec.feature]} · {plural(selectedStage.spec.units, "unit")} per new render</p> : null}
           </div>
         </section>
 

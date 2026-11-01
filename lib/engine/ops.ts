@@ -6,6 +6,7 @@
  */
 import { diffAssignments, freezeExcept, lockedPairs, replanWithout, solve, type SlotChange } from "./solver";
 import type { Production, Slot } from "./types";
+import { plural } from "../plural.ts";
 
 export type Op =
   | { type: "plan" }
@@ -35,14 +36,14 @@ export function applyOp(p: Production, op: Op): OpResult {
       const plan = solve(p, { fixed: lockedPairs(p) });
       const changes = diffAssignments(before, plan.assignment);
       const affected = [...new Set(changes.map((c) => c.lookId))];
-      const summary = `Planned ${p.looks.length} looks: ${plan.gaps.length} gaps, ${p.currency}${plan.cost} of ${p.currency}${p.budget}, ${plan.nodes} options weighed in ${plan.ms} ms.`;
+      const summary = `Planned ${plural(p.looks.length, "look")}: ${plural(plan.gaps.length, "gap")}, ${p.currency}${plan.cost} of ${p.currency}${p.budget}, ${plural(plan.nodes, "option")} weighed in ${plan.ms} ms.`;
       return { production: withHistory({ ...p, plan }, "plan", summary, affected), changes, affected, summary };
     }
     case "unavailable": {
       if (!p.plan) return applyOp(applyOp(p, { type: "plan" }).production, op);
       const { production, changes, affected } = replanWithout(p, op.itemId);
       const lines = describeChanges(production, changes);
-      const summary = `${itemName(p, op.itemId)} is unavailable${op.reason ? ` (${op.reason})` : ""}. ${affected.length ? `Re-planned ${affected.length} look${affected.length > 1 ? "s" : ""}: ${lines.join("; ")}.` : "No look was using it."}`;
+      const summary = `${itemName(p, op.itemId)} is unavailable${op.reason ? ` (${op.reason})` : ""}. ${affected.length ? `Re-planned ${plural(affected.length, "look")}: ${lines.join("; ")}.` : "No look was using it."}`;
       return { production: withHistory(production, "replan", summary, affected), changes, affected, summary };
     }
     case "restore": {

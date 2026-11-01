@@ -4,6 +4,7 @@ import { useStudio } from "@/lib/client/store";
 import { describeChanges } from "@/lib/engine/ops";
 import { lightweight } from "@/lib/engine/light";
 import { pendingStages, renderImpact } from "@/lib/engine/render";
+import { plural } from "@/lib/plural";
 
 type Turn = { role: "user" | "assistant"; text: string };
 
@@ -48,7 +49,7 @@ export function DirectorBar() {
       const affectedLooks = [...new Set(results.flatMap((r) => r.affected))];
       const redo = after && affectedLooks.length ? pendingStages(after, affectedLooks, !status?.demo).length : 0;
       const impact = after && renderImpact(p, after);
-      const rerender = impact?.changedKeys.length ? `${impact.changedKeys.length} of ${impact.total} layers changed; ${impact.kept} kept. ${redo ? `Updating ${redo} layer${redo === 1 ? "" : "s"}.` : "Saved previews reused; no new units."}` : undefined;
+      const rerender = impact?.changedKeys.length ? `${impact.changedKeys.length} of ${plural(impact.total, "layer")} changed; ${impact.kept} kept. ${redo ? `Updating ${plural(redo, "layer")}.` : "Saved previews reused; no new units."}` : undefined;
       setLast({ reply: j.reply, lines, offline: j.offline, rerender });
       setTurns((t) => [...t, { role: "user" as const, text: message }, { role: "assistant" as const, text: j.reply }].slice(-12));
       if (affectedLooks.length) setTimeout(() => render(affectedLooks), 600);

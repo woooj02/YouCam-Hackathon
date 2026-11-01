@@ -4,6 +4,7 @@
  * carry over by name, so re-breaking a brief never loses work.
  */
 import type { Look, Performer, Production, Requirement, Role, Scene } from "./engine/types";
+import { plural } from "./plural.ts";
 
 export type BreakdownData = {
   title: string;
@@ -55,7 +56,7 @@ export function applyBreakdown(prev: Production, b: BreakdownData, brief: string
     looks,
     plan: null,
     renders: prev.renders,
-    history: [...prev.history, { at: Date.now(), kind: "edit", text: `Applied a new breakdown: ${looks.length} looks across ${scenes.length} scenes.` }],
+    history: [...prev.history, { at: Date.now(), kind: "edit", text: `Applied a new breakdown: ${plural(looks.length, "look")} across ${plural(scenes.length, "scene")}.` }],
   };
 }
 

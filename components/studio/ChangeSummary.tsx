@@ -2,6 +2,7 @@
 import { useStudio } from "@/lib/client/store";
 import { allStages } from "@/lib/engine/render";
 import { describeChanges } from "@/lib/engine/ops";
+import { plural } from "@/lib/plural";
 
 export function ChangeSummary({ onOpen }: { onOpen: (lookId: string) => void }) {
   const { production: p, changeReport: report, rendering } = useStudio();
@@ -14,9 +15,9 @@ export function ChangeSummary({ onOpen }: { onOpen: (lookId: string) => void }) 
     <section className="rise rounded-2xl border border-accent/40 bg-surface p-4 shadow-card" aria-label="Last plan change" role="status">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-[family-name:var(--font-display)] text-xl">{report.changedKeys.length} of {report.total} layers changed. {report.kept} kept.</h2>
+          <h2 className="font-[family-name:var(--font-display)] text-xl">{report.changedKeys.length} of {plural(report.total, "layer")} changed. {report.kept} kept.</h2>
           <p className="mt-1 text-xs text-muted">
-            {report.lookIds.length} look{report.lookIds.length === 1 ? "" : "s"} affected · {ready ? report.cachedKeys.length === report.changedKeys.length ? "Saved preview reused · 0 new units" : `Preview ready · ${spent} YouCam units` : `${rendering ? "Updating" : "Ready to update"} ${pending.length} layer${pending.length === 1 ? "" : "s"} · ~${cost} units`}
+            {plural(report.lookIds.length, "look")} affected · {ready ? report.cachedKeys.length === report.changedKeys.length ? "Saved preview reused · 0 new units" : `Preview ready · ${plural(spent, "YouCam unit")}` : `${rendering ? "Updating" : "Ready to update"} ${plural(pending.length, "layer")} · ~${plural(cost, "unit")}`}
           </p>
         </div>
         {report.lookIds[0] ? <button onClick={() => onOpen(report.lookIds[0])} className="rounded-full border border-line px-4 py-2 text-xs hover:border-accent">Inspect changed look</button> : null}
