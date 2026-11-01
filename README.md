@@ -6,13 +6,9 @@ ENCORE is a fitting room for an entire cast. A costume designer gives it the sho
 
 When something breaks ("the navy greatcoat has moth damage"), ENCORE re-plans only the looks that used it, re-renders only the layers that changed, and updates the sourcing basket.
 
-> Submitted to the **YouCam API Skin AI & eCommerce VTO Hackathon** (eCommerce VTO track).
+Built for the **YouCam API Skin AI & eCommerce VTO Hackathon** (eCommerce VTO track).
 
-| | |
-|---|---|
-| Demo video | _add YouTube link_ |
-| Live app | _add Vercel link_ (runs in demo mode with no keys) |
-| Showcase | `/studio?showcase=1` |
+Open the included production at `/studio?showcase=1` after starting the app.
 
 ## The problem
 
@@ -134,7 +130,7 @@ lib/engine/          types, solver, ops, render graph (pure, unit-tested)
 lib/youcam/          YouCam client, request bodies, result parsing
 lib/showcase.ts      The Lantern Keepers, an original one-act written for the demo
 scripts/             eval.ts (planner benchmark), smoke.ts (live API test)
-docs/                VIDEO_SCRIPT.md, SUBMISSION.md, EVAL.md, RUNBOOK.md
+docs/EVAL.md         reproducible planner benchmark and its limits
 ```
 
 ## License
