@@ -12,10 +12,11 @@ export function LookCard({ look, onOpen, index, view = "costume" }: { look: Look
   const gaps = gapsFor(p, look.id);
   const hot = highlight && Date.now() - highlight.at < 4000 && highlight.lookIds.includes(look.id);
   const assigned = p.plan?.assignment[look.id] ?? {};
-  const bodySrc = s.body?.url ?? performer?.bodyPhoto;
+  // The hero is the single complete look (costume + outer + hair + makeup) once it exists.
+  const bodySrc = s.complete?.url ?? s.body?.url ?? performer?.bodyPhoto;
   const faceSrc = s.portrait?.url ?? performer?.portraitPhoto;
   const imageSrc = view === "styling" ? faceSrc : bodySrc;
-  const finished = view === "styling" ? s.portrait : s.body;
+  const finished = view === "styling" ? s.portrait : s.complete ?? s.body;
   const framing = view === "costume" ? performer?.bodyFraming : undefined;
 
   return (
@@ -31,7 +32,7 @@ export function LookCard({ look, onOpen, index, view = "costume" }: { look: Look
         {s.rendering && !s.body ? <div className="shimmer absolute inset-0" /> : null}
         {imageSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img key={imageSrc.slice(-40)} src={imageSrc} alt={`${look.name}: ${view === "styling" ? "hair and makeup" : "costume"} on ${performer?.name}`} className={`h-full w-full object-cover ${finished ? "curtain" : "opacity-40 grayscale"}`} style={framing ? { transform: `scale(${framing.zoom})`, transformOrigin: `${framing.x}% ${framing.y}%` } : undefined} />
+          <img key={imageSrc.slice(-40)} src={imageSrc} alt={`${look.name}: ${view === "styling" ? "hair and makeup" : s.complete ? "complete look" : "costume"} on ${performer?.name}`} className={`h-full w-full object-cover ${finished ? "curtain" : "opacity-40 grayscale"}`} style={framing ? { transform: `scale(${framing.zoom})`, transformOrigin: `${framing.x}% ${framing.y}%` } : undefined} />
         ) : (
           <div className="flex h-full items-center justify-center p-6 text-center text-xs text-muted">Not rendered yet</div>
         )}
@@ -40,7 +41,11 @@ export function LookCard({ look, onOpen, index, view = "costume" }: { look: Look
         ) : null}
         {finished?.demo ? <span className="absolute bottom-3 left-3 rounded bg-white/90 shadow-sm backdrop-blur px-1.5 py-0.5 text-[10px] text-accent">sketch</span> : null}
         {look.locked ? <span className="absolute right-3 top-3 rounded-full bg-white/90 shadow-sm backdrop-blur px-2.5 py-1 text-[11px] text-ok">Locked</span> : null}
-        {faceSrc && view === "costume" ? (
+        {s.complete && view === "costume" ? (
+          <span className="absolute bottom-3 right-3 rounded-full bg-white/90 px-2.5 py-1 text-[10px] shadow-sm backdrop-blur">
+            Complete look{s.complete.composite ? " · composite" : ""} · {s.stages.filter((x) => x.spec.feature !== "composite" && x.spec.chain !== "portrait").length} API layers
+          </span>
+        ) : faceSrc && view === "costume" ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={faceSrc} alt="Hair and makeup preview" className={`absolute bottom-3 right-3 h-20 w-20 rounded-full border-2 border-white object-cover shadow-xl ${s.portrait ? "curtain" : "opacity-50 grayscale"}`} />
         ) : null}

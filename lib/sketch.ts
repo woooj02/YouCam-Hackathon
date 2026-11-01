@@ -31,7 +31,8 @@ export function sketchFor(p: Production, look: Look, stage: StageId): string {
   const baseItem = find(a.base);
   const dress = baseItem?.garmentCategory === "full_body" && /dress|gown/.test(baseItem.tags.join(" ") + baseItem.name.toLowerCase());
 
-  if (stage === "base" || stage === "outer") {
+  const styledBody = stage === "composite" || ((stage === "look-hair" || stage === "look-makeup") && p.completeLook?.strategy === "direct");
+  if (stage === "base" || stage === "outer" || styledBody) {
     const skirt = dress
       ? `<path d="M128 214 L96 420 Q160 436 224 420 L192 214 Z" fill="${base}"/>`
       : `<path d="M132 230 L120 420 L152 420 L160 270 L168 420 L200 420 L188 230 Z" fill="${base ? shade(base, -0.35) : "#333"}"/>`;
@@ -41,10 +42,12 @@ export function sketchFor(p: Production, look: Look, stage: StageId): string {
 <ellipse cx="160" cy="440" rx="90" ry="10" fill="#5a3b5c" opacity=".12"/>
 <circle cx="160" cy="92" r="30" fill="${skin}"/>
 <rect x="150" y="118" width="20" height="18" fill="${skin}"/>
+${styledBody && look.makeup?.lip ? `<path d="M153 106 Q160 110 167 106 Q160 103 153 106 Z" fill="${look.makeup.lip.color}"/>` : ""}
 ${skirt}
 <path d="M120 136 Q160 126 200 136 L196 236 L124 236 Z" fill="${base ?? "#555"}"/>
 <path d="M120 140 L98 250 L110 254 L130 160 Z M200 140 L222 250 L210 254 L190 160 Z" fill="${base ?? "#555"}"/>
 ${outer ? `<path d="M116 134 Q160 122 204 134 L214 330 L180 336 L170 160 L150 160 L140 336 L106 330 Z" fill="${outer}" opacity=".96"/><path d="M116 136 L92 256 L106 260 L128 162 Z M204 136 L228 256 L214 260 L192 162 Z" fill="${outer}"/>` : ""}
+${styledBody && look.hair ? `<path d="M126 92 Q122 50 160 52 Q198 50 194 92 Q190 66 160 64 Q130 66 126 92 Z" fill="#3a2418"/>` : ""}
 ${hat ? `<path d="M124 70 Q160 40 196 70 L200 78 L120 78 Z" fill="${hat}"/><rect x="112" y="76" width="96" height="8" rx="4" fill="${shade(hat, -0.2)}"/>` : `<path d="M130 86 Q160 46 190 86 Q186 66 160 60 Q134 66 130 86 Z" fill="#2b1d14"/>`}
 </svg>`);
   }

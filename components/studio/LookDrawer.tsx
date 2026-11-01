@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useStudio } from "@/lib/client/store";
 import { itemById, lookState, money, performerOf, SLOT_LABEL, SOURCE_LABEL } from "@/lib/client/view";
-import { API_NAME } from "@/lib/engine/render";
+import { API_NAME, type StageSpec } from "@/lib/engine/render";
 import type { HairSpec } from "@/lib/engine/types";
 import { ImageComparison } from "./ImageComparison";
 import { plural } from "@/lib/plural";
@@ -13,7 +13,7 @@ type Template = { id: string; title: string; thumb: string };
 export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () => void }) {
   const { production: p, setProduction, op, render, rendering, redo } = useStudio();
   const [templates, setTemplates] = useState<Template[] | null>(null);
-  const [selected, setSelected] = useState("costume");
+  const [picked, setSelected] = useState<string | null>(null);
   const [hairSearch, setHairSearch] = useState("");
 
   useEffect(() => {
@@ -39,12 +39,24 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
   const setHair = (hair: HairSpec | undefined) =>
     setProduction((prev) => ({ ...prev, looks: prev.looks.map((l) => (l.id === look.id ? { ...l, hair } : l)) }));
 
-  const chain = (c: "body" | "portrait") => s.stages.filter((x) => x.spec.chain === c);
-  const root = (c: "body" | "portrait") => (c === "body" ? performer?.bodyPhoto : performer?.portraitPhoto);
-  const selectedStage = selected === "costume" ? chain("body").at(-1) : s.stages.find((stage) => stage.spec.stage === selected);
-  const before = selected === "costume" ? root("body") : selectedStage?.spec.parentKey ? p.renders[selectedStage.spec.parentKey]?.url : selectedStage && root(selectedStage.spec.chain);
+  const chain = (c: StageSpec["chain"]) => s.stages.filter((x) => x.spec.chain === c);
+  const root = (c: StageSpec["chain"]) => (c === "portrait" ? performer?.portraitPhoto : performer?.bodyPhoto);
+  const hasComplete = chain("look").length > 0;
+  const selected = picked ?? (s.complete ? "complete" : "costume");
+  const selectedStage = selected === "complete" ? chain("look").at(-1) : selected === "costume" ? chain("body").at(-1) : s.stages.find((stage) => stage.spec.stage === selected);
+  const firstCrop = !!selectedStage?.spec.crop && !selectedStage.spec.parentKey;
+  const before = selected === "complete" || selected === "costume" ? root("body")
+    : selectedStage?.spec.feature === "composite" ? (selectedStage.spec.baseKey ? p.renders[selectedStage.spec.baseKey]?.url : undefined)
+    : firstCrop ? undefined
+    : selectedStage?.spec.parentKey ? p.renders[selectedStage.spec.parentKey]?.url : selectedStage && root(selectedStage.spec.chain);
   const after = selectedStage?.record?.url;
-  const comparisonLabel = selected === "costume" ? "Complete costume" : selectedStage?.spec.label ?? selected;
+  const isComposite = p.completeLook?.strategy === "composite";
+  const comparisonLabel = selected === "complete" ? `Complete look${isComposite ? " (composite)" : ""}` : selected === "costume" ? "Complete costume" : selectedStage?.spec.label ?? selected;
+  const options = [
+    ...(hasComplete ? [{ id: "complete", title: isComposite ? "Complete look · composite" : "Complete look" }] : []),
+    { id: "costume", title: "Costume only" },
+    ...s.stages.filter((stage) => stage.spec.stage !== "base" && stage.spec.chain !== "look").map(({ spec }) => ({ id: spec.stage, title: spec.stage === "outer" ? "Outer layer only" : spec.stage === "hair" ? "Hair only (close-up)" : "Makeup only (close-up)" })),
+  ];
 
   return (
     <div className="no-print fixed inset-0 z-40 flex justify-end bg-fg/25 backdrop-blur-sm" onClick={onClose}>
@@ -68,14 +80,17 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
 
         <section className="mt-5 grid gap-4 sm:grid-cols-[1fr_180px]" aria-label="Look comparison">
           <div>
-            {before && after ? <ImageComparison key={`${look.id}:${selected}:${after.slice(-30)}`} before={before} after={after} label={comparisonLabel} framing={selectedStage?.spec.chain === "body" ? performer?.bodyFraming : undefined} /> : <div className="flex aspect-[3/4] items-center justify-center rounded-2xl bg-panel p-6 text-center text-sm text-muted">{selectedStage?.record?.error ?? "Render this layer to compare it with its source photo."}</div>}
+            {before && after ? <ImageComparison key={`${look.id}:${selected}:${after.slice(-30)}`} before={before} after={after} label={comparisonLabel} framing={selectedStage?.spec.chain === "body" ? performer?.bodyFraming : undefined} /> : after ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={after} alt={comparisonLabel} className="aspect-[3/4] w-full rounded-2xl border border-line bg-panel object-contain" />
+            ) : <div className="flex aspect-[3/4] items-center justify-center rounded-2xl bg-panel p-6 text-center text-sm text-muted">{selectedStage?.record?.error ?? "Render this layer to compare it with its source photo."}</div>}
           </div>
           <div>
             <h3 className="text-xs uppercase tracking-wider text-muted">Inspect the changes</h3>
             <div className="mt-3 flex flex-col gap-2">
-              {[{ id: "costume", title: "Complete costume" }, ...s.stages.filter((stage) => stage.spec.stage !== "base").map(({ spec }) => ({ id: spec.stage, title: spec.stage === "outer" ? "Outer layer only" : spec.stage === "hair" ? "Hair only" : "Makeup only" }))].map((option) => <button key={option.id} onClick={() => setSelected(option.id)} aria-pressed={selected === option.id} className={`rounded-xl border px-3 py-3 text-left text-sm ${selected === option.id ? "border-accent bg-accent/5 text-accent" : "border-line text-muted hover:border-accent"}`}>{option.title}</button>)}
+              {options.map((option) => <button key={option.id} onClick={() => setSelected(option.id)} aria-pressed={selected === option.id} className={`rounded-xl border px-3 py-3 text-left text-sm ${selected === option.id ? "border-accent bg-accent/5 text-accent" : "border-line text-muted hover:border-accent"}`}>{option.title}</button>)}
             </div>
-            <p className="mt-4 text-xs leading-relaxed text-muted">Costume and close-up styling use separate source photos. Compare a single layer to see exactly what it changed.</p>
+            <p className="mt-4 text-xs leading-relaxed text-muted">{hasComplete ? isComposite ? "The complete look pastes the styled head back onto the costume render with a feathered mask. It is labelled composite wherever it appears." : "The complete look runs hairstyle and makeup on the costume render itself." : "Costume and close-up styling use separate source photos."} Compare a single layer to see exactly what it changed.</p>
             {selectedStage ? <p className="mt-3 text-[11px] text-accent">{API_NAME[selectedStage.spec.feature]} · {plural(selectedStage.spec.units, "unit")} per new render</p> : null}
           </div>
         </section>
@@ -89,17 +104,17 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
           </button>
         </div>
 
-        {(["body", "portrait"] as const).map((c) => (
+        {(["look", "body", "portrait"] as const).filter((c) => c !== "look" || hasComplete).map((c) => (
           <section key={c} className="mt-8">
-            <h3 className="text-xs uppercase tracking-wider text-muted">{c === "body" ? "Costume chain" : "Hair & makeup chain"}</h3>
+            <h3 className="text-xs uppercase tracking-wider text-muted">{c === "look" ? `Complete look chain${isComposite ? " · composite" : ""}` : c === "body" ? "Costume chain" : "Hair & makeup chain (close-up)"}</h3>
             <div className="scrollbar-thin mt-3 flex gap-3 overflow-x-auto pb-2">
-              <Stage title={c === "body" ? "Full-body photo" : "Close-up photo"} img={root(c)} sub={performer?.name ?? ""} error={root(c) ? undefined : "Add a photo in Cast & rack"} />
+              {c === "look" && !(isComposite && p.completeLook?.strategy === "composite" && p.completeLook.cropFrom === "photo") ? null : <Stage title={c === "look" ? "Full-body photo · head crop" : c === "body" ? "Full-body photo" : "Close-up photo"} img={root(c)} sub={performer?.name ?? ""} error={root(c) ? undefined : "Add a photo in Cast & rack"} />}
               {chain(c).map(({ spec, record }, i, all) => (
                 <Stage
                   onRedo={!rendering && (record?.status === "done" || record?.status === "error") ? () => redo(look.id, all.slice(i).map((x) => x.spec.key)) : undefined}
                   onInspect={() => setSelected(spec.stage)}
                   key={spec.key}
-                  title={spec.stage === "base" ? "Costume" : spec.stage === "outer" ? "Outer layer" : spec.stage === "hair" ? "Hairstyle" : spec.stage === "makeup" ? "Makeup" : "Headwear"}
+                  title={STAGE_TITLE[spec.stage]}
                   sub={spec.label}
                   api={API_NAME[spec.feature]}
                   units={spec.units}
@@ -107,6 +122,7 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
                   busy={record?.status === "running"}
                   error={record?.status === "error" ? record.error : undefined}
                   demo={record?.demo}
+                  composite={record?.composite}
                 />
               ))}
               {!chain(c).length ? <p className="self-center text-sm text-muted">Nothing planned for this chain yet.</p> : null}
@@ -198,7 +214,12 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
   );
 }
 
-function Stage({ title, sub, img, api, units, busy, error, demo, onRedo, onInspect }: { title: string; sub: string; img?: string; api?: string; units?: number; busy?: boolean; error?: string; demo?: boolean; onRedo?: () => void; onInspect?: () => void }) {
+const STAGE_TITLE: Record<StageSpec["stage"], string> = {
+  base: "Costume", outer: "Outer layer", hair: "Hairstyle", makeup: "Makeup", hat: "Headwear",
+  "look-hair": "Hairstyle", "look-makeup": "Makeup", composite: "Composite",
+};
+
+function Stage({ title, sub, img, api, units, busy, error, demo, composite, onRedo, onInspect }: { title: string; sub: string; img?: string; api?: string; units?: number; busy?: boolean; error?: string; demo?: boolean; composite?: boolean; onRedo?: () => void; onInspect?: () => void }) {
   return (
     <div className="w-44 shrink-0">
       <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-line bg-panel">
@@ -210,6 +231,7 @@ function Stage({ title, sub, img, api, units, busy, error, demo, onRedo, onInspe
           <div className="flex h-full items-center justify-center p-3 text-center text-[11px] text-muted">{error ?? "Not rendered"}</div>
         ) : null}
         {demo ? <span className="absolute left-2 top-2 rounded bg-white/90 shadow-sm backdrop-blur px-1.5 py-0.5 text-[10px] text-accent">sketch</span> : null}
+        {composite ? <span className="absolute right-2 top-2 rounded bg-white/90 shadow-sm backdrop-blur px-1.5 py-0.5 text-[10px] text-fg">composite</span> : null}
       </div>
       {onInspect ? <button onClick={onInspect} className="mt-2 text-[11px] text-accent underline underline-offset-2">Compare this layer</button> : null}
       <div className="mt-2 text-sm font-medium">{title}</div>

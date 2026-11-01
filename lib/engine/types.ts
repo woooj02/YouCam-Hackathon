@@ -48,7 +48,20 @@ export type Performer = {
   reference?: "provided" | "fictional";
   /** Display framing only; the source photo and render are unchanged. */
   bodyFraming?: { zoom: number; x: number; y: number };
+  /** Where the head sits in the full-body photo (0..1 of width/height), for the complete-look composite. */
+  headBox?: HeadBox;
 };
+
+export type HeadBox = { x: number; y: number; w: number; h: number };
+
+/**
+ * How the single "complete look" image (costume + outer + hair + makeup) is built.
+ *  - direct: Hairstyle VTO then Makeup VTO run on the clothed render itself.
+ *  - composite: the head is cropped from the full-body photo (or the clothed
+ *    render), styled with Hairstyle + Makeup VTO, then pasted back onto the
+ *    clothed render with a feathered mask. Labelled "composite" everywhere.
+ */
+export type CompleteLook = { strategy: "direct" } | { strategy: "composite"; cropFrom: "photo" | "clothed" };
 
 export type Role = { id: string; name: string; performerId: string; summary: string };
 
@@ -118,9 +131,11 @@ export type RenderRecord = {
   finishedAt?: number;
   units?: number;
   creationPending?: boolean;
+  /** Built locally from other renders (head composite), not returned by an API. */
+  composite?: boolean;
 };
 
-export type StageId = "base" | "outer" | "hair" | "makeup" | "hat";
+export type StageId = "base" | "outer" | "hair" | "makeup" | "hat" | "look-hair" | "look-makeup" | "composite";
 
 export type HistoryEvent = { at: number; kind: "plan" | "replan" | "render" | "edit" | "agent"; text: string; lookIds?: string[] };
 
@@ -143,4 +158,6 @@ export type Production = {
   renders: Record<string, RenderRecord>;
   history: HistoryEvent[];
   notice?: string;
+  /** Off when undefined: looks keep the separate costume and close-up chains only. */
+  completeLook?: CompleteLook;
 };

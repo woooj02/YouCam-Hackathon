@@ -30,7 +30,8 @@ export default function PrintCards() {
                 <article key={l.id} className="print-card mt-4 grid gap-4 rounded-2xl border border-line p-4 sm:grid-cols-[160px_1fr]">
                   <div className="space-y-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    {s.body?.url ? <img src={s.body.url} alt="" className="w-full rounded-lg" /> : <div className="aspect-[2/3] rounded-lg bg-panel" />}
+                    {(s.complete ?? s.body)?.url ? <img src={(s.complete ?? s.body)!.url} alt={s.complete?.composite ? "Complete look (composite)" : ""} className="w-full rounded-lg" /> : <div className="aspect-[2/3] rounded-lg bg-panel" />}
+                    {s.complete?.composite ? <p className="text-[10px] text-muted">Complete look · composite</p> : null}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {s.portrait?.url ? <img src={s.portrait.url} alt="" className="w-full rounded-lg" /> : null}
                   </div>

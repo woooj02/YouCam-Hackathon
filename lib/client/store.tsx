@@ -2,7 +2,8 @@
 /** Production state, deterministic planner changes and a resumable render queue. */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { applyOp, type Op, type OpResult } from "../engine/ops";
-import { pendingStages, renderImpact, type RenderImpact, type StageSpec } from "../engine/render";
+import { allStages, dependencies, pendingStages, renderImpact, type RenderImpact, type StageSpec } from "../engine/render";
+import { cropHead, pasteHead } from "./composite";
 import type { Production, RenderRecord } from "../engine/types";
 import { showcaseProduction } from "../showcase";
 import { sketchFor } from "../sketch";
@@ -151,11 +152,27 @@ export function StudioProvider({ children }: { children: ReactNode }) {
         await persist({ ...base, status: "done", url: sketchFor(ref.current!, look, spec.stage), demo: true, units: 0, finishedAt: Date.now() });
         return;
       }
+      if (spec.feature === "composite") {
+        // Local step: paste the styled head onto the clothed render. No API call, no units.
+        const head = spec.parentKey ? ref.current!.renders[spec.parentKey] : undefined;
+        const clothed = spec.baseKey ? ref.current!.renders[spec.baseKey] : undefined;
+        if (!head?.url || !clothed?.url || !spec.crop) return await fail("Waiting on the styled head and the costume");
+        const url = await pasteHead(await imageDataUrl(clothed.url), await imageDataUrl(head.url), spec.crop);
+        return await persist({ ...base, status: "done", url, demo: false, composite: true, units: 0, finishedAt: Date.now() });
+      }
       if (creationPending && !taskId) return await fail("The last request may have started. Check the account activity before choosing Redo this layer.");
       putRecord({ ...base, taskId });
       if (!taskId) {
         const body: Record<string, unknown> = { job: spec.job };
-        if (spec.parentKey) {
+        if (spec.crop) {
+          // Complete-look head: crop from the clothed render or the full-body photo, then upload the crop once.
+          const role = p.roles.find((item) => item.id === look.roleId);
+          const performer = p.performers.find((item) => item.id === role?.performerId);
+          const source = spec.parentKey ? ref.current!.renders[spec.parentKey]?.url : performer?.bodyPhoto;
+          if (!source) return await fail(spec.parentKey ? "Waiting on the costume render" : "Add a full-body photo in Cast & rack");
+          const cropKey = `crop:${p.id}:${spec.key}`;
+          body.fileId = fileIds.current[cropKey] ?? await ensureFile(await cropHead(await imageDataUrl(source), spec.crop), cropKey);
+        } else if (spec.parentKey) {
           const parent = ref.current!.renders[spec.parentKey];
           if (!parent?.url || parent.demo) return await fail("Waiting on the previous stage");
           if (/^https:\/\//.test(parent.url)) body.srcUrl = parent.url;
@@ -212,7 +229,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
         for (;;) {
           const current = ref.current!;
           const pending = pendingStages(current, lookIds, !status.demo).filter((stage) => !inflight.current.has(stage.key) && !attempted.has(stage.key));
-          const ready = pending.filter((stage) => !stage.parentKey || (current.renders[stage.parentKey]?.status === "done" && (status.demo || !current.renders[stage.parentKey]?.demo)));
+          const ready = pending.filter((stage) => dependencies(stage).every((key) => current.renders[key]?.status === "done" && (status.demo || !current.renders[key]?.demo)));
           if (!ready.length && !inflight.current.size) break;
           for (const stage of ready.slice(0, Math.max(0, 3 - inflight.current.size))) {
             inflight.current.add(stage.key); attempted.add(stage.key);
@@ -250,7 +267,16 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   }, [setProduction]);
   const redo = useCallback((lookId: string, keys: string[]) => {
     if (queueRun.current) return;
-    setProduction((current) => { const renders = { ...current.renders }; for (const key of keys) delete renders[key]; return { ...current, renders }; });
+    setProduction((current) => {
+      // Also drop every finished layer that reads from a redone one (e.g. the composite).
+      const drop = new Set(keys);
+      const stages = allStages(current).filter((stage) => stage.lookId === lookId);
+      for (let grew = true; grew;) {
+        grew = false;
+        for (const stage of stages) if (!drop.has(stage.key) && dependencies(stage).some((key) => drop.has(key))) { drop.add(stage.key); grew = true; }
+      }
+      const renders = { ...current.renders }; for (const key of drop) delete renders[key]; return { ...current, renders };
+    });
     render([lookId]);
   }, [render, setProduction]);
 
