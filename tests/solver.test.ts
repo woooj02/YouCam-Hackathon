@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { audit, lockedPairs, matchScore, naivePlan, replanWithout, solve } from "@/lib/engine/solver";
-import { allStages } from "@/lib/engine/render";
+import { allStages, lookImages, stagesForLook } from "@/lib/engine/render";
 import { showcaseProduction } from "@/lib/showcase";
 import type { Production } from "@/lib/engine/types";
 
@@ -57,6 +57,21 @@ describe("replanWithout", () => {
     const after = allStages(replanWithout(p, "i-navy-coat").production);
     const rekeyed = after.filter((s) => !before.has(s.key));
     expect(rekeyed.map((s) => `${s.lookId}:${s.stage}`)).toEqual(["l-rowe-sea:outer"]);
+  });
+});
+
+describe("headwear preview validation", () => {
+  it("keeps the hat in the wardrobe plan without replacing a finished makeup portrait", () => {
+    const p = planned();
+    const look = p.looks.find((l) => l.id === "l-rowe-sea")!;
+    look.makeup = { label: "Stage direction", smooth: 20 };
+    expect(p.plan!.assignment[look.id].hat).toBeTruthy();
+    const stages = stagesForLook(p, look);
+    expect(stages.some((stage) => stage.feature === "hat")).toBe(false);
+    const makeup = stages.find((stage) => stage.stage === "makeup")!;
+    p.renders[makeup.key] = { key: makeup.key, lookId: look.id, stage: "makeup", status: "done", url: "https://example.com/approved-makeup.jpg" };
+    p.renders["old-hat"] = { key: "old-hat", lookId: look.id, stage: "hat", status: "done", url: "https://example.com/repainted-scene.jpg" };
+    expect(lookImages(p, look.id).portrait?.url).toBe("https://example.com/approved-makeup.jpg");
   });
 });
 

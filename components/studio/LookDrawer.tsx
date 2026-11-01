@@ -67,7 +67,7 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
 
         {(["body", "portrait"] as const).map((c) => (
           <section key={c} className="mt-8">
-            <h3 className="text-xs uppercase tracking-wider text-muted">{c === "body" ? "Costume chain" : "Hair, makeup & headwear chain"}</h3>
+            <h3 className="text-xs uppercase tracking-wider text-muted">{c === "body" ? "Costume chain" : "Hair & makeup chain"}</h3>
             <div className="scrollbar-thin mt-3 flex gap-3 overflow-x-auto pb-2">
               <Stage title={c === "body" ? "Full-body photo" : "Close-up photo"} img={root(c)} sub={performer?.name ?? ""} error={root(c) ? undefined : "Add a photo in Cast & rack"} />
               {chain(c).map(({ spec, record }, i, all) => (
@@ -91,6 +91,7 @@ export function LookDrawer({ lookId, onClose }: { lookId: string; onClose: () =>
 
         <section className="mt-8">
           <h3 className="text-xs uppercase tracking-wider text-muted">Pieces from the plan</h3>
+          {a.hat ? <p className="mt-2 text-xs text-muted">Headwear is included in the pull list. Confirm its appearance at the physical fitting; it is not rendered in this preview.</p> : null}
           <ul className="mt-3 grid gap-2 sm:grid-cols-3">
             {look.requirements.map((r) => {
               const it = itemById(p, a[r.slot]);

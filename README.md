@@ -2,7 +2,7 @@
 
 **See opening night before you rent or buy the costumes.**
 
-ENCORE is a fitting room for an entire cast. A costume designer gives it the show, the cast and the rack they already have. ENCORE plans every look across every scene from that rack, renders each look on the real performers with the YouCam API (costume, outer layer, hairstyle, makeup and headwear), and lists exactly what is left to hire or buy, inside the budget.
+ENCORE is a fitting room for an entire cast. A costume designer gives it the show, the cast and the rack they already have. ENCORE plans every look across every scene from that rack, renders each look on the real performers with the YouCam API (costume, outer layer, hairstyle and makeup), and lists exactly what is left to hire or buy, inside the budget. Headwear remains in the wardrobe plan and fitting cards.
 
 When something breaks ("the navy greatcoat has moth damage"), ENCORE re-plans only the looks that used it, re-renders only the layers that changed, and updates the sourcing basket.
 
@@ -32,11 +32,11 @@ Costume software already tracks stock, measurements and scene plots. What it can
 
 ## YouCam API usage
 
-Every look is two chains of real YouCam tasks. Each stage's output image is the next stage's input.
+Looks use separate body and portrait chains of real YouCam tasks. Each configured stage's output image is the next stage's input.
 
 ```
 body:      full-body photo ─▶ AI Clothes Virtual Try-On (costume) ─▶ AI Clothes Virtual Try-On (garment_category "outer")
-portrait:  close-up photo  ─▶ AI Hairstyle Virtual Try-On (hair_color "src") ─▶ AI Makeup Virtual Try-On ─▶ AI Hat Virtual Try-On
+portrait:  close-up photo  ─▶ AI Hairstyle Virtual Try-On (hair_color "src") ─▶ AI Makeup Virtual Try-On
 ```
 
 | Feature | Endpoint | Used for |
@@ -44,13 +44,13 @@ portrait:  close-up photo  ─▶ AI Hairstyle Virtual Try-On (hair_color "src")
 | AI Clothes Virtual Try-On (v4) | `POST /s2s/v2.0/task/cloth-v4` | The rack piece on the performer; outer layers over the costume |
 | AI Hairstyle Virtual Try-On | `POST /s2s/v2.1/task/hair-transfer`, `GET /s2s/v2.1/task/template/hair-transfer` | Hair direction, optionally keeping the performer's own colour |
 | AI Makeup Virtual Try-On | `POST /s2s/v2.0/task/makeup-vto` | Stage makeup: foundation, lip colour and texture, skin smoothing |
-| AI Hat Virtual Try-On | `POST /s2s/v2.0/task/hat` | Headwear from the rack |
+| AI Hat Virtual Try-On | `POST /s2s/v2.0/task/hat` | Isolated smoke-test experiment; excluded from cast previews after visual validation |
 | File API | `POST /s2s/v2.0/file` | Presigned upload of performer and rack photos, reused by file id |
 | Credits | `GET /s2s/v1.0/client/credit` | Live unit balance shown in the studio |
 
 Engineering details that matter for a real deployment:
 
-- **Content-keyed render graph.** Every stage's key hashes its own inputs plus its parent's key (`lib/engine/render.ts`). Swap a coat and only that stage and the stages after it re-key, so in the showcase a lost coat re-renders 1 of 17 layers.
+- **Content-keyed render graph.** Every stage's key hashes its own inputs plus its parent's key (`lib/engine/render.ts`). Swap a coat and only that stage and the stages after it re-key, so in the showcase a lost coat changes one outer layer.
 - **Saved-task resumption.** Task ids are stored with render records so polling can resume after a reload. The YouCam API has no idempotency key; interruption before an id is saved can still leave an uncertain creation outcome.
 - **Errors arrive as HTTP 200.** Engine failures come back as `task_status: "error"` with a stringified tuple; they're parsed into messages a person can act on ("Use a full-body shot").
 - **The key stays server-side.** The browser only talks to our routes in `app/api/youcam/`.
@@ -119,7 +119,8 @@ npm run smoke -- --body full.jpg --face face.jpg --garment dress.jpg --outer coa
 - Hairstyle renders show a direction for the wig or styling team; they don't certify a specific wig.
 - Sizes, quantities, prices and changeover notes come from what the wardrobe team enters. The showcase partner catalogue and its prices are fictional.
 - In the no-model workflow, photos stay in the browser (IndexedDB) and go to the YouCam API to render. Optional assisted rack tagging also sends the selected rack photo to the configured model provider. Only photograph adults who have agreed to it.
-- Real rendering still requires a successful smoke test on consenting performers' photos. Request construction alone does not establish visual quality.
+- A live smoke test verified costume → outerwear and hairstyle → makeup on a consenting performer's photos with temporary garment references. Sanitized API response shapes are in `tests/fixtures/youcam/`; source photos, signed URLs and output images stay out of version control.
+- The Hat API completed successfully but regenerated the outfit, scene and face. Headwear is therefore planned for the physical fitting and excluded from cast previews. The isolated smoke check remains available to evaluate future API changes.
 
 ## Project layout
 

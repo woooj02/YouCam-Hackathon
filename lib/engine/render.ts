@@ -2,7 +2,11 @@
  * The render graph. Each look is two short chains of YouCam calls:
  *
  *   body:     performer photo -> base garment (Clothes VTO) -> outer layer (Clothes VTO, "outer")
- *   portrait: performer close-up -> hairstyle (Hairstyle VTO) -> makeup (Makeup VTO) -> headwear (Hat VTO)
+ *   portrait: performer close-up -> hairstyle (Hairstyle VTO) -> makeup (Makeup VTO)
+ *
+ * Headwear stays in the wardrobe plan for a physical fitting. The Hat API
+ * regenerated the outfit, scene and face in the live composition check, so
+ * it is excluded from these previews instead of overwriting approved layers.
  *
  * Every stage gets a content key: a hash of its own inputs plus its parent's
  * key. Change a garment and only that stage and the stages after it re-key;
@@ -86,14 +90,6 @@ export function stagesForLook(p: Production, look: Look): StageSpec[] {
     const key = hash(`${parent ?? faceRoot}|makeup|${JSON.stringify(look.makeup)}`);
     out.push({ key, lookId: look.id, stage: "makeup", chain: "portrait", parentKey: parent, feature: "makeup-vto", label: look.makeup.label, units: UNIT_COST["makeup-vto"],
       job: { feature: "makeup-vto", makeup: look.makeup } });
-    parent = key;
-  }
-  const hat = item(assigned.hat);
-  if (hat) {
-    const fit = perf.hatFit ?? "female";
-    const key = hash(`${parent ?? faceRoot}|hat|${imageRef(hat)}|${fit}`);
-    out.push({ key, lookId: look.id, stage: "hat", chain: "portrait", parentKey: parent, feature: "hat", label: hat.name, units: UNIT_COST.hat,
-      job: { feature: "hat", ref: hat.image, gender: fit } });
   }
   return out;
 }

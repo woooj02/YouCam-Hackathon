@@ -1,0 +1,10 @@
+{
+  "status": 200,
+  "data": {
+    "error": null,
+    "results": {
+      "url": "https://example.com/redacted-image.jpg"
+    },
+    "task_status": "success"
+  }
+}
