@@ -27,8 +27,8 @@ Costume software already tracks stock, measurements and scene plots. What it can
 
 ## What ENCORE does
 
-1. **Brief in, breakdown out.** Paste the show. The AI drafts scenes, roles, and each look's needs per slot (costume, outer layer, headwear). The designer corrects it before anything is planned.
-2. **Photograph the rack.** Each photo becomes an editable rack tag (name, slot, colours, tags). The designer adds sizes, quantity and whether it's owned, on hire, or for sale.
+1. **Set up the cast.** The included one-act, *The Lantern Keepers*, has prepared scenes, roles and six costume looks. Add performer photos and sizes, and save the show's brief alongside the plan.
+2. **Photograph the rack.** Add each piece's name, slot, colours, tags, sizes, quantity and whether it's owned, on hire, or for sale. Manual entry works without a model key.
 3. **Plan the whole cast at once.** A constraint solver assigns pieces to every look: never more wearers in a scene than the rack holds, only sizes that fit, never over budget. Anything it can't fill becomes a sourcing need, not a hidden double-booking.
 4. **See opening night.** Each look is rendered on the performer in two YouCam chains (below). The cast board fills with complete looks.
 5. **Re-plan in one sentence.** Tell the director what changed. Only affected looks change; locked looks never do; only changed layers re-render.
@@ -55,7 +55,7 @@ portrait:  close-up photo  ─▶ AI Hairstyle Virtual Try-On (hair_color "src")
 Engineering details that matter for a real deployment:
 
 - **Content-keyed render graph.** Every stage's key hashes its own inputs plus its parent's key (`lib/engine/render.ts`). Swap a coat and only that stage and the stages after it re-key, so in the showcase a lost coat re-renders 1 of 17 layers.
-- **No double-charging on reload.** The YouCam API has no idempotency key, so task ids are saved before polling and a reload resumes the poll instead of creating a new task.
+- **Saved-task resumption.** Task ids are stored with render records so polling can resume after a reload. The YouCam API has no idempotency key; interruption before an id is saved can still leave an uncertain creation outcome.
 - **Errors arrive as HTTP 200.** Engine failures come back as `task_status: "error"` with a stringified tuple; they're parsed into messages a person can act on ("Use a full-body shot").
 - **The key stays server-side.** The browser only talks to our routes in `app/api/youcam/`.
 - **Upload once.** Performer photos are uploaded once per photo version and reused by `file_id`; rack photos are cached per server instance.
@@ -80,29 +80,37 @@ Engineering details that matter for a real deployment:
 
 200 synthetic productions (3–6 performers, 4–7 scenes, seeds 1–200). ENCORE leaves 31 more slots unfilled than the baseline: those are slots the baseline "filled" by double-booking a piece or overspending, which ENCORE reports as sourcing needs instead. The scenarios are constructed to measure feasibility, not taste. See `docs/EVAL.md`.
 
-## The agent
+## Optional assisted setup
 
-The AI does three bounded jobs (`lib/ai.ts`, `lib/director.ts`):
+With a separately configured model key, the code supports three bounded jobs (`lib/ai.ts`, `lib/director.ts`). These integrations have not been verified live and are not required for the showcase or recording:
 
 - **Breakdown:** structured output (zod schema) from the written brief, plus questions where the brief is ambiguous.
 - **Rack tagging:** vision plus structured output from one photo of one piece. The designer confirms it.
 - **Director:** a tool loop over the real solver (`find_items`, `mark_unavailable`, `change_requirement`, `lock_look`, `set_budget`, `production_summary`). The model never states a price, size or quantity the tools didn't return. The server returns an op log and the browser replays it on the full production; the solver is deterministic, so both sides agree.
 
-Without a model key the director runs offline and still understands "`<piece>` is unavailable" and "re-plan".
+Without a model key, the director uses deterministic commands and still understands "the navy greatcoat has moth damage", "`<piece>` is unavailable" and "re-plan". Planning, manual rack intake, YouCam rendering, locks and fitting cards need no language-model service.
 
 ## Run it
 
 ```bash
+nvm use                      # Node 22; install it with nvm install if needed
 npm install
-cp .env.example .env.local   # optional: add YOUCAM_API_KEY and GEMINI_API_KEY
+cp .env.example .env.local   # only if you do not already have this file
+# Add YOUCAM_API_KEY for real renders; leave model keys blank.
 npm run dev                  # http://localhost:3000
 ```
 
 - **No keys:** demo mode. Planning, replanning, the scene plot and the basket all work; renders are clearly labelled costume sketches.
 - **YouCam key:** real renders. Add performer photos and rack photos in *Cast & rack*.
-- **Gemini key** (free from Google AI Studio) or Anthropic key: brief breakdown, photo tagging and the full director.
+- **Optional model key:** assisted brief breakdown, photo tagging and broader director commands. Provider access and billing are separate from the YouCam allowance.
 
-Checks: `npm run check` (typecheck and unit tests), `npm run eval` (planner evaluation), and the live API test (about 9 units):
+Checks: `npm run check` (typecheck and unit tests), `npm run eval` (planner evaluation), then the YouCam preflight (balance and hair templates; creates no render tasks):
+
+```bash
+npm run smoke -- --preflight
+```
+
+Once the five real photos are ready, run the layered API test (about 9 units):
 
 ```bash
 npm run smoke -- --body full.jpg --face face.jpg --garment dress.jpg --outer coat.jpg --hat cap.jpg
@@ -113,7 +121,8 @@ npm run smoke -- --body full.jpg --face face.jpg --garment dress.jpg --outer coa
 - Previews support appearance decisions. Physical fittings establish fit, comfort and movement.
 - Hairstyle renders show a direction for the wig or styling team; they don't certify a specific wig.
 - Sizes, quantities, prices and changeover notes come from what the wardrobe team enters. The showcase partner catalogue and its prices are fictional.
-- Photos stay in the browser (IndexedDB) and go only to the YouCam API to render. Only photograph adults who have agreed to it.
+- In the no-model workflow, photos stay in the browser (IndexedDB) and go to the YouCam API to render. Optional assisted rack tagging also sends the selected rack photo to the configured model provider. Only photograph adults who have agreed to it.
+- Real rendering still requires a successful smoke test on consenting performers' photos. Request construction alone does not establish visual quality.
 
 ## Project layout
 

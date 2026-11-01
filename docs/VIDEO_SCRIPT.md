@@ -4,7 +4,7 @@ Judges may score from the video alone. Every second either shows the product wor
 
 **Format:** 1920×1080 screen recording of the studio in a browser at 1440 px wide, plus about 10 seconds of phone footage (rack intake). Real API, real performers, no mock-ups.
 **Audio:** voice-over recorded separately, then synced. Music only from a royalty-free source you have rights to (YouTube Audio Library), quiet under the voice. No third-party trademarks on screen: tape over brand labels on the rack.
-**Before recording:** run the full production once with the real key so every look is rendered. Then click the **Looks** tile (Restore rack & re-plan, which keeps photos and renders) and record the "See opening night" moment from cached renders, so the reveal is instant. Record the coat moment live; it re-renders a single layer (~20–40 s), so cut the wait with a 2-second cross-fade.
+**Before recording:** capture the initial real render while the board fills, then inspect every finished look. Click the **Looks** tile (Restore rack & re-plan, which keeps photos and renders) to prepare the plan comparison. Record the first coat re-plan before rehearsing it: it creates one new layer, so cut the wait with a 2-second cross-fade. Later takes reuse the cached pea coat and switch instantly; the re-render count only appears when a layer is actually pending. Completed looks remain visible after restoring the rack.
 
 ---
 
@@ -13,14 +13,13 @@ Judges may score from the video alone. Every second either shows the product wor
 **Caption:** *3 performers. 6 looks. 1 rack. $250.*
 **VO:** "A small theatre dresses a whole cast from one rack and a tiny budget. The hard part isn't picking a costume. It's picking all of them at once, and not seeing any of it until the fitting."
 
-## 0:12–0:30 · The brief and the cast
-**Screen:** `/studio/setup`, Brief tab. The Lantern Keepers brief is pasted. Click **Draft the breakdown**. Scenes, roles and looks appear, then **Worth confirming** questions.
-Cut to the Cast tab: three performers with full-body and close-up photos.
-**VO:** "ENCORE starts where a designer does: the brief. The AI drafts the breakdown, scenes, roles and every look, and flags what's ambiguous. Then the cast, photographed once."
+## 0:12–0:30 · The cast and the show
+**Screen:** `/studio/setup`, Cast photos tab: three performers with full-body and close-up photos, sizes and hat fit. Cut to the studio's scene plot: five scenes and six looks, including one performer doubling roles. The prepared brief can appear briefly; no assisted drafting shot.
+**VO:** "For our original one-act, The Lantern Keepers, three performers play four roles across five scenes. We add their photos and sizes once. Six costume looks share the same rack and the same budget."
 
 ## 0:30–0:45 · The rack (phone)
-**Screen:** Phone footage: photograph the navy greatcoat on a hanger in Rack intake. Fields fill in: *Navy wool greatcoat · Outer layer · navy · coat, wool, naval*. Tap **Add to rack**.
-**VO:** "Every piece on the rack becomes a tagged, sized, costed item: owned, on hire, or for sale at a partner shop."
+**Screen:** Phone footage: photograph the navy greatcoat on a hanger. Cut to Rack intake and enter the fields by hand: *Navy wool greatcoat · Outer layer · navy · coat, wool, naval*, sizes, quantity and source. Tap **Add to rack**. For an existing showcase piece, replace its thumbnail instead of adding a duplicate.
+**VO:** "Photograph each piece, then enter its tags, sizes, quantity and cost. Owned pieces and a sample hire-and-resale catalogue go into one plan."
 
 ## 0:45–1:05 · Plan the whole cast
 **Screen:** Studio. Click the **Plan check** tile. Left panel, in red: *"Navy wool greatcoat is on 2 people in 'The Harbour at Dusk' but the rack has 1."* Right panel, in green: *0 hard conflicts · $0 · N options weighed in N ms.*
@@ -28,7 +27,7 @@ Cut to the Cast tab: three performers with full-body and close-up photos.
 **VO:** "Pick looks one character at a time and the captain and the harbourmaster both get the only navy coat, in the same scene. ENCORE plans every look together: one piece, one person per scene, inside the budget."
 
 ## 1:05–1:35 · See opening night (the reveal)
-**Screen:** Click **See opening night**. The cast board fills: six complete looks on three real performers, each with a portrait inset. Slow scroll. Open **Elsie, the masquerade** in the drawer: Full-body photo → Costume → Outer layer, and Close-up → Hairstyle → Makeup. Hover the pink API labels.
+**Screen:** Click **See opening night** if any layers are pending; otherwise begin on the completed cast board. Six complete looks on three real performers, each with a portrait inset. Slow scroll. Open **Elsie, the masquerade** in the drawer: Full-body photo → Costume → Outer layer, and Close-up → Hairstyle → Makeup. Hover the pink API labels. Use an actual render capture if showing cards filling in: restoring the rack keeps completed renders, so it does not replay that animation.
 **Caption (stacked, 1 s each):** *AI Clothes Virtual Try-On* · *AI Clothes Virtual Try-On, outer layer* · *AI Hairstyle Virtual Try-On* · *AI Makeup Virtual Try-On* · *AI Hat Virtual Try-On*
 **VO:** "Then, opening night, before anything is hired. Each look is two chains of YouCam API calls: Clothes Try-On puts the rack piece on the performer, and a second Clothes call layers the coat over it. Hairstyle Try-On sets the hair direction while keeping the performer's own colour. Makeup Try-On adds the stage face. Hat Try-On adds the headwear. Every stage feeds the next."
 
@@ -49,6 +48,7 @@ Show in order: the toast (*Re-planned 1 look: Rowe, off the boat: outer Navy woo
 ---
 
 ### Shot checklist
+- [ ] No assisted breakdown or auto-tagging shots; the recording works with model keys blank
 - [ ] Every look rendered with the real key (no "sketch" badges anywhere on screen)
 - [ ] Rack pieces photographed, brand labels hidden
 - [ ] The three performers have agreed, in writing, to appear in a public video

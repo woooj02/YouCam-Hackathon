@@ -39,7 +39,7 @@ export default function Setup() {
 }
 
 function Brief() {
-  const { production: p, setProduction } = useStudio();
+  const { production: p, setProduction, status } = useStudio();
   const [brief, setBrief] = useState(p!.brief);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,11 +62,18 @@ function Brief() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted">Describe the show the way you would to your wardrobe team. ENCORE drafts the breakdown; you correct it before anything is planned.</p>
+      <p className="text-sm text-muted">Keep the show&apos;s brief beside the prepared scenes, roles and looks. Save your notes, then add cast photos and tag your rack.</p>
       <textarea value={brief} onChange={(e) => setBrief(e.target.value)} rows={12} className="w-full rounded-2xl border border-line bg-surface shadow-card p-4 text-sm leading-relaxed outline-none focus:border-accent" />
-      <button onClick={breakdown} disabled={busy} className="rounded-full grad px-5 py-2 text-sm font-medium text-white disabled:opacity-50">
-        {busy ? "Reading the brief…" : "Draft the breakdown"}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button onClick={() => setProduction((prev) => ({ ...prev, brief }))} disabled={brief === p!.brief} className="rounded-full grad px-5 py-2 text-sm font-medium text-white disabled:opacity-50">
+          {brief === p!.brief ? "Brief saved" : "Save brief"}
+        </button>
+        {status?.agent ? (
+          <button onClick={breakdown} disabled={busy} className="rounded-full border border-line px-5 py-2 text-sm disabled:opacity-50">
+            {busy ? "Reading the brief…" : "Draft the breakdown"}
+          </button>
+        ) : null}
+      </div>
       {error ? <p className="text-sm text-alarm">{error}</p> : null}
       {draft ? (
         <div className="rise space-y-4 rounded-2xl border border-line bg-surface shadow-card p-5">
@@ -165,7 +172,7 @@ function Cast() {
 const EMPTY = { name: "", slot: "base" as Slot, garmentCategory: "auto" as GarmentCategory, colors: "", tags: "", sizes: "M", qty: 1, source: "owned" as ItemSource, cost: 0, vendor: "" };
 
 function Rack() {
-  const { production: p, setProduction, op } = useStudio();
+  const { production: p, setProduction, op, status } = useStudio();
   const [form, setForm] = useState(EMPTY);
   const [image, setImage] = useState<string | null>(null);
   const [tagging, setTagging] = useState(false);
@@ -175,8 +182,9 @@ function Rack() {
     if (!file) return;
     const url = await fileToDataUrl(file, 1024);
     setImage(url);
-    setTagging(true);
     setNote(null);
+    if (!status?.agent) return;
+    setTagging(true);
     try {
       const res = await fetch("/api/tag", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: url }) });
       const j = await res.json();

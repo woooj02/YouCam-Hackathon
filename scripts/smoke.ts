@@ -1,116 +1,183 @@
-/**
- * Live smoke test against the real YouCam API. Run this first with a real key:
- * it proves the layered pipeline (costume -> outer layer, hair -> makeup ->
- * headwear) on your own photos, prints every result URL to eyeball, and pins
- * the raw responses as fixtures.
- *
- *   npm run smoke -- \   (reads YOUCAM_API_KEY from .env.local)
- *     --body me-full.jpg --face me-face.jpg --garment dress.jpg --outer coat.jpg --hat cap.jpg [--gender male|female (default male)]
- *
- * Spends roughly 9 units. Every step is independent: a failure is reported and
- * the next step still runs where it can.
- */
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+/** Live YouCam check. --preflight creates no render tasks; full run is ~9 units. */
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { basename, extname } from "node:path";
+import { parseArgs } from "node:util";
 import { buildBody, type Job } from "../lib/youcam/bodies.ts";
 import { FEATURES, type FeatureId } from "../lib/youcam/features.ts";
+import { findBalance, findImageUrl } from "../lib/youcam/result.ts";
+import { normaliseTemplates } from "../lib/youcam/templates.ts";
 
 const BASE = "https://yce-api-01.makeupar.com";
-const KEY = process.env.YOUCAM_API_KEY;
-if (!KEY) {
-  console.error("Set YOUCAM_API_KEY in .env.local first.");
-  process.exit(1);
+const LOCAL = ".local/youcam-smoke";
+const FIX = "tests/fixtures/youcam";
+const STATE = `${LOCAL}/state.json`;
+const HELP = `YouCam smoke test (Node 22; reads .env.local)
+  npm run smoke -- --preflight
+    Check authentication, balance and hair templates. No render tasks.
+  npm run smoke -- --body body.jpg --face face.jpg --garment dress.jpg --outer coat.jpg --hat cap.jpg [--gender male|female]
+    Check both layered chains (~9 units). Default gender: male.
+    Re-running resumes saved tasks and reuses finished results.
+  Add --retry-failed to deliberately retry tasks the API marked as failed.
+Raw responses and task ids: ${LOCAL}/ (private, ignored by git).
+Sanitized response shapes: ${FIX}/.`;
+
+type Body = Record<string, any>;
+type SavedTask = { signature: string; taskId?: string; creating?: boolean; response?: Body };
+type State = { uploads: Record<string, string>; tasks: Record<string, SavedTask> };
+const state: State = existsSync(STATE) ? JSON.parse(readFileSync(STATE, "utf8")) : { uploads: {}, tasks: {} };
+const digest = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+let failures = 0;
+let retryFailed = false;
+
+function save() {
+  mkdirSync(LOCAL, { recursive: true });
+  writeFileSync(`${STATE}.tmp`, JSON.stringify(state, null, 2));
+  renameSync(`${STATE}.tmp`, STATE);
 }
 
-const args = Object.fromEntries(
-  process.argv.slice(2).reduce<[string, string][]>((acc, a, i, all) => (a.startsWith("--") ? [...acc, [a.slice(2), all[i + 1]]] : acc), []),
-);
-const FIX = "tests/fixtures/youcam";
-mkdirSync(FIX, { recursive: true });
+/** Preserve response structure without publishing image access or upload credentials. */
+function sanitize(value: unknown): unknown {
+  if (typeof value === "string" && /^https?:\/\//.test(value)) return "https://example.com/redacted-image.jpg";
+  if (Array.isArray(value)) return value.map(sanitize);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(Object.entries(value).map(([key, v]) => [key,
+    /^(task_id|file_id|headers|next_token)$/i.test(key) ? "[redacted]" : sanitize(v),
+  ]));
+}
 
-async function api(path: string, init?: RequestInit) {
-  const res = await fetch(`${BASE}${path}`, { ...init, headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json", ...init?.headers } });
-  const text = await res.text();
-  let body: unknown;
-  try {
-    body = JSON.parse(text);
-  } catch {
-    body = text;
-  }
-  if (!res.ok) throw new Error(`${path}: HTTP ${res.status} ${text.slice(0, 300)}`);
-  return body as Record<string, any>;
+function fixture(name: string, body: unknown) {
+  mkdirSync(LOCAL, { recursive: true });
+  mkdirSync(FIX, { recursive: true });
+  writeFileSync(`${LOCAL}/${name}.json`, JSON.stringify(body, null, 2));
+  writeFileSync(`${FIX}/${name}.json`, JSON.stringify(sanitize(body), null, 2) + "\n");
+}
+
+async function api(path: string, init?: RequestInit): Promise<Body> {
+  const res = await fetch(`${BASE}${path}`, {
+    ...init,
+    headers: { Authorization: `Bearer ${process.env.YOUCAM_API_KEY}`, "Content-Type": "application/json", ...init?.headers },
+    signal: AbortSignal.timeout(30_000),
+  });
+  const body = await res.json() as Body;
+  if (!res.ok) throw new Error(`${path}: HTTP ${res.status} ${body.error_code ?? body.error ?? "request failed"}`);
+  return body;
+}
+
+function photo(path: string): { bytes: Buffer; type: string } {
+  const ext = extname(path).toLowerCase();
+  if (![".jpg", ".jpeg", ".png"].includes(ext)) throw new Error(`${path}: use a JPEG or PNG photo`);
+  const bytes = readFileSync(path);
+  if (!bytes.length || bytes.length > 10 * 1024 * 1024) throw new Error(`${path}: photo must be nonempty and at most 10 MB`);
+  const png = bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+  const jpeg = bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
+  if (ext === ".png" ? !png : !jpeg) throw new Error(`${path}: contents do not match the image extension`);
+  return { bytes, type: png ? "image/png" : "image/jpeg" };
 }
 
 async function upload(path: string): Promise<string> {
-  const bytes = readFileSync(path);
-  const type = path.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
-  const reg = await api("/s2s/v2.0/file", { method: "POST", body: JSON.stringify({ files: [{ content_type: type, file_name: path.split("/").pop(), file_size: bytes.byteLength }] }) });
-  const f = reg.data.files[0];
-  const r = f.requests[0];
-  const put = await fetch(r.url, { method: r.method ?? "PUT", headers: r.headers ?? { "Content-Type": type }, body: bytes });
-  if (!put.ok) throw new Error(`PUT failed ${put.status}`);
-  return f.file_id;
+  const { bytes, type } = photo(path);
+  const key = digest(bytes);
+  if (state.uploads[key]) return state.uploads[key];
+  const reg = await api("/s2s/v2.0/file", { method: "POST", body: JSON.stringify({ files: [{ content_type: type, file_name: basename(path), file_size: bytes.byteLength }] }) });
+  const file = reg.data?.files?.[0];
+  const request = file?.requests?.[0];
+  if (!file?.file_id || !request?.url) throw new Error("File registration returned no file_id or upload URL");
+  const put = await fetch(request.url, { method: request.method ?? "PUT", headers: request.headers ?? { "Content-Type": type }, body: new Uint8Array(bytes).buffer, signal: AbortSignal.timeout(30_000) });
+  if (!put.ok) throw new Error(`Upload failed: HTTP ${put.status}`);
+  state.uploads[key] = file.file_id;
+  save();
+  return file.file_id;
 }
 
-function findUrl(x: unknown): string | undefined {
-  if (typeof x === "string") return /^https?:\/\//.test(x) ? x : undefined;
-  if (Array.isArray(x)) return x.map(findUrl).find(Boolean);
-  if (x && typeof x === "object") {
-    const o = x as Record<string, unknown>;
-    return findUrl(o.url) ?? Object.values(o).map(findUrl).find(Boolean);
-  }
-  return undefined;
-}
-
-async function run(name: string, feature: FeatureId, job: Job, src: Record<string, string>, ref?: Record<string, string>) {
-  const t0 = Date.now();
+async function run(name: string, feature: FeatureId, job: Job, src: Record<string, string>, ref?: Record<string, string>): Promise<string | undefined> {
+  const start = Date.now();
+  const request = buildBody(job, src, ref);
+  const signature = digest(JSON.stringify(request));
+  let saved = state.tasks[name];
   try {
-    const created = await api(FEATURES[feature].taskPath, { method: "POST", body: JSON.stringify(buildBody(job, src, ref)) });
-    const taskId = created.data.task_id;
-    for (;;) {
-      await new Promise((r) => setTimeout(r, 2000));
-      const polled = await api(`${FEATURES[feature].taskPath}/${taskId}`);
-      const status = polled.data?.task_status;
-      if (status === "success" || status === "error") {
-        writeFileSync(`${FIX}/${name}.json`, JSON.stringify(polled, null, 2));
-        const url = findUrl(polled.data?.results);
-        console.log(`${status === "success" ? "OK  " : "FAIL"} ${name.padEnd(14)} ${((Date.now() - t0) / 1000).toFixed(1)}s  ${status === "success" ? url : polled.data?.error}`);
-        return status === "success" ? url : undefined;
-      }
+    if (saved?.signature !== signature || (retryFailed && saved.response?.data?.task_status === "error")) {
+      saved = state.tasks[name] = { signature };
     }
-  } catch (e) {
-    console.log(`FAIL ${name.padEnd(14)} ${(e as Error).message}`);
+    if (saved.creating && !saved.taskId) throw new Error(`Creation outcome is unknown. Inspect ${STATE} before creating another paid task.`);
+    if (!saved.taskId) {
+      saved.creating = true;
+      save();
+      const created = await api(FEATURES[feature].taskPath, { method: "POST", body: JSON.stringify(request) });
+      if (!created.data?.task_id) throw new Error("Task creation returned no task_id");
+      saved.taskId = created.data.task_id;
+      saved.creating = false;
+      save();
+      fixture(`${name}-created`, created);
+    }
+    const deadline = Date.now() + 180_000;
+    for (;;) {
+      let response = saved.response;
+      if (!response || !["success", "error"].includes(response.data?.task_status)) {
+        await sleep(2000);
+        response = await api(`${FEATURES[feature].taskPath}/${encodeURIComponent(saved.taskId!)}`);
+        saved.response = response;
+        save();
+      }
+      const status = response.data?.task_status;
+      if (status === "success" || status === "error") {
+        fixture(name, response);
+        const url = findImageUrl(response.data?.results);
+        if (status === "error" || !url) throw new Error(String(response.data?.error ?? "Task succeeded without a recognizable image URL"));
+        console.log(`OK   ${name.padEnd(14)} ${((Date.now() - start) / 1000).toFixed(1)}s  ${url}`);
+        return url;
+      }
+      if (Date.now() >= deadline) throw new Error("Polling timed out; re-run the same command to resume this task");
+    }
+  } catch (error) {
+    failures++;
+    console.error(`FAIL ${name.padEnd(14)} ${(error as Error).message}`);
     return undefined;
   }
 }
 
-const balance = async () => JSON.stringify(await api("/s2s/v1.0/client/credit").then((b) => b.data ?? b).catch((e) => ({ error: String(e) })));
+async function main() {
+  const { values: args } = parseArgs({ options: {
+    help: { type: "boolean" }, preflight: { type: "boolean" }, "retry-failed": { type: "boolean" },
+    body: { type: "string" }, face: { type: "string" }, garment: { type: "string" }, outer: { type: "string" }, hat: { type: "string" }, gender: { type: "string", default: "male" },
+  } });
+  if (args.help) return console.log(HELP);
+  if (args.gender !== "male" && args.gender !== "female") throw new Error("--gender must be male or female");
+  if (!args.preflight) {
+    const missing = ["body", "face", "garment", "outer", "hat"].filter((key) => !args[key as keyof typeof args]);
+    if (missing.length) throw new Error(`Missing photos: ${missing.map((key) => `--${key}`).join(", ")}\n${HELP}`);
+    for (const path of [args.body, args.face, args.garment, args.outer, args.hat]) photo(path!);
+  }
+  if (!process.env.YOUCAM_API_KEY?.trim()) throw new Error("Set YOUCAM_API_KEY in .env.local first");
+  retryFailed = args["retry-failed"] ?? false;
 
-(async () => {
-  console.log("Balance before:", await balance());
-  if (args.body && args.garment) {
-    const [body, garment] = [await upload(args.body), await upload(args.garment)];
-    const costume = await run("cloth-base", "cloth", { feature: "cloth", ref: "x", category: "auto" }, { src_file_id: body }, { ref_file_id: garment });
-    if (costume && args.outer) {
-      await run("cloth-outer", "cloth", { feature: "cloth", ref: "x", category: "outer" }, { src_file_url: costume }, { ref_file_id: await upload(args.outer) });
-    }
-  }
-  if (args.face) {
-    const face = await upload(args.face);
-    const templates = await api(`${FEATURES["hair-transfer"].templatePath}?page_size=5`).catch((e) => ({ error: String(e) }));
-    writeFileSync(`${FIX}/hair-templates.json`, JSON.stringify(templates, null, 2));
-    const t = (templates as any)?.data?.templates?.[0] ?? (templates as any)?.data?.results?.[0];
-    const tid = t?.id ?? t?.template_id;
-    console.log("Hair template:", tid ?? "none found (see tests/fixtures/youcam/hair-templates.json)");
-    let src: Record<string, string> = { src_file_id: face };
-    if (tid) {
-      const hair = await run("hair-transfer", "hair-transfer", { feature: "hair-transfer", templateId: String(tid), hairColor: "src" }, src);
-      if (hair) src = { src_file_url: hair };
-    }
-    const made = await run("makeup-vto", "makeup-vto", { feature: "makeup-vto", makeup: { label: "test", lip: { color: "#8e1b2b", texture: "matte" }, foundation: { color: "#e9c7b0", coverage: 45 }, smooth: 40 } }, src);
-    if (args.hat) {
-      await run("hat", "hat", { feature: "hat", ref: "x", gender: args.gender === "female" ? "female" : "male" }, made ? { src_file_url: made } : src, { ref_file_id: await upload(args.hat) });
-    }
-  }
-  console.log("Balance after: ", await balance());
-  console.log(`\nRaw responses saved in ${FIX}/. Open each URL above and check the face and garment held up through the chain.`);
-})();
+  // Abort before uploads or paid task creation if auth/templates are not ready.
+  const credits = await api("/s2s/v1.0/client/credit");
+  console.log("Balance before:", findBalance(credits) ?? JSON.stringify(credits.data ?? credits));
+  const templates = await api(`${FEATURES["hair-transfer"].templatePath}?page_size=5`);
+  fixture("hair-templates", templates);
+  const first = normaliseTemplates(templates)[0];
+  if (!first) throw new Error(`No hair templates found; inspect ${LOCAL}/hair-templates.json`);
+  console.log("Hair template:", first.id, first.title);
+  if (args.preflight) return console.log("Preflight passed. No uploads or render tasks created.");
+
+  const body = await upload(args.body!);
+  const garment = await upload(args.garment!);
+  const costume = await run("cloth-base", "cloth", { feature: "cloth", ref: "x", category: "auto" }, { src_file_id: body }, { ref_file_id: garment });
+  if (costume) await run("cloth-outer", "cloth", { feature: "cloth", ref: "x", category: "outer" }, { src_file_url: costume }, { ref_file_id: await upload(args.outer!) });
+  else console.error("SKIP cloth-outer: base garment did not finish");
+
+  const face = await upload(args.face!);
+  const hair = await run("hair-transfer", "hair-transfer", { feature: "hair-transfer", templateId: first.id, hairColor: "src" }, { src_file_id: face });
+  if (hair) {
+    const made = await run("makeup-vto", "makeup-vto", { feature: "makeup-vto", makeup: { label: "test", lip: { color: "#8e1b2b", texture: "matte" }, foundation: { color: "#e9c7b0", coverage: 45 }, smooth: 40 } }, { src_file_url: hair });
+    if (made) await run("hat", "hat", { feature: "hat", ref: "x", gender: args.gender }, { src_file_url: made }, { ref_file_id: await upload(args.hat!) });
+    else console.error("SKIP hat: makeup did not finish");
+  } else console.error("SKIP makeup-vto and hat: hairstyle did not finish");
+  console.log("Balance after:", findBalance(await api("/s2s/v1.0/client/credit")) ?? "unknown");
+  console.log(`Private responses and resume state: ${LOCAL}/. Sanitized fixtures: ${FIX}/. Inspect the output images before recording.`);
+  if (failures) process.exitCode = 1;
+}
+
+main().catch((error) => { console.error((error as Error).message); process.exitCode = 1; });

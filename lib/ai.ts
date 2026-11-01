@@ -5,9 +5,8 @@
  *   - director:  plain-language changes -> planner ops (tool use over the real solver)
  * Prices, quantities and feasibility always come from the solver, never the model.
  *
- * Two providers, picked by which key is set: GEMINI_API_KEY (free tier from
- * Google AI Studio) or ANTHROPIC_API_KEY. Both return output validated by the
- * same zod schemas.
+ * Optional providers, picked by which key is set: GEMINI_API_KEY or
+ * ANTHROPIC_API_KEY. Both return output validated by the same zod schemas.
  */
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";

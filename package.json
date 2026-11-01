@@ -4,6 +4,9 @@
   "private": true,
   "description": "ENCORE: see opening night before you rent or buy the costumes. Built on the YouCam API.",
   "license": "MIT",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

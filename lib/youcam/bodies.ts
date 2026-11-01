@@ -38,7 +38,7 @@ const h = (c: string) => (c.startsWith("#") ? c : `#${c}`);
 
 export function makeupEffects(m: z.infer<typeof Makeup>): Record<string, unknown>[] {
   const effects: Record<string, unknown>[] = [];
-  if (m.smooth) effects.push({ category: "skin_smooth", strength: m.smooth, colorIntensity: 50 });
+  if (m.smooth !== undefined) effects.push({ category: "skin_smooth", skinSmoothStrength: m.smooth, skinSmoothColorIntensity: 50 });
   if (m.foundation) {
     effects.push({
       category: "foundation",

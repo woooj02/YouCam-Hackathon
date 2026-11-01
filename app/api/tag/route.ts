@@ -17,7 +17,7 @@ const Tag = z.object({
 
 /** Rack intake: a photo of one piece becomes an editable rack tag. The designer confirms it. */
 export async function POST(req: Request) {
-  if (!hasLLM()) return NextResponse.json({ error: "no_key", message: "Add GEMINI_API_KEY (free) or ANTHROPIC_API_KEY to auto-tag photos, or tag by hand." }, { status: 503 });
+  if (!hasLLM()) return NextResponse.json({ error: "no_key", message: "Assisted tagging is not configured. Add the piece's name, sizes and tags by hand." }, { status: 503 });
   try {
     const { image } = (await req.json()) as { image?: string };
     const m = image && /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(image);

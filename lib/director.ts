@@ -253,5 +253,5 @@ export function directOffline(production: Production, message: string): Director
     const r = applyOp(p, { type: "plan" });
     return { reply: r.summary, ops: [{ type: "plan" }], affected: r.affected, offline: true };
   }
-  return { reply: "Offline mode understands \"<piece> is unavailable\" and \"re-plan\". Add an Anthropic key for full direction.", ops: [], affected: [], offline: true };
+  return { reply: "Tell me which piece is damaged, missing or unavailable, or say \"re-plan\" to rebuild the cast's plan.", ops: [], affected: [], offline: true };
 }

@@ -43,7 +43,7 @@ the brief doesn't need it. Tags are short lowercase words a wardrobe team would 
 Never invent cast members or scenes the brief doesn't imply. List genuine ambiguities as questions.`;
 
 export async function POST(req: Request) {
-  if (!hasLLM()) return NextResponse.json({ error: "no_key", message: "Add GEMINI_API_KEY (free) or ANTHROPIC_API_KEY to break down a new brief." }, { status: 503 });
+  if (!hasLLM()) return NextResponse.json({ error: "no_key", message: "Assisted drafting is not configured. Use the prepared breakdown and save your brief in Cast & rack." }, { status: 503 });
   try {
     const { brief } = (await req.json()) as { brief?: string };
     if (!brief || brief.trim().length < 40) {

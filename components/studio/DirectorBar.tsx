@@ -12,9 +12,10 @@ const SUGGESTIONS = [
   "Lock Elsie's masquerade look, the director approved it",
   "Our sourcing budget just dropped to $30",
 ];
+const BASIC_SUGGESTIONS = [SUGGESTIONS[0], "Re-plan the cast"];
 
 export function DirectorBar() {
-  const { production: p, replay, render } = useStudio();
+  const { production: p, replay, render, status } = useStudio();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -81,7 +82,7 @@ export function DirectorBar() {
         ) : null}
         {focused && !busy ? (
           <div className="mb-2 flex flex-wrap gap-2">
-            {SUGGESTIONS.map((s) => (
+            {(status?.agent ? SUGGESTIONS : BASIC_SUGGESTIONS).map((s) => (
               <button key={s} onMouseDown={(e) => e.preventDefault()} onClick={() => send(s)} className="rounded-full border border-line bg-surface/90 px-3 py-1.5 text-xs text-muted backdrop-blur hover:border-accent hover:text-fg">
                 {s}
               </button>

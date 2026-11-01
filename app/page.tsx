@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 const STEPS = [
-  { n: "01", title: "Brief in, breakdown out", body: "Paste the show. ENCORE drafts scenes, roles and every costume look, ready for you to correct." },
-  { n: "02", title: "Photograph your rack", body: "Each piece becomes a tagged, sized, costed item. Owned, on hold from a hire house, or one click to buy." },
+  { n: "01", title: "Meet the cast", body: "Start with The Lantern Keepers: three performers, six looks and five scenes. Add your cast photos, sizes and costume direction." },
+  { n: "02", title: "Photograph your rack", body: "Add each piece with its tags, sizes, quantity and cost. Plan with owned pieces and a priced catalogue of hire and resale options." },
   { n: "03", title: "Plan the whole cast at once", body: "One coat can't be on two people in the same scene. ENCORE allocates the rack across every look, inside your budget." },
   { n: "04", title: "See opening night", body: "Costume, outer layer, hair, makeup and headwear, rendered on your actual performers with the YouCam API." },
   { n: "05", title: "When something breaks, re-plan", body: "A coat goes missing? Only the looks that used it change, only their changed layers re-render, and the basket updates." },
