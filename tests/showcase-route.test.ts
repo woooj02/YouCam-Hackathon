@@ -24,4 +24,12 @@ describe("private rehearsal isolation", () => {
     expect((await GET(new Request("http://localhost/api/showcase"))).status).toBe(404);
     expect(readFile).not.toHaveBeenCalled();
   });
+
+  it("selects a separate local film take without exposing arbitrary files", async () => {
+    vi.stubEnv("ENCORE_LOCAL_SHOWCASE", "1"); vi.stubEnv("VERCEL", "");
+    await GET(new Request("http://localhost/api/showcase?take=film", { headers: { host: "localhost" } }));
+    expect(readFile).toHaveBeenCalledWith(expect.stringContaining(".local/film/production.json"), "utf8");
+    await GET(new Request("http://localhost/api/showcase?take=../../.env.local", { headers: { host: "localhost" } }));
+    expect(readFile).toHaveBeenLastCalledWith(expect.stringContaining(".local/showcase/production.json"), "utf8");
+  });
 });

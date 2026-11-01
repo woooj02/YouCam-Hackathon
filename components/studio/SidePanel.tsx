@@ -100,7 +100,7 @@ function Basket() {
                 <span className="text-sm">{money(p, l.total)}</span>
               </div>
               <div className="mt-1 text-[11px] text-muted">
-                {SOURCE_LABEL[l.source]} · {l.vendor} · {l.units} × {money(p, l.unitCost)}
+                {SOURCE_LABEL[l.source]} · {l.vendor} · sizes {it.sizes.join("/")} · {l.units} × {money(p, l.unitCost)}
               </div>
             </li>
           );

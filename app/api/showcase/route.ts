@@ -20,7 +20,9 @@ export async function GET(request: Request) {
     return new Response(null, { status: 404 });
   }
   try {
-    const json = await readFile(join(process.cwd(), ".local/showcase/production.json"), "utf8");
+    const bundle = new URL(request.url).searchParams.get("take") === "film" ? ".local/film/production.json" : ".local/showcase/production.json";
+    // Local rehearsal files are runtime-only and must never be bundled for deployment.
+    const json = await readFile(join(/* turbopackIgnore: true */ process.cwd(), bundle), "utf8");
     return new Response(json, { headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
   } catch {
     return new Response(null, { status: 404 });

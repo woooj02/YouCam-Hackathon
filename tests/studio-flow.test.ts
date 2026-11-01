@@ -93,6 +93,7 @@ describe("the complete studio journey", () => {
   it("opens six ready looks, reveals distinct styling, compares makeup and locks approval", async () => {
     vi.stubGlobal("fetch", baseFetch(initial()));
     await mount();
+    expect(location.search).not.toContain("showcase");
     expect(document.querySelectorAll("h3")).toHaveLength(6);
     expect(document.body.textContent).toContain("All looks rendered");
     expect(document.body.textContent).toContain("Navy wool greatcoat is on 2 people");

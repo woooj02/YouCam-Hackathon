@@ -204,7 +204,7 @@ function Stage({ title, sub, img, api, units, busy, error, demo, onRedo, onInspe
         {busy ? <div className="shimmer absolute inset-0" /> : null}
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={img} alt={title} className="curtain h-full w-full object-cover" />
+          <img src={img} alt={title} className="curtain h-full w-full object-contain" />
         ) : !busy ? (
           <div className="flex h-full items-center justify-center p-3 text-center text-[11px] text-muted">{error ?? "Not rendered"}</div>
         ) : null}

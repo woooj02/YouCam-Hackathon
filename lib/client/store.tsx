@@ -28,8 +28,10 @@ const KEY = "production:v1", FILES_KEY = "fileIds:v1";
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function bundledShowcase(): Promise<Production | undefined> {
-  const publicOnly = new URLSearchParams(location.search).has("public");
-  for (const url of publicOnly ? ["/showcase/production.json"] : ["/api/showcase", "/showcase/production.json"]) {
+  const params = new URLSearchParams(location.search);
+  const publicOnly = params.has("public");
+  const rehearsal = params.has("film") ? "/api/showcase?take=film" : "/api/showcase";
+  for (const url of publicOnly ? ["/showcase/production.json"] : [rehearsal, "/showcase/production.json"]) {
     try {
       const response = await fetch(url, { cache: "no-store" });
       if (!response.ok) continue;
@@ -72,6 +74,13 @@ export function StudioProvider({ children }: { children: ReactNode }) {
       if (!active) return;
       ref.current = p; setP(p);
       void idbSet(KEY, p);
+      if (force) {
+        // Loading the showcase is a one-time action. A reload must resume the
+        // saved production and its task ids rather than overwrite it again.
+        const url = new URL(location.href);
+        url.searchParams.delete("showcase");
+        history.replaceState(history.state, "", url.pathname + url.search + url.hash);
+      }
       try {
         const next = await (await fetch("/api/status")).json();
         if (active) setStatus(next);

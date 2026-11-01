@@ -9,10 +9,10 @@ export function ImageComparison({ before, after, label, framing }: { before: str
     <div className="space-y-3">
       <div className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-line bg-panel" aria-label={label}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={after} alt={`${label}, after`} className="absolute inset-0 h-full w-full object-cover" style={style} />
+        <img src={after} alt={`${label}, after`} className="absolute inset-0 h-full w-full object-contain" style={style} />
         <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={before} alt={`${label}, before`} className="h-full w-full object-cover" style={style} />
+          <img src={before} alt={`${label}, before`} className="h-full w-full object-contain" style={style} />
         </div>
         <span className="absolute left-3 top-3 rounded-full bg-surface/90 px-2.5 py-1 text-[11px] text-fg">Before</span>
         <span className="absolute right-3 top-3 rounded-full bg-surface/90 px-2.5 py-1 text-[11px] text-fg">After</span>
