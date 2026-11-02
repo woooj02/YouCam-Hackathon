@@ -8,6 +8,7 @@ import { applyBreakdown, type BreakdownData } from "@/lib/breakdown";
 import { applyOp } from "@/lib/engine/ops";
 import type { GarmentCategory, Item, ItemSource, Slot } from "@/lib/engine/types";
 import { ItemImage } from "@/components/studio/ItemImage";
+import { loadCatalogueFeed, mergeFeed } from "@/lib/catalogue/feed";
 
 type Tab = "brief" | "cast" | "rack";
 
@@ -280,6 +281,8 @@ function Rack() {
         </div>
       </div>
 
+      <FeedImport />
+
       {[{ title: "On the rack", items: p!.inventory }, { title: "Partner catalogue (hire, buy, secondhand)", items: p!.shop }].map(({ title, items }) => (
         <div key={title}>
           <h3 className="mb-3 text-xs uppercase tracking-wider text-muted">{title}</h3>
@@ -307,6 +310,35 @@ function Rack() {
           </ul>
         </div>
       ))}
+    </div>
+  );
+}
+
+/** Load a supplier's catalogue feed (encore.catalogue.v1 JSON) into the partner catalogue, then re-plan. */
+function FeedImport() {
+  const { production: p, setProduction, op } = useStudio();
+  const [weeks, setWeeks] = useState(1);
+  const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  async function load(file?: File) {
+    if (!file || !p) return;
+    try {
+      const result = loadCatalogueFeed(JSON.parse(await file.text()), { runWeeks: weeks, currency: p.currency });
+      setProduction((prev) => mergeFeed(prev, result));
+      op({ type: "plan" });
+      setMessage({ text: `Loaded ${result.items.length} pieces from ${result.supplier} and re-planned.${result.warnings.length ? ` ${result.warnings.join(" ")}` : ""}` });
+    } catch (error) {
+      setMessage({ text: error instanceof SyntaxError ? "That file isn't JSON." : (error as Error).message, error: true });
+    }
+  }
+  return (
+    <div className="rounded-2xl border border-line bg-surface p-4 text-sm">
+      <h3 className="text-xs uppercase tracking-wider text-muted">Supplier catalogue feed</h3>
+      <p className="mt-1 text-xs text-muted">A hire house or shop can publish its stock as one JSON file in the <a className="text-accent underline" href="https://github.com/woooj02/YouCam-Hackathon/blob/main/docs/catalogue-feed.schema.json" target="_blank" rel="noreferrer">encore.catalogue.v1 format</a>. ENCORE validates it and adds it to the catalogue; it never orders anything. <a className="text-accent underline" href="/feeds/sample-hire-feed.json" download>Sample feed (fictional supplier)</a></p>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <label className="text-xs">Run length for weekly hire <input type="number" min={1} max={52} value={weeks} onChange={(e) => setWeeks(Math.max(1, Number(e.target.value) || 1))} className="ml-1 w-16 rounded-lg border border-line bg-panel px-2 py-1" /> weeks</label>
+        <label className="cursor-pointer rounded-full border border-line px-4 py-2 text-xs hover:border-accent">Load feed (.json)<input type="file" accept="application/json,.json" className="hidden" onChange={(e) => load(e.target.files?.[0])} /></label>
+      </div>
+      {message ? <p role="status" className={`mt-2 text-xs ${message.error ? "text-alarm" : "text-ok"}`}>{message.text}</p> : null}
     </div>
   );
 }

@@ -9,6 +9,7 @@ vi.mock("server-only", () => ({}));
 vi.mock("@/lib/client/idb", () => ({ idbGet: async (key: string) => persisted.get(key), idbSet: async (key: string, value: unknown) => { persisted.set(key, structuredClone(value)); } }));
 import Studio from "@/app/studio/page";
 import { StudioProvider } from "@/lib/client/store";
+import OrderSheetPage from "@/app/studio/orders/page";
 
 const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
 let root: Root;
@@ -29,9 +30,9 @@ beforeEach(() => {
 });
 afterEach(async () => { await act(async () => { root.unmount(); }); vi.unstubAllGlobals(); });
 
-async function open(search: string) {
+async function open(search: string, page: () => unknown = Studio) {
   history.replaceState({}, "", `/studio${search}`);
-  await act(async () => { root.render(createElement(StudioProvider, null, createElement(Studio))); });
+  await act(async () => { root.render(createElement(StudioProvider, null, createElement(page as () => null))); });
   await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
 }
 
@@ -49,5 +50,15 @@ describe("public showcases", () => {
     expect(requested).toContain("/showcase/production.json");
     expect(document.body.textContent).toContain("The Great Gatsby");
     expect(document.body.textContent).toContain("3 looks · 3 performers · 1 scene");
+  });
+
+  it("turns the Midsummer plan into an order sheet with a quote draft that sends nothing", async () => {
+    await open("?showcase=midsummer&public=1", OrderSheetPage);
+    const text = document.body.textContent ?? "";
+    for (const heading of ["On the rack", "Hire", "Secondhand", "Left in budget", "$160", "$180", "Download CSV", "Print order sheet"]) expect(text).toContain(heading);
+    expect(text).toContain("ENCORE has no live connection to suppliers and sends nothing.");
+    const vendor = [...document.querySelectorAll("button")].find((b) => b.textContent === "Limelight Costume Hire (fictional)")!;
+    await act(async () => { vendor.click(); });
+    expect((document.querySelector("textarea") as HTMLTextAreaElement).value).toContain("Black dinner jacket (hire) · 1 × sizes L");
   });
 });

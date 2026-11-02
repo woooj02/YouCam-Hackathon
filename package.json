@@ -16,6 +16,7 @@
     "eval": "node --experimental-strip-types scripts/eval.ts",
     "eval:write": "node --experimental-strip-types scripts/eval.ts 200 --write",
     "smoke": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/smoke.ts",
+    "feed:schema": "node --experimental-strip-types scripts/write-feed-schema.ts",
     "check": "npm run typecheck && npm run test",
     "showcase:build": "node --experimental-strip-types scripts/build-showcase.ts",
     "showcase:generate": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/generate-showcase.ts",

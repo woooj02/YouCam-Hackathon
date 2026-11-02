@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { useStudio } from "@/lib/client/store";
 import { money, SLOT_LABEL, SOURCE_LABEL, itemById } from "@/lib/client/view";
@@ -108,6 +109,7 @@ function Basket() {
         })}
         {!plan.basket.length ? <li className="text-sm text-muted">Everything comes off your own rack. Nothing to hire or buy.</li> : null}
       </ul>
+      <Link href="/studio/orders" className="block rounded-xl border border-accent/40 px-3 py-2 text-center text-sm text-accent hover:bg-accent/5">Open the order sheet: by source, per performer, CSV →</Link>
       {plan.gaps.length ? (
         <div>
           <h4 className="mb-2 text-xs uppercase tracking-wider text-accent">Still to source</h4>

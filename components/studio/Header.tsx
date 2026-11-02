@@ -40,6 +40,7 @@ export function Header() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link href="/studio/setup" className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent">Cast & rack</Link>
+          <Link href="/studio/orders" className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent">Order sheet</Link>
           <Link href="/studio/print" className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent">Fitting cards</Link>
           <button disabled={rendering} onClick={() => op({ type: "plan" })} className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent disabled:opacity-40">Re-plan</button>
           <button disabled={exporting || rendering} onClick={async () => { setExporting(true); setError(""); try { await exportProduction(p); } catch (e) { setError((e as Error).message); } finally { setExporting(false); } }} className="rounded-full px-3 py-2 text-xs text-muted hover:text-fg disabled:opacity-40" title="Download the cast photos, rack and finished previews as one production file">

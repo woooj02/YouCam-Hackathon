@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "feed": {
+      "type": "string",
+      "const": "encore.catalogue.v1"
+    },
+    "supplier": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "hire",
+            "retail",
+            "secondhand"
+          ]
+        },
+        "contact": {
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "name",
+        "kind"
+      ]
+    },
+    "currency": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 3,
+      "description": "Display symbol or code, e.g. \"$\""
+    },
+    "updated": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+    },
+    "items": {
+      "minItems": 1,
+      "maxItems": 5000,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "description": "The supplier's own stock code; unique within the feed"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "slot": {
+            "type": "string",
+            "enum": [
+              "base",
+              "outer",
+              "hat"
+            ],
+            "description": "base = the costume, outer = coat/jacket/shawl, hat = headwear"
+          },
+          "garmentCategory": {
+            "default": "auto",
+            "type": "string",
+            "enum": [
+              "upper_body",
+              "lower_body",
+              "full_body",
+              "outer",
+              "auto"
+            ]
+          },
+          "colors": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "tags": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "sizes": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Sizes in stock; \"OS\" for one size"
+          },
+          "stock": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Units available for the production's dates"
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "number",
+                "minimum": 0
+              },
+              "per": {
+                "type": "string",
+                "enum": [
+                  "run",
+                  "week",
+                  "item"
+                ],
+                "description": "run = hire fee for the whole run, week = hire fee per week, item = purchase price"
+              }
+            },
+            "required": [
+              "amount",
+              "per"
+            ]
+          },
+          "image": {
+            "description": "https URL of a front-on product photo, used as the try-on garment reference",
+            "type": "string",
+            "format": "uri"
+          },
+          "condition": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "sku",
+          "name",
+          "slot",
+          "colors",
+          "sizes",
+          "stock",
+          "price"
+        ]
+      }
+    }
+  },
+  "required": [
+    "feed",
+    "supplier",
+    "currency",
+    "items"
+  ]
+}

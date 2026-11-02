@@ -1,0 +1,12 @@
+{
+  "feed": "encore.catalogue.v1",
+  "supplier": { "name": "Gaslight Wardrobe Hire (fictional)", "kind": "hire", "contact": "Example only: replace with the hire house's own contact" },
+  "currency": "$",
+  "updated": "2026-11-01",
+  "items": [
+    { "sku": "DJ-BLK-014", "name": "Black peak-lapel dinner jacket", "slot": "outer", "garmentCategory": "outer", "colors": ["black"], "tags": ["dinner", "jacket", "satin", "lapel", "formal"], "sizes": ["M", "L", "XL"], "stock": 3, "price": { "amount": 15, "per": "week" }, "condition": "Good" },
+    { "sku": "GWN-IVR-203", "name": "Ivory beaded 1920s gown", "slot": "base", "garmentCategory": "full_body", "colors": ["ivory", "gold"], "tags": ["gown", "evening", "1920s", "beaded"], "sizes": ["S", "M"], "stock": 1, "price": { "amount": 60, "per": "run" } },
+    { "sku": "CPE-VLV-031", "name": "Velvet evening cape", "slot": "outer", "garmentCategory": "outer", "colors": ["navy"], "tags": ["cape", "velvet", "evening"], "sizes": ["OS"], "stock": 2, "price": { "amount": 10, "per": "week" } },
+    { "sku": "DRS-BLU-112", "name": "Blue drop-waist day dress", "slot": "base", "garmentCategory": "full_body", "colors": ["blue"], "tags": ["dress", "1920s", "day"], "sizes": ["L", "XL"], "stock": 0, "price": { "amount": 35, "per": "run" } }
+  ]
+}

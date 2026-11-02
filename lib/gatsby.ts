@@ -47,7 +47,7 @@ export function gatsbyProduction(): Production {
       owned({ id: "g-emerald-dress", name: "Emerald beaded party dress", slot: "base", garmentCategory: "full_body", colors: ["emerald", "green"], tags: ["gown", "evening", "1920s", "beaded", "dress"], sizes: ["S", "M"], qty: 1, image: assets["emerald-gown"] }),
       owned({ id: "g-silver-shawl", name: "Silver evening shawl", slot: "outer", garmentCategory: "outer", colors: ["silver"], tags: ["shawl", "evening", "chiffon"], sizes: ["OS"], qty: 1, image: "/rack/silver-shawl-ff92543caa.jpg" }),
     ],
-    shop: [{ id: "g-ivory-jacket", name: "Ivory dinner jacket", slot: "outer", garmentCategory: "outer", colors: ["ivory"], tags: ["dinner", "jacket", "lapel", "formal"], sizes: ["L"], qty: 1, source: "rental", cost: 40, vendor: "Footlights Costume Hire", image: assets["ivory-dinner-jacket"], available: true }],
+    shop: [{ id: "g-ivory-jacket", name: "Ivory dinner jacket", slot: "outer", garmentCategory: "outer", colors: ["ivory"], tags: ["dinner", "jacket", "lapel", "formal"], sizes: ["L"], qty: 1, source: "rental", cost: 40, vendor: "Footlights Costume Hire (fictional)", image: assets["ivory-dinner-jacket"], available: true }],
     plan: null,
     renders: {},
     history: [],
