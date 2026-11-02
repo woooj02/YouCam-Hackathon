@@ -10,7 +10,7 @@ export const midsummerAssets: Record<string, string> = {
   "b-evening-base": "/showcase/midsummer/rack/b-evening-base-3db0464b5d.jpg",
   "h-black-jacket": "/showcase/midsummer/rack/h-black-jacket-20ff043b3a.jpg",
   "h-gold-gown": "/showcase/midsummer/rack/h-gold-gown-9c250bf8af.jpg",
-  "h-ivory-stole": "/showcase/midsummer/rack/h-ivory-stole-25c5d0f50b.jpg",
+  "h-ivory-stole": "/showcase/midsummer/rack/h-ivory-stole-23f63d8f35.jpg",
   "h-sheer-cape": "/showcase/midsummer/rack/h-sheer-cape-22495e8935.jpg",
   "m-apron": "/showcase/midsummer/rack/m-apron-1ca1b90a61.jpg",
   "m-black-jacket": "/showcase/midsummer/rack/m-black-jacket-7aae5a96b1.jpg",

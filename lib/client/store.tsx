@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { applyOp, type Op, type OpResult } from "../engine/ops";
 import { allStages, dependencies, pendingStages, renderImpact, repairCost, type RenderImpact, type RepairCost, type StageSpec } from "../engine/render";
 import { cropHead, pasteHead } from "./composite";
+import { DEFAULT_HEAD_BOX } from "../engine/composite";
 import type { Production, RenderRecord } from "../engine/types";
 import { showcaseProduction } from "../showcase";
 import { sketchFor } from "../sketch";
@@ -27,6 +28,23 @@ type Ctx = {
 const StoreCtx = createContext<Ctx | null>(null);
 const KEY = "production:v1", FILES_KEY = "fileIds:v1";
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+type Polled = { kind: "success"; url: string } | { kind: "error"; code?: string; message: string } | { kind: "failed"; message: string } | { kind: "timeout" };
+
+/** Poll a YouCam task until it finishes. "error" is the engine's verdict; "failed" is the connection. */
+async function pollTask(feature: string, taskId: string): Promise<Polled> {
+  const deadline = Date.now() + 180_000;
+  while (Date.now() < deadline) {
+    await sleep(3000);
+    const response = await fetch(`/api/youcam/task?feature=${feature}&taskId=${encodeURIComponent(taskId)}`);
+    const state = await response.json();
+    if (response.status === 429) continue;
+    if (!response.ok) return { kind: "failed", message: state.message ?? "Connection interrupted. Render again to resume this task." };
+    if (state.status === "success" && state.url) return { kind: "success", url: state.url };
+    if (state.status === "error") return { kind: "error", code: state.code, message: state.message ?? state.code };
+  }
+  return { kind: "timeout" };
+}
 
 /** Which public showcase this tab loaded: "1" is the Gatsby party, any other slug is /showcase/<slug>/. */
 let showcaseName = "1";
@@ -204,21 +222,33 @@ export function StudioProvider({ children }: { children: ReactNode }) {
       }
       // Persist the task id before polling; errors and timeouts keep it for resumption.
       await persist({ ...base, taskId, creationPending: false });
-      const deadline = Date.now() + 180_000;
-      while (Date.now() < deadline) {
-        await sleep(3000);
-        const response = await fetch(`/api/youcam/task?feature=${spec.feature}&taskId=${encodeURIComponent(taskId!)}`);
-        const state = await response.json();
-        if (response.status === 429) continue;
-        if (!response.ok) return await fail(state.message ?? "Connection interrupted. Render again to resume this task.");
-        if (state.status === "success" && state.url) {
-          // Signed result URLs expire. Keep finished pixels with the production.
-          const url = await imageDataUrl(state.url);
-          setUnitsSpent((units) => units + spec.units);
-          return await persist({ ...base, taskId, status: "done", url, demo: false, units: spec.units, finishedAt: Date.now() });
-        }
-        if (state.status === "error") return await fail(state.message ?? state.code, true);
+      const state = await pollTask(spec.feature, taskId!);
+      if (state.kind === "success") {
+        // Signed result URLs expire. Keep finished pixels with the production.
+        const url = await imageDataUrl(state.url);
+        setUnitsSpent((units) => units + spec.units);
+        return await persist({ ...base, taskId, status: "done", url, demo: false, units: spec.units, finishedAt: Date.now() });
       }
+      const parent = spec.parentKey ? ref.current!.renders[spec.parentKey] : undefined;
+      if (state.kind === "error" && state.code === "error_no_face" && spec.stage === "look-makeup" && !spec.crop && parent?.url) {
+        // In a full-length image the face can be too small for makeup to find. Retry on a head crop of the
+        // same image and paste it back; the record says it is a composite. (The failed task is not charged.)
+        const role = p.roles.find((item) => item.id === look.roleId);
+        const box = p.performers.find((item) => item.id === role?.performerId)?.headBox ?? DEFAULT_HEAD_BOX;
+        const parentImage = await imageDataUrl(parent.url);
+        await persist({ ...base, taskId: undefined, creationPending: false });
+        const fileId = await ensureFile(await cropHead(parentImage, box), `crop:${p.id}:${spec.key}:no-face`);
+        const response = await fetch("/api/youcam/run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job: spec.job, fileId }) });
+        const created = await response.json();
+        if (!response.ok || !created.taskId) return await fail(created.message ?? "Couldn't start the head-crop retry", true);
+        const retry = await pollTask(spec.feature, created.taskId);
+        if (retry.kind !== "success") return await fail(retry.kind === "error" ? retry.message : "The head-crop retry is still processing. Render again.", true);
+        const url = await pasteHead(parentImage, await imageDataUrl(retry.url), box);
+        setUnitsSpent((units) => units + spec.units);
+        return await persist({ ...base, status: "done", url, demo: false, composite: true, units: spec.units, finishedAt: Date.now() });
+      }
+      if (state.kind === "error") return await fail(state.message, true);
+      if (state.kind === "failed") return await fail(state.message);
       await fail("Still processing. Render again to resume this task.");
     } catch (error) { await fail(error instanceof Error ? error.message : "Render interrupted. Try again to resume."); }
   }, [ensureFile, putRecord, status]);

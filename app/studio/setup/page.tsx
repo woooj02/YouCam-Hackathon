@@ -13,9 +13,9 @@ import { loadCatalogueFeed, mergeFeed } from "@/lib/catalogue/feed";
 type Tab = "brief" | "cast" | "rack";
 
 export default function Setup() {
-  const [tab, setTab] = useState<Tab>("cast");
-  const { production: p } = useStudio();
-  if (!p) return null;
+  const [tab, setTab] = useState<Tab>("brief");
+  const { production: p, status } = useStudio();
+  if (!p) return <main className="spotlight min-h-screen"><p className="mx-auto max-w-5xl px-8 pt-24 text-sm text-muted">Opening your production…</p></main>;
   return (
     <main className="spotlight min-h-screen pb-24">
       <div className="mx-auto max-w-5xl px-4 pt-6 sm:px-8">
@@ -26,6 +26,15 @@ export default function Setup() {
           <Link href="/studio" className="rounded-full grad px-5 py-2 text-sm font-medium text-white">Back to the studio</Link>
         </div>
         <h1 className="mt-6 font-[family-name:var(--font-display)] text-4xl">{p.title}</h1>
+        <div className="mt-3 max-w-3xl space-y-1 text-sm text-muted">
+          <p>You&apos;re editing this production. Replace the brief, the cast photos and the rack with your own; everything stays in this browser until you render.</p>
+          {status ? (
+            <p>
+              {status.agent ? "“Draft the breakdown” turns your brief into scenes, roles and looks. " : "This copy has no language-model key, so it can't draft scenes and roles from a new brief: adapt the prepared show instead. "}
+              {status.demo ? "It has no YouCam key either, so new renders appear as labelled sketches. Run ENCORE with your own key to render (see the README)." : "Renders call the YouCam API and spend units from your account."}
+            </p>
+          ) : null}
+        </div>
         <div className="mt-6 flex gap-1 rounded-full border border-line bg-surface p-1 text-sm">
           {(["brief", "cast", "rack"] as Tab[]).map((t) => (
             <button key={t} onClick={() => setTab(t)} className={`flex-1 rounded-full px-4 py-2 capitalize ${tab === t ? "bg-panel text-fg" : "text-muted"}`}>
@@ -147,8 +156,8 @@ function Cast() {
                 {["XS", "S", "M", "L", "XL", "XXL"].map((s) => <option key={s}>{s}</option>)}
               </select>
               <select aria-label="Hat fit" title="Hat fit" value={perf.hatFit ?? "female"} onChange={(e) => update(perf.id, { hatFit: e.target.value as "male" | "female" })} className="basis-full rounded-lg border border-line bg-panel px-2 py-1.5 text-sm">
-                <option value="female">Women&apos;s hats</option>
-                <option value="male">Men&apos;s hats</option>
+                <option value="female">Hat fit: women&apos;s</option>
+                <option value="male">Hat fit: men&apos;s</option>
               </select>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">

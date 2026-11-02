@@ -1231,7 +1231,7 @@
       "source": "rental",
       "vendor": "Limelight Costume Hire (fictional)",
       "available": true,
-      "image": "/showcase/midsummer/rack/h-ivory-stole-25c5d0f50b.jpg"
+      "image": "/showcase/midsummer/rack/h-ivory-stole-23f63d8f35.jpg"
     },
     {
       "id": "h-sheer-cape",
@@ -1568,7 +1568,7 @@
       }
     ],
     "nodes": 30297,
-    "ms": 30
+    "ms": 26
   },
   "renders": {
     "88269659": {
@@ -1660,37 +1660,6 @@
       "demo": false,
       "units": 2,
       "finishedAt": 1793580249187
-    },
-    "9a5b74f7": {
-      "key": "9a5b74f7",
-      "lookId": "l-hippolyta",
-      "stage": "outer",
-      "status": "done",
-      "url": "/showcase/midsummer/renders/9a5b74f7.jpg",
-      "demo": false,
-      "units": 2,
-      "finishedAt": 1793580262280
-    },
-    "ba55c450": {
-      "key": "ba55c450",
-      "lookId": "l-hippolyta",
-      "stage": "look-hair",
-      "status": "done",
-      "url": "/showcase/midsummer/renders/ba55c450.jpg",
-      "demo": false,
-      "units": 2,
-      "finishedAt": 1793580269223
-    },
-    "ae9f12bb": {
-      "key": "ae9f12bb",
-      "lookId": "l-hippolyta",
-      "stage": "look-makeup",
-      "status": "done",
-      "url": "/showcase/midsummer/renders/ae9f12bb.jpg",
-      "demo": false,
-      "composite": true,
-      "units": 1,
-      "finishedAt": 1793580279731
     },
     "e5c40436": {
       "key": "e5c40436",
@@ -2065,6 +2034,37 @@
       "demo": false,
       "units": 2,
       "finishedAt": 1793582226871
+    },
+    "adc2f99c": {
+      "key": "adc2f99c",
+      "lookId": "l-hippolyta",
+      "stage": "outer",
+      "status": "done",
+      "url": "/showcase/midsummer/renders/adc2f99c.jpg",
+      "demo": false,
+      "units": 2,
+      "finishedAt": 1793584630459
+    },
+    "1988ac08": {
+      "key": "1988ac08",
+      "lookId": "l-hippolyta",
+      "stage": "look-hair",
+      "status": "done",
+      "url": "/showcase/midsummer/renders/1988ac08.jpg",
+      "demo": false,
+      "units": 2,
+      "finishedAt": 1793584637333
+    },
+    "a93998b0": {
+      "key": "a93998b0",
+      "lookId": "l-hippolyta",
+      "stage": "look-makeup",
+      "status": "done",
+      "url": "/showcase/midsummer/renders/a93998b0.jpg",
+      "demo": false,
+      "composite": true,
+      "units": 1,
+      "finishedAt": 1793584647993
     }
   },
   "history": []

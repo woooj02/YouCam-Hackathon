@@ -39,7 +39,7 @@ export const GARMENT_PROMPTS: Record<string, string> = {
   "m-apron": GARMENT("a long brown canvas carpenter's work apron with front pockets"),
   "h-black-jacket": GARMENT("a man's black dinner jacket with black satin notch lapels"),
   "h-gold-gown": GARMENT("a gold beaded 1920s evening gown with an ivory underlayer, sleeveless, mid-calf length"),
-  "h-ivory-stole": GARMENT("an ivory satin evening stole wrap, long and soft"),
+  "h-ivory-stole": GARMENT("a long sheer ivory chiffon evening shawl with a fine gold beaded fringe, draped around the shoulders of the mannequin like a wrap, the two loose ends hanging down the front past the hips, shoulders and arms open, no sleeves, no buttons"),
   "h-sheer-cape": GARMENT("a sheer silver organza cape, floor length, light and translucent"),
   "b-blue-dress": GARMENT("a powder-blue 1920s drop-waist day dress, long sleeves, ankle length"),
   "b-champagne-gown": GARMENT("a champagne satin 1920s evening gown, long, with a low back"),

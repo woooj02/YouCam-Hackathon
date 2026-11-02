@@ -5,7 +5,8 @@ import type { Production } from "@/lib/engine/types";
 import { lookImages } from "@/lib/engine/render";
 import { naivePlan, replanWithout } from "@/lib/engine/solver";
 
-const PROBLEM_DOC = "https://github.com/woooj02/YouCam-Hackathon/blob/main/docs/PROBLEM.md";
+const REPO = "https://github.com/woooj02/YouCam-Hackathon";
+const PROBLEM_DOC = `${REPO}/blob/main/docs/PROBLEM.md`;
 
 /** Published figures, each copied from the source named beside it (all checked in docs/PROBLEM.md). */
 const COSTS = [
@@ -56,7 +57,10 @@ export default function Home() {
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl font-semibold leading-[1.05] sm:text-7xl">
             See opening night <span className="text-accent">before</span> you rent or buy the costumes.
           </h1>
-          <p className="mt-6 max-w-2xl text-lg text-muted">
+          <p className="mt-6 max-w-2xl text-xl text-fg">
+            Try-on apps dress one person. A show dresses a whole cast from one shared rack, scene by scene, on one budget.
+          </p>
+          <p className="mt-3 max-w-2xl text-lg text-muted">
             For costume designers at community theatres, schools and small companies. ENCORE plans every look across the cast from the rack
             you already have, previews each one on the real performer, and tells you exactly what is left to hire, buy or find, inside your budget.
           </p>
@@ -187,10 +191,31 @@ export default function Home() {
             ))}
             <li className="flex flex-wrap gap-3 pl-1 text-xs">
               <a className="text-accent underline" href="/feeds/sample-hire-feed.json" download>Sample feed (fictional hire house)</a>
-              <a className="text-accent underline" href="https://github.com/woooj02/YouCam-Hackathon/blob/main/docs/catalogue-feed.schema.json" target="_blank" rel="noreferrer">Feed schema</a>
+              <a className="text-accent underline" href={`${REPO}/blob/main/docs/catalogue-feed.schema.json`} target="_blank" rel="noreferrer">Feed schema</a>
               <Link className="text-accent underline" href="/studio/orders">See an order sheet</Link>
             </li>
           </ol>
+        </section>
+
+        <section className="mt-16" aria-label="Under the hood">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <h2 className="font-[family-name:var(--font-display)] text-3xl">Under the hood</h2>
+            <a className="text-sm text-accent hover:underline" href={`${REPO}#architecture`} target="_blank" rel="noreferrer">Architecture diagram →</a>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ["Planner", "A branch-and-bound search over every look and slot: scene capacity, sizes, availability and budget are hard rules, in plain code."],
+              ["Render graph", "Each layer is keyed by its inputs. Change one piece and only that layer and the ones built on it re-render."],
+              ["YouCam chain", "Clothes try-on for the costume and the outer layer, then hairstyle, then makeup, each output feeding the next."],
+              ["Failure handling", "A face too small for makeup is retried on a head crop and pasted back, labelled composite. Tasks resume after a reload, never bought twice."],
+            ].map(([t, d]) => (
+              <div key={t} className="rounded-2xl border border-line bg-surface p-4 shadow-card">
+                <p className="text-sm font-medium">{t}</p>
+                <p className="mt-1 text-sm text-muted">{d}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-[11px] text-muted">Synthetic benchmark, 200 generated productions: look-by-look plans are feasible 24.5% of the time, ENCORE&apos;s 100.0%. <a className="text-accent underline" href={`${REPO}/blob/main/docs/EVAL.md`} target="_blank" rel="noreferrer">How it was measured</a></p>
         </section>
 
         <section className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">

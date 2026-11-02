@@ -32,6 +32,29 @@ Small productions (community theatre, schools, fringe companies) dress a whole c
 4. **Re-plan in one sentence.** Only affected looks change; locked looks stay fixed; only changed layers re-render.
 5. **Order and fit.** The order sheet groups pieces by source, per performer, with sizes, quantities, the scene each piece is first needed by, totals against budget, print and CSV export, and a quote request you send yourself. Fitting cards carry pieces, sources, styling and quick-change notes.
 
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Browser["Browser (Next.js, saved in IndexedDB)"]
+    In["Cast photos · rack photos<br/>hire feed · brief"] --> Solver["Planner<br/>branch-and-bound solver"]
+    Solver --> Graph["Render graph<br/>content-keyed layers"]
+    Graph --> Out["Plan check · cast wall<br/>order sheet · fitting cards"]
+    Dir["Director bar<br/>'the jacket is torn'"] --> Ops["Planner ops"] --> Solver
+  end
+  subgraph Server["Next.js API routes (keys stay here)"]
+    YC["/api/youcam: upload, run, poll, credits"]
+    LLM["/api/breakdown · /api/tag · /api/director<br/>optional LLM, zod-validated"]
+  end
+  Graph -- "only changed layers" --> YC
+  YC --> API["YouCam API<br/>Clothes VTO · Hairstyle VTO · Makeup VTO"]
+  API -- "error_no_face on a full-length image" --> Crop["Retry on a head crop,<br/>paste back, mark 'composite'"]
+  Dir -.-> LLM
+  In -.-> LLM
+```
+
+Rules, maths and money live in plain code (solver, render graph, unit costs); the language model only turns words into structured input, and every number it reports comes from the solver.
+
 ## YouCam API usage
 
 Every configured stage's output image is the next stage's input:
@@ -58,6 +81,7 @@ Engineering details:
 - **Content-keyed render graph** (`lib/engine/render.ts`). Each stage's key hashes its inputs plus its parent's key; a composite also depends on the costume render. Swap a coat and only that stage and its dependants re-key. The composite strategy hangs the head chain off the photo, not the costume, so a coat swap is still one API layer plus a free local re-paste. The direct strategy re-renders hair and makeup too (3 layers, 5 units).
 - **Repair numbers from the graph.** `repairCost()` counts changed API layers and their units from `UNIT_COST` (clothes 2, hairstyle 2, makeup 1) against rendering every layer of the cast. Nothing in that sentence is typed in.
 - **Saved-task resumption.** Task ids are stored before polling; interrupted tasks resume after a reload; an interrupted creation with no returned id is held, never resubmitted. Finished images are saved with the production so signed URL expiry doesn't erase them.
+- **No face in a full-length image.** Makeup can fail with `error_no_face` when the face is small in a full-length render. The studio and the showcase script then retry on a head crop of the same image and paste it back with tone matching; the failed task isn't charged, and the record is marked `composite` so the UI says so (`tests/no-face-retry.test.ts`).
 - **Errors arrive as HTTP 200** with `task_status: "error"` and a stringified tuple; they're parsed into messages a person can act on.
 - **The key stays server-side.** The browser only talks to `app/api/youcam/`.
 

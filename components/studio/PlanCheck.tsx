@@ -102,7 +102,7 @@ function Thumb({ p, look, record, item, bad }: { p: Production; look: Look; reco
       </div>
       <figcaption className="mt-1 text-[11px] leading-tight">
         <span className="font-medium">{role?.name}</span>
-        <span className={`block truncate ${bad ? "text-alarm" : "text-muted"}`}>{item?.name ?? "to source"}</span>
+        <span className={`block ${bad ? "text-alarm" : "text-muted"}`}>{item?.name ?? "to source"}</span>
       </figcaption>
     </figure>
   );

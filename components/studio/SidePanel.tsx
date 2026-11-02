@@ -58,8 +58,8 @@ function Rack({ onLost }: { onLost: (item: Item) => void }) {
                     </div>
                   </div>
                   {it.available ? (
-                    <button onClick={() => onLost(it)} className="rounded-lg px-2 py-1 text-[11px] text-muted hover:bg-alarm/15 hover:text-alarm" title="Mark unavailable">
-                      Lost
+                    <button onClick={() => onLost(it)} className="rounded-lg px-2 py-1 text-[11px] text-muted hover:bg-alarm/15 hover:text-alarm" title="Mark this piece lost or damaged and re-plan">
+                      Mark lost
                     </button>
                   ) : null}
                 </li>

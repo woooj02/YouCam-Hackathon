@@ -1,5 +1,5 @@
 /** Browser side of the complete-look composite: canvas crop and feathered paste. */
-import { blendInto, featherMask, headCropRect, upscaleSize } from "../engine/composite";
+import { blendInto, featherMask, headCropRect, matchTone, upscaleSize } from "../engine/composite";
 import type { HeadBox } from "../engine/types";
 
 function load(src: string): Promise<HTMLImageElement> {
@@ -43,7 +43,10 @@ export async function pasteHead(baseSrc: string, headSrc: string, box: HeadBox):
   scaled.ctx.drawImage(head, 0, 0, rect.width, rect.height);
   const baseData = out.ctx.getImageData(0, 0, W, H);
   const headData = scaled.ctx.getImageData(0, 0, rect.width, rect.height);
-  blendInto(baseData.data, W, headData.data, rect, featherMask(rect.width, rect.height));
+  const mask = featherMask(rect.width, rect.height);
+  // Same as the showcase script: match the styled head's tone to the body around the seam, then blend.
+  matchTone(baseData.data, W, headData.data, rect, mask);
+  blendInto(baseData.data, W, headData.data, rect, mask);
   out.ctx.putImageData(baseData, 0, 0);
   return out.c.toDataURL("image/jpeg", 0.92);
 }
