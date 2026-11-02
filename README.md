@@ -2,142 +2,147 @@
 
 **See opening night before you rent or buy the costumes.**
 
-ENCORE is a fitting room for an entire cast. A costume designer gives it the show, the cast and the rack they already have. ENCORE plans every look across every scene from that rack, renders each look on the real performers with the YouCam API (costume, outer layer, hairstyle and makeup), and lists exactly what is left to hire or buy, inside the budget. Headwear remains in the wardrobe plan and fitting cards.
+ENCORE is a fitting room for an entire cast. A costume designer gives it the show, the cast and the rack they already have. ENCORE plans every look across every scene from that rack, renders each look on the performer with the YouCam API (costume, outer layer, hairstyle and makeup in one image), and turns what is left into an order sheet: what to pull, hire, buy or find secondhand, inside the budget.
 
-When something breaks ("Gatsby’s black dinner jacket is damaged"), ENCORE re-plans only the looks that used it, re-renders only the layers that changed, and updates the sourcing basket.
+When something breaks ("Gatsby’s black dinner jacket is damaged"), ENCORE re-plans only the looks that used it, re-renders only the layers that changed, and says what that saved: "Re-rendered 1 of 12 layers: 2 units instead of 21 for the whole cast".
 
 Built for the **YouCam API Skin AI & eCommerce VTO Hackathon** (eCommerce VTO track).
 
-Open `/studio?showcase=1&public=1` after starting the app. The included demo has three clearly labelled fictional performers, six rack and catalogue references, three complete looks and 12 saved YouCam render layers. You can inspect every result and try the $40 jacket repair without any API key or new unit spend.
+## Two public showcases
+
+| Route | What it is | State on this branch |
+|---|---|---|
+| `/studio?showcase=1&public=1` | *The Great Gatsby* party scene: 3 fictional performers, 3 looks, 12 saved YouCam layers, the $40 jacket repair | Complete; works with no API key |
+| `/studio?showcase=midsummer&public=1` | *A Midsummer Night's Dream* (public domain) as a 1920s wedding: 10 fictional performers, 15 looks, 4 scenes, two doubled roles, a hire/buy/secondhand catalogue, $180 budget | Plan, conflicts, cast wall, order sheet work. Photos and renders are **not generated yet** (see Honest limits); until then it shows labelled swatches and sketches |
 
 ## The problem
 
-Small productions (community theatre, schools, fringe companies) dress a whole cast from a shared rack, a hire house and secondhand shops. The hard part isn't choosing one costume. It's choosing all of them at once:
+Small productions (community theatre, schools, fringe companies) dress a whole cast from a shared rack, a hire house and secondhand shops. Hire is priced per piece and per period, extra weeks for fittings cost extra, and alterations that can't be undone are charged at replacement value. Sourced figures are in [docs/PROBLEM.md](docs/PROBLEM.md). The hard part isn't choosing one costume. It's choosing all of them at once:
 
 - one coat can't be on two people in the same scene;
-- a performer who doubles roles needs both looks to work around their changes;
+- a performer who doubles roles needs a quick change that works;
 - every hire and purchase comes out of one small budget;
 - and nobody sees the finished looks until the fitting, when changing course costs the most.
 
-ENCORE connects the shared inventory and scene plot to performer previews, priced sourcing needs and targeted repairs when the rack changes.
-
 ## What ENCORE does
 
-1. **Set up the cast.** The included Gatsby-inspired party scene has three fictional performers, three roles and three distinct costume looks. Add performer photos and sizes, and save the show's brief alongside the plan.
-2. **Photograph the rack.** Add each piece's name, slot, colours, tags, sizes, quantity and whether it's owned, on hire, or for sale. Manual entry works without a model key.
-3. **Plan the whole cast at once.** A constraint solver assigns pieces to every look: never more wearers in a scene than the rack holds, only sizes that fit, never over budget. Anything it can't fill becomes a sourcing need, not a hidden double-booking.
-4. **See opening night.** Each look is rendered on the performer in two YouCam chains (below). The cast board has costume and styling views. A before/after slider isolates each layer, with the exact hair and makeup direction shown beside the result.
-5. **Re-plan in one sentence.** Tell the director what changed. Only affected looks change; locked looks remain fixed; only changed layers re-render. The prepared jacket repair changes one of 12 layers and reuses the other 11. Its saved public preview needs no API call; a live rehearsal also confirmed that rendering the replacement costs two units.
-6. **Take it to the fitting.** Printable fitting cards per performer: pieces, sources, hair and makeup direction, handoffs to rehearse.
+1. **Plan the whole cast at once.** A constraint solver assigns pieces to every look: never more wearers in a scene than the rack holds, only sizes that fit, never over budget. Anything it can't fill becomes a sourcing need, not a hidden double-booking.
+2. **Show the conflict.** The plan check puts the look-by-look plan beside ENCORE's: the same garment on two performers in one scene ("Same scene. The rack has 1."), then the resolved plan.
+3. **See opening night.** Each look renders as one complete image: costume, outer layer, hair and makeup. The cast wall shows every look; the inspector shows every layer with a before/after slider and the API that made it.
+4. **Re-plan in one sentence.** Only affected looks change; locked looks stay fixed; only changed layers re-render.
+5. **Order and fit.** The order sheet groups pieces by source, per performer, with sizes, quantities, the scene each piece is first needed by, totals against budget, print and CSV export, and a quote request you send yourself. Fitting cards carry pieces, sources, styling and quick-change notes.
 
 ## YouCam API usage
 
-Looks use separate body and portrait chains of real YouCam tasks. Each configured stage's output image is the next stage's input.
+Every configured stage's output image is the next stage's input:
 
 ```
-body:      full-body photo ─▶ AI Clothes Virtual Try-On (costume) ─▶ AI Clothes Virtual Try-On (garment_category "outer")
-portrait:  close-up photo  ─▶ AI Hairstyle Virtual Try-On (hair_color "src") ─▶ AI Makeup Virtual Try-On
+costume:        full-body photo ─▶ Clothes VTO (costume) ─▶ Clothes VTO (garment_category "outer")
+close-up:       close-up photo  ─▶ Hairstyle VTO ─▶ Makeup VTO                 (when a close-up exists)
+complete look:  composite: head crop of the full-body photo ─▶ Hairstyle VTO ─▶ Makeup VTO
+                           ─▶ pasted onto the costume render with a feathered mask (local, 0 units)
+                direct:    costume render ─▶ Hairstyle VTO ─▶ Makeup VTO
 ```
 
 | Feature | Endpoint | Used for |
 |---|---|---|
 | AI Clothes Virtual Try-On (v4) | `POST /s2s/v2.0/task/cloth-v4` | The rack piece on the performer; outer layers over the costume |
-| AI Hairstyle Virtual Try-On | `POST /s2s/v2.1/task/hair-transfer`, `GET /s2s/v2.1/task/template/hair-transfer` | Hair direction, optionally keeping the performer's own colour |
+| AI Hairstyle Virtual Try-On | `POST /s2s/v2.1/task/hair-transfer`, `GET …/template/hair-transfer` | Hair direction, optionally keeping the performer's own colour |
 | AI Makeup Virtual Try-On | `POST /s2s/v2.0/task/makeup-vto` | Stage makeup: foundation, lip colour and texture, skin smoothing |
-| AI Hat Virtual Try-On | `POST /s2s/v2.0/task/hat` | Isolated smoke-test experiment; excluded from cast previews after visual validation |
-| File API | `POST /s2s/v2.0/file` | Presigned upload of performer and rack photos, reused by file id |
-| Credits | `GET /s2s/v1.0/client/credit` | Live unit balance shown in the studio |
+| Text-to-image (`youcam-image-v2`) | `POST /s2s/v2.0/task/text-to-image/youcam` | Scripts only: fictional performer and garment photos for the Midsummer showcase |
+| AI Hat Virtual Try-On | `POST /s2s/v2.0/task/hat` | Isolated smoke test only; it regenerated the whole image, so headwear stays in the plan and fitting cards |
+| File API, Credits | `POST /s2s/v2.0/file`, `GET /s2s/v1.0/client/credit` | Presigned uploads reused by file id; live unit balance |
 
-Engineering details that matter for a real deployment:
+Engineering details:
 
-- **Content-keyed render graph.** Every stage's key hashes its own inputs plus its parent's key (`lib/engine/render.ts`). Swap a coat and only that stage and the stages after it re-key, so in the showcase a lost coat changes one outer layer.
-- **Saved-task resumption.** Task ids are stored before polling, interrupted tasks resume after a reload, and poll errors keep the id for retry. An interrupted creation with no returned id is held for inspection rather than automatically submitted again. Finished images are saved with the production so signed URL expiry does not erase the preview.
-- **Errors arrive as HTTP 200.** Engine failures come back as `task_status: "error"` with a stringified tuple; they're parsed into messages a person can act on ("Use a full-body shot").
-- **The key stays server-side.** The browser only talks to our routes in `app/api/youcam/`.
-- **Upload once.** Performer photos are uploaded once per photo version and reused by `file_id`; rack photos are cached per server instance.
+- **Content-keyed render graph** (`lib/engine/render.ts`). Each stage's key hashes its inputs plus its parent's key; a composite also depends on the costume render. Swap a coat and only that stage and its dependants re-key. The composite strategy hangs the head chain off the photo, not the costume, so a coat swap is still one API layer plus a free local re-paste. The direct strategy re-renders hair and makeup too (3 layers, 5 units).
+- **Repair numbers from the graph.** `repairCost()` counts changed API layers and their units from `UNIT_COST` (clothes 2, hairstyle 2, makeup 1) against rendering every layer of the cast. Nothing in that sentence is typed in.
+- **Saved-task resumption.** Task ids are stored before polling; interrupted tasks resume after a reload; an interrupted creation with no returned id is held, never resubmitted. Finished images are saved with the production so signed URL expiry doesn't erase them.
+- **Errors arrive as HTTP 200** with `task_status: "error"` and a stringified tuple; they're parsed into messages a person can act on.
+- **The key stays server-side.** The browser only talks to `app/api/youcam/`.
 
 ## The planner
 
-`lib/engine/solver.ts` is a branch-and-bound search over (look, slot) variables, ordered fewest-candidates first, with an optimistic bound from each remaining slot's best match.
+`lib/engine/solver.ts` is a branch-and-bound search over (look, slot) variables, fewest-candidates first, with an optimistic bound.
 
 - **Hard constraints:** scene capacity (`qty` per scene), size fit, availability, budget.
-- **Objective:** tag and colour match to each look's brief, minus a small cost penalty. Unfilled required slots cost a fixed penalty and become sourcing needs.
-- **Replanning:** `replanWithout` frees only the (look, slot) pairs that used the lost piece and freezes everything else. Locked looks stay fixed in every full re-plan.
-- **Soft warnings:** a piece passing between performers across back-to-back scenes is flagged as a handoff to rehearse.
+- **Objective:** tag and colour match to each look's brief, minus a small cost penalty. Unfilled required slots become sourcing needs.
+- **Replanning:** `replanWithout` frees only the (look, slot) pairs that used the lost piece. Locked looks stay fixed.
+- **Soft warnings:** quick changes for a performer in two looks in back-to-back scenes, and pieces handed between performers when there aren't enough units for everyone.
+
+In the Midsummer showcase, picking look by look puts one black dinner jacket on three suitors and one ivory gown on three brides, and spends $198 of $180. ENCORE's plan has no conflicts and costs $160, by trade-offs a person might not spot: the Duke keeps the owned jacket, Lysander takes the navy one, Demetrius (size L) is hired; Ama wears Titania's silver gown again as Hippolyta, which frees the ivory gown for Hermia; Helena wears one $30 secondhand dress in both looks. `tests/midsummer.test.ts` checks all of it.
 
 ### Evaluation (synthetic, seeded, reproducible)
 
-`npm run eval` compares the planner with what most teams do by hand: pick the best piece for each look on its own.
+`npm run eval` compares the planner with picking the best piece for each look on its own. `npm run eval:write` also writes `lib/eval-result.json`, which the plan check displays.
 
 | Planner | Feasible plans | Double-bookings (total) | Over budget | Unfilled slots | Avg solve time |
 |---|---|---|---|---|---|
 | Look-by-look baseline | 24.5% | 317 | 25.5% | 145 | 0.3 ms |
-| ENCORE planner | 100.0% | 0 | 0.0% | 176 | 3.9 ms |
+| ENCORE planner | 100.0% | 0 | 0.0% | 176 | 3.5 ms |
 
-200 synthetic productions (3–6 performers, 4–7 scenes, seeds 1–200). ENCORE leaves 31 more slots unfilled than the baseline: those are slots the baseline "filled" by double-booking a piece or overspending, which ENCORE reports as sourcing needs instead. The scenarios are constructed to measure feasibility, not taste. See `docs/EVAL.md`.
+200 synthetic productions (3–6 performers, 4–7 scenes, seeds 1–200). ENCORE leaves more slots unfilled because the baseline "filled" them by double-booking or overspending. The scenarios measure feasibility, not taste. See [docs/EVAL.md](docs/EVAL.md).
 
-## Optional assisted setup
+## Catalogue feed for suppliers
 
-With a separately configured model key, the code supports three bounded jobs (`lib/ai.ts`, `lib/director.ts`). These integrations have not been verified live and are not required for the showcase or recording:
+A costume hire house, shop or secondhand dealer can plug its stock in as one JSON file:
 
-- **Breakdown:** structured output (zod schema) from the written brief, plus questions where the brief is ambiguous.
-- **Rack tagging:** vision plus structured output from one photo of one piece. The designer confirms it.
-- **Director:** a tool loop over the real solver (`find_items`, `mark_unavailable`, `change_requirement`, `lock_look`, `set_budget`, `production_summary`). The model never states a price, size or quantity the tools didn't return. The server returns an op log and the browser replays it on the full production; the solver is deterministic, so both sides agree.
-
-Without a model key, the director uses deterministic commands: "Gatsby’s black dinner jacket is damaged", "set the budget to $30", "lock Daisy’s look", "unlock Daisy’s look", "the black dinner jacket has been repaired" and "re-plan". Planning, manual rack intake, YouCam rendering, locks and fitting cards need no language-model service.
+- **Format:** `encore.catalogue.v1`, defined by the zod schema in `lib/catalogue/feed.ts` and published as [docs/catalogue-feed.schema.json](docs/catalogue-feed.schema.json) (generated from the same schema: `npm run feed:schema`).
+- **Contents:** supplier name and kind (`hire`, `retail`, `secondhand`), currency, and items with SKU, slot, colours, tags, sizes, stock and a price per run, per week or per item, plus an optional https product photo for try-on.
+- **Loading:** *Cast & rack → Rack* → "Load feed". ENCORE validates it, prices weekly hire over the run length you enter, skips out-of-stock rows, warns on currency mismatch or duplicate SKUs, replaces that supplier's earlier feed and re-plans.
+- **What it is not:** there is no live supplier connection. ENCORE never fetches a feed, places an order or sends a quote. `public/feeds/sample-hire-feed.json` is an example from a fictional supplier.
 
 ## Run it
 
 ```bash
-nvm use                      # Node 22; install it with nvm install if needed
-npm install
-cp .env.example .env.local   # only if you do not already have this file
-# Add YOUCAM_API_KEY for real renders and YOUCAM_API_SECRET_KEY for the balance.
-# Leave model keys blank.
+nvm use && npm install
+cp .env.example .env.local   # add YOUCAM_API_KEY (renders) and YOUCAM_API_SECRET_KEY (balance)
 npm run dev                  # http://localhost:3000
 ```
 
-- **No keys:** the included saved YouCam previews, jacket repair, planning, scene plot, budget, locks and fitting cards all work. Newly requested renders use clearly labelled costume sketches.
-- **YouCam key:** real renders. Add performer photos and rack photos in *Cast & rack*. The matching `YOUCAM_API_SECRET_KEY` enables the account balance check: V1 account endpoints require an exchanged access token, while V2 render endpoints accept the API key directly.
-- **Optional model key:** assisted brief breakdown, photo tagging and broader director commands. Provider access and billing are separate from the YouCam allowance.
+- **No keys:** both showcases, planning, the order sheet, locks and fitting cards work. New renders are labelled costume sketches.
+- **YouCam key:** real renders from photos added in *Cast & rack*.
+- **Checks:** `npm run check` (typecheck and 85 unit tests), `npm run eval`, `npm run build`. YouCam preflight (balance and templates, no render tasks): `npm run smoke -- --preflight`.
 
-Checks: `npm run check` (typecheck and unit tests), `npm run eval` (planner evaluation), then the YouCam preflight (balance and hair templates; creates no render tasks):
+### Showcase scripts (live, paid)
 
-```bash
-npm run smoke -- --preflight
-```
-
-Once the five real photos are ready, run the layered API test (about 9 units):
+All live scripts print the balance and the unit estimate first, stop after two failures, keep task ids in `.local/` (git-ignored) so a rerun resumes without resubmitting, and refuse to take total spend past a 300-unit cap (`ENCORE_UNIT_CAP`). Keys are read only from the environment.
 
 ```bash
-npm run smoke -- --body full.jpg --face face.jpg --garment dress.jpg --outer coat.jpg --hat cap.jpg
+npm run showcase:generate -- --dry-run                       # 33 prompts, no network
+npm run showcase:generate -- --units-per-image <price>       # price from your API console
+npm run showcase:build -- midsummer                          # plan + keep saved renders
+npm run showcase:render -- midsummer --dry-run               # ~75 units for 15 complete looks
+npm run showcase:render -- gatsby --looks l-daisy --strategy composite
+npm run showcase:render -- gatsby --extra l-nick:outer=g-black-jacket   # the clash image, ~2 units
 ```
 
 ## Honest limits
 
-- Previews support appearance decisions. Physical fittings establish fit, comfort and movement.
-- Hairstyle renders show a direction for the wig or styling team; they don't certify a specific wig.
-- Sizes, quantities, prices and changeover notes come from what the wardrobe team enters. The supplied demo cast, garments and partner catalogue are illustrative; prices and sizes are fictional. Replace them with consenting performers and actual stock before making production decisions.
-- In the no-model workflow, photos stay in the browser (IndexedDB) and go to the YouCam API to render. Optional assisted rack tagging also sends the selected rack photo to the configured model provider. Only photograph adults who have agreed to it.
-- A live smoke test verified costume → outerwear and hairstyle → makeup on a consenting performer's photos with temporary garment references. Sanitized API response shapes are in `tests/fixtures/youcam/`; personal source photos, personal output images, signed URLs and task identifiers stay out of version control. Only the fictional demo assets and their saved previews are included.
-- The Hat API completed successfully but regenerated the outfit, scene and face. Headwear is therefore planned for the physical fitting and excluded from cast previews. The isolated smoke check remains available to evaluate future API changes.
+- **Not verified live on this branch.** The complete-look chain (both strategies), the Midsummer photos and renders, and Nick's black-jacket render were built and tested against mocks only: the development environment could not reach the YouCam API host. Which strategy looks right is still to be decided on real renders. The full-length head is small in the frame, so the composite may need waist-up or three-quarter photos.
+- Previews support appearance decisions. Physical fittings establish fit, comfort and movement. Hairstyle renders show a direction for the wig or styling team; they don't certify a wig.
+- Every performer, vendor and price in the demos is fictional and labelled so on screen. Sizes, quantities and prices in real use come from what the wardrobe team and suppliers enter.
+- The order sheet's quote request is a draft the designer sends; prices are catalogue listings, not quotes.
+- The benchmark is synthetic and measures feasibility only. The figures in docs/PROBLEM.md were gathered by web search; each needs checking at its source before it is quoted.
+- In the no-model workflow, photos stay in the browser (IndexedDB) and go to the YouCam API to render. Only photograph adults who have agreed to it.
+- The Hat API completed but regenerated the outfit, scene and face, so headwear is planned for the fitting and excluded from previews.
+- Optional language-model features (`lib/ai.ts`, `lib/director.ts`: brief breakdown, rack photo tagging, a tool-using director) need a separate key and have not been verified live. Without one, the director understands fixed commands such as "Gatsby’s black dinner jacket is damaged", "set the budget to $30" and "lock Daisy’s look".
 
 ## Project layout
 
 ```
-app/                 landing, studio, setup, fitting cards, API routes
+app/studio/          studio, orders (order sheet), print (fitting cards), setup (cast, rack, feeds)
 app/api/youcam/      upload, run, task, templates, credits (server-side key)
-app/api/director     deterministic commands; optional model tool loop
-lib/engine/          types, solver, ops, render graph (pure, unit-tested)
+components/studio/   cast board and wall, plan check, inspector, side panel, change summary
+lib/engine/          types, solver, ops, render graph, head-composite math (pure, unit-tested)
+lib/orders.ts        order sheet, CSV and quote request
+lib/catalogue/       supplier catalogue feed adapter
 lib/youcam/          YouCam client, request bodies, result parsing
-lib/gatsby.ts        Gatsby-inspired party scene used in the public showcase
-lib/showcase.ts      original multi-scene production for planner fixtures and evaluation
-public/showcase/     fictional cast and completed, portable demo previews
-public/rack/         unbranded garment references for every catalogue item
-scripts/             eval.ts (planner benchmark), smoke.ts (live API test)
-docs/EVAL.md         reproducible planner benchmark and its limits
+lib/gatsby.ts, lib/midsummer.ts   the two public showcases
+scripts/             eval, smoke, showcase generate/build/render, feed schema
+docs/                EVAL.md, PROBLEM.md, SHOT_LIST.md, catalogue-feed.schema.json
 ```
 
 ## License
 
-MIT. The demo is an independent Gatsby-inspired costume study; it is not affiliated with any film or stage production. Performers, garment references and catalogue prices are illustrative.
+MIT. The Gatsby demo is an independent Gatsby-inspired costume study, not affiliated with any film or stage production. *A Midsummer Night's Dream* is public domain; the staging is original. Performers, garments, suppliers and prices are fictional.

@@ -60,7 +60,7 @@ export default function PrintCards() {
                       <ul className="mt-1 list-disc pl-4">
                         <li>Check fit and movement in every piece.</li>
                         {a.hat ? <li>Fit headwear in person; it is excluded from the preview.</li> : null}
-                        {soft.map((c, i) => <li key={i}>{c.message}: rehearse the handoff.</li>)}
+                        {soft.map((c, i) => <li key={i}>{c.message}: rehearse {c.kind === "quick-change" ? "the change" : "the handoff"}.</li>)}
                         {l.locked ? <li>Look approved and locked.</li> : null}
                       </ul>
                     </div>
