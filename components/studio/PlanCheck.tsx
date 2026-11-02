@@ -43,7 +43,7 @@ export function PlanCheck() {
       <div className="grid gap-4 lg:grid-cols-2">
         <div>
           <div className="text-xs uppercase tracking-wider text-muted">Look-by-look: each look picked on its own</div>
-          <p className="mt-1 text-sm text-alarm">{plural(naiveHard.length, "hard conflict")} · {money(p, naive.cost)} of {money(p, p.budget)}</p>
+          <p className={`mt-1 text-sm ${naiveHard.length ? "text-alarm" : "text-ok"}`}>{plural(naiveHard.length, "hard conflict")} · {money(p, naive.cost)} of {money(p, p.budget)}</p>
           {clash && item ? (
             <div className="mt-3 rounded-xl border border-alarm/50 bg-alarm/5 p-3">
               <div className="flex flex-wrap items-end gap-3">
