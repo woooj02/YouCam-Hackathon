@@ -6,7 +6,9 @@ ENCORE is a fitting room for an entire cast. A costume designer gives it the sho
 
 When something breaks ("Gatsby’s black dinner jacket is damaged"), ENCORE re-plans only the looks that used it, re-renders only the layers that changed, and says what that saved: "Re-rendered 3 of 18 layers: 5 units instead of 30 for the whole cast" (the jacket, then the hair and makeup of the complete look built on it).
 
-Built for the **YouCam API Skin AI & eCommerce VTO Hackathon** (eCommerce VTO track).
+Built for the **YouCam API Skin AI & eCommerce VTO Hackathon**.
+
+**Try it (no setup, no key):** <https://encore.91.99.162.43.sslip.io>. Both showcases, the plan check, the jacket repair, the order sheet and the fitting cards run on saved YouCam renders. That copy has no API key, so new renders appear as labelled sketches; to render your own cast, run it locally with a key (see [Run it](#run-it)).
 
 ## Two public showcases
 
@@ -126,7 +128,7 @@ npm run dev                  # http://localhost:3000
 
 - **No keys:** both showcases, planning, the order sheet, locks and fitting cards work. New renders are labelled costume sketches.
 - **YouCam key:** real renders from photos added in *Cast & rack*.
-- **Checks:** `npm run check` (typecheck and 85 unit tests), `npm run eval`, `npm run build`. YouCam preflight (balance and templates, no render tasks): `npm run smoke -- --preflight`.
+- **Checks:** `npm run check` (typecheck and 92 unit tests), `npm run eval`, `npm run build`. YouCam preflight (balance and templates, no render tasks): `npm run smoke -- --preflight`.
 
 ### Showcase scripts (live, paid)
 
@@ -143,11 +145,11 @@ npm run showcase:render -- gatsby --extra l-nick:outer=g-black-jacket   # the cl
 
 ## Honest limits
 
-- **Complete looks, verified live on 2026-11-01** (spend in [docs/LIVE_RUNS.md](docs/LIVE_RUNS.md)). On real renders the direct chain (hair, then makeup, on the clothed image) beat the head-crop composite, which pasted the photo's collar and showed a seam, so direct is the default. In full-length shots the face is small and makeup sometimes returns `error_no_face`; the script then runs makeup on a head crop of the same render, matches its tone and pastes it back. Those looks (Nick, Hippolyta, Titania, Helena twice, Demetrius) are marked `composite` in the data and the UI.
+- **Complete looks, verified live on 2026-11-01** (spend in [docs/LIVE_RUNS.md](docs/LIVE_RUNS.md)). On real renders the direct chain (hair, then makeup, on the clothed image) beat the head-crop composite, which pasted the photo's collar and showed a seam, so direct is the default. In full-length shots the face is small and makeup sometimes returns `error_no_face`; the studio and the showcase script then run makeup on a head crop of the same render, match its tone and paste it back. Those looks (Nick, Hippolyta, Titania, Helena twice, Demetrius) are marked `composite` in the data and the UI.
 - Previews support appearance decisions. Physical fittings establish fit, comfort and movement. Hairstyle renders show a direction for the wig or styling team; they don't certify a wig.
 - Every performer, vendor and price in the demos is fictional and labelled so on screen. Sizes, quantities and prices in real use come from what the wardrobe team and suppliers enter.
 - The order sheet's quote request is a draft the designer sends; prices are catalogue listings, not quotes.
-- The benchmark is synthetic and measures feasibility only. The figures in docs/PROBLEM.md were gathered by web search; each needs checking at its source before it is quoted.
+- The benchmark is synthetic and measures feasibility only. The figures in docs/PROBLEM.md were found by web search and each was read at its live source on 2026-11-01; rates change, so check the source before quoting one.
 - In the no-model workflow, photos stay in the browser (IndexedDB) and go to the YouCam API to render. Only photograph adults who have agreed to it.
 - The Hat API completed but regenerated the outfit, scene and face, so headwear is planned for the fitting and excluded from previews.
 - Optional language-model features (`lib/ai.ts`, `lib/director.ts`: brief breakdown, rack photo tagging, a tool-using director) need a separate key and have not been verified live. Without one, the director understands fixed commands such as "Gatsby’s black dinner jacket is damaged", "set the budget to $30" and "lock Daisy’s look".

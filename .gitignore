@@ -19,3 +19,6 @@ AGENTS.md
 *.swp
 *.swo
 .*.sw?
+
+# Video, narration and form drafts (never pushed)
+submission/

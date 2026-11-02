@@ -1,6 +1,6 @@
 # Shot list: ENCORE demo film (~2:50)
 
-Picture and on-screen text only. No narration in this list; the voice-over is recorded last over the cut.
+Picture and on-screen text only. The narration is recorded last, over the cut.
 
 **Before recording.** Run `npm run dev` with `YOUCAM_API_KEY` set. Browser at 1440×900, zoom 100%, light theme. Every "Asset" marked *needs live render* must exist first; run the command given. On-screen text in quotes is typed exactly; text in brackets comes from the app. Saved renders are real YouCam outputs; never caption a saved render as happening live.
 
@@ -27,10 +27,9 @@ Picture and on-screen text only. No narration in this list; the voice-over is re
 - **Route:** same page, blurred to 20% behind text cards (edit-side blur).
 - **Action:** three text cards, 3 s each, then the name card.
 - **On-screen text (from docs/PROBLEM.md, checked against the sources on 2026-11-01):**
-  - "Hire: $175 a costume for one week." small: "TDF Costume Collection, regular stock"
-  - "Extra weeks for fittings: +50% of the rental fee." small: "Pioneer Theatre Company rental terms, 2025"
-  - "Alter it and can't undo it? You pay replacement value." small: "Costume Connection, Houston"
-  - Name card: "ENCORE" / "See opening night before you rent or buy the costumes."
+  - Name card: "ENCORE" / "See opening night before you rent or buy the costumes." small: "For community theatres, schools and small companies"
+  - "$175 a week to hire one costume." · "Extra weeks for fittings: +50%." · "Can't undo the alteration? Replacement value." small, on all three: "Sources: docs/PROBLEM.md"
+  - The rules ban third-party trademarks in the video, so the cards name no hire houses; the sources are in docs/PROBLEM.md.
 - **Assets:** none.
 
 ### 3 · 0:25–0:55 · The whole cast, and the solver clearing conflicts
@@ -55,6 +54,7 @@ Picture and on-screen text only. No narration in this list; the voice-over is re
   - "AI Makeup Virtual Try-On · wine lip"
   - If the composite strategy is kept: "Head composite (local, 0 units)" and keep the "composite" badge visible.
   - Final: "One image. Costume, outer layer, hair, makeup."
+- **Then:** cut to the Gatsby cast wall and hold on Nick's "composite" badge (the no-face head-crop retry).
 - **Assets:** Daisy's complete look (rendered, direct chain).
 
 ### 5 · 1:35–2:15 · Damage, then only the changed layers re-render live
