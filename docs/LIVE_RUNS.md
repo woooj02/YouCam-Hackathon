@@ -13,6 +13,7 @@ Units are read from the account balance before and after each run. No task ids o
 | 2026-11-01 | Lysander and Demetrius in the shared black jacket (costume layer only, for the plan check) | 4 | 751 |
 | 2026-11-01 | Nick's makeup retried without the crop (`error_no_face` again, failed task not charged); head-crop fallback kept | 0 | 751 |
 | 2026-11-01 | New ivory stole photo (the first read as a vest), then Hippolyta's stole, hair and makeup layers again (makeup via head crop) | 6 | 745 |
-| | **Total** | **142** | |
+| 2026-11-01 | Demo video take: Gatsby's ivory jacket layer re-rendered live (outer layer, hair, makeup) | 5 | 740 |
+| | **Total** | **147** | |
 
 Re-compositing the six head-crop looks with tone matching was local and cost nothing.
