@@ -26,8 +26,8 @@ Picture and on-screen text only. No narration in this list; the voice-over is re
 ### 2 · 0:12–0:25 · Stakes, then the name
 - **Route:** same page, blurred to 20% behind text cards (edit-side blur).
 - **Action:** three text cards, 3 s each, then the name card.
-- **On-screen text (from docs/PROBLEM.md; confirm each figure in a browser first):**
-  - "Hire: $165 a costume for one week." small: "TDF Costume Collection, regular stock"
+- **On-screen text (from docs/PROBLEM.md, checked against the sources on 2026-11-01):**
+  - "Hire: $175 a costume for one week." small: "TDF Costume Collection, regular stock"
   - "Extra weeks for fittings: +50% of the rental fee." small: "Pioneer Theatre Company rental terms, 2025"
   - "Alter it and can't undo it? You pay replacement value." small: "Costume Connection, Houston"
   - Name card: "ENCORE" / "See opening night before you rent or buy the costumes."
