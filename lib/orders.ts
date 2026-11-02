@@ -85,7 +85,7 @@ const cell = (v: string | number) => {
 export function orderCsv(sheet: OrderSheet): string {
   const rows: (string | number)[][] = [["source", "item", "supplier", "performers", "sizes", "qty", "unit_cost", "line_total", "needed_by_scene"]];
   for (const g of sheet.groups) for (const l of g.lines) {
-    rows.push([g.label, l.name, l.vendor ?? "", [...new Set(l.wearers.map((w) => `${w.performer} (${w.size}) as ${w.role}`))].join("; "), l.sizes.join("/"), l.qty, l.unitCost, l.total, l.neededBy ? `${l.neededBy.order}. ${l.neededBy.name}` : ""]);
+    rows.push([g.label, l.name, l.vendor ?? "", [...new Set(l.wearers.map((w) => `${w.performer} (${w.size}) as ${w.look}`))].join("; "), l.sizes.join("/"), l.qty, l.unitCost, l.total, l.neededBy ? `${l.neededBy.order}. ${l.neededBy.name}` : ""]);
   }
   for (const u of sheet.unsourced) rows.push(["Still to source", u.need, "", `${u.performer} as ${u.look}`, "", 1, "", "", u.neededBy ? `${u.neededBy.order}. ${u.neededBy.name}` : ""]);
   rows.push(["Total", "", "", "", "", "", "", sheet.total, ""]);

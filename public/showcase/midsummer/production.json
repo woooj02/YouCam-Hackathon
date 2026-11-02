@@ -837,7 +837,7 @@
     {
       "id": "l-thisbe",
       "roleId": "r-flute",
-      "name": "Flute as Thisbe",
+      "name": "Flute, playing Thisbe",
       "sceneIds": [
         "wedding"
       ],
@@ -2045,6 +2045,26 @@
       "demo": false,
       "units": 1,
       "finishedAt": 1793580826722
+    },
+    "82521d60": {
+      "key": "82521d60",
+      "lookId": "l-lysander",
+      "stage": "outer",
+      "status": "done",
+      "url": "/showcase/midsummer/renders/82521d60.jpg",
+      "demo": false,
+      "units": 2,
+      "finishedAt": 1793582214177
+    },
+    "89588de7": {
+      "key": "89588de7",
+      "lookId": "l-demetrius",
+      "stage": "outer",
+      "status": "done",
+      "url": "/showcase/midsummer/renders/89588de7.jpg",
+      "demo": false,
+      "units": 2,
+      "finishedAt": 1793582226871
     }
   },
   "history": []

@@ -12,7 +12,7 @@ Built for the **YouCam API Skin AI & eCommerce VTO Hackathon** (eCommerce VTO tr
 
 | Route | What it is | State on this branch |
 |---|---|---|
-| `/studio?showcase=1&public=1` | *The Great Gatsby* party scene: 3 fictional performers, 3 looks, 12 saved YouCam layers, the $40 jacket repair | Complete; works with no API key |
+| `/studio?showcase=1&public=1` | *The Great Gatsby* party scene: 3 fictional performers, 3 looks, 18 saved YouCam layers, the $40 jacket repair | Complete; works with no API key |
 | `/studio?showcase=midsummer&public=1` | *A Midsummer Night's Dream* (public domain) as a 1920s wedding: 10 fictional performers, 15 looks, 4 scenes, two doubled roles, a hire/buy/secondhand catalogue, $180 budget | Plan, conflicts, cast wall and order sheet, with 33 generated fictional photos and 15 complete looks rendered live with YouCam |
 
 ## The problem

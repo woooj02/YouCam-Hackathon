@@ -34,8 +34,8 @@ describe("order sheet", () => {
     expect(rows[0]).toBe("source,item,supplier,performers,sizes,qty,unit_cost,line_total,needed_by_scene");
     expect(rows).toContain("Total,,,,,,,160,");
     expect(rows).toContain("Remaining,,,,,,,20,");
-    expect(rows).toContain('Secondhand,"Ivory lawn day dress, secondhand",Encore Thrift (fictional),Grace (L) as Helena,L,1,30,30,1. The Duke\'s Court');
-    expect(csv).toContain("Elliot (M) as Theseus; Elliot (M) as Oberon");
+    expect(rows).toContain('Secondhand,"Ivory lawn day dress, secondhand",Encore Thrift (fictional),"Grace (L) as Helena, the garden party; Grace (L) as Helena, the wedding",L,1,30,30,1. The Duke\'s Court');
+    expect(csv).toContain("Elliot (M) as Theseus, the Duke; Elliot (M) as Oberon, in the wood");
   });
 
   it("drafts a quote request per supplier without claiming to send it", () => {

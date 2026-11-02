@@ -65,7 +65,7 @@ export default function OrderSheetPage() {
                         <div><div>{l.name}</div>{l.vendor ? <div className="text-[11px] text-muted">{l.vendor}</div> : null}</div>
                       </div>
                     </td>
-                    <td className="py-2 pr-2 text-xs">{l.wearers.map((w) => <div key={w.look}>{w.performer} <span className="text-muted">as {w.role}</span></div>)}</td>
+                    <td className="py-2 pr-2 text-xs">{l.wearers.map((w) => <div key={w.look}>{w.performer} <span className="text-muted">as {w.look}</span></div>)}</td>
                     <td className="py-2 pr-2">{l.sizes.join(" / ")}</td>
                     <td className="py-2 pr-2">{l.qty}</td>
                     <td className="py-2 pr-2 text-xs">{l.neededBy ? `${l.neededBy.order}. ${l.neededBy.name}` : "-"}</td>

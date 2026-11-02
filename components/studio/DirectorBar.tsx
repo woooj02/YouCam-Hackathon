@@ -61,7 +61,10 @@ export function DirectorBar() {
   }
 
   return (
-    <div className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-30 px-4 pb-4 sm:px-8">
+    // Docked under the main column (never over the side panel), on a fade so content slides beneath it instead of being cut.
+    <div className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-30">
+      <div className="mx-auto grid max-w-[1500px] gap-6 px-4 sm:px-8 xl:grid-cols-[1fr_360px]">
+      <div className="bg-gradient-to-t from-canvas via-canvas/90 to-transparent pb-4 pt-10">
       <div className="pointer-events-auto mx-auto max-w-3xl">
         {last ? (
           <div className="rise mb-3 rounded-2xl border border-accent/40 bg-surface/95 p-4 shadow-2xl backdrop-blur">
@@ -113,6 +116,8 @@ export function DirectorBar() {
             {busy ? "…" : "Send"}
           </button>
         </form>
+      </div>
+      </div>
       </div>
     </div>
   );

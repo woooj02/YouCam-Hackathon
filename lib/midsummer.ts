@@ -144,7 +144,7 @@ export function midsummerProduction(): Production {
         direction: "Plain work shirt and trousers.",
         requirements: [{ slot: "base", tags: ["work", "shirt", "trousers"], colors: ["grey", "blue"] }],
         makeup: { label: "Bare face", smooth: 0 } }),
-      look({ id: "l-thisbe", roleId: "r-flute", name: "Flute as Thisbe", sceneIds: ["wedding"],
+      look({ id: "l-thisbe", roleId: "r-flute", name: "Flute, playing Thisbe", sceneIds: ["wedding"],
         direction: "A borrowed, too-big ivory gown worn for laughs over the work clothes.",
         requirements: [{ slot: "base", tags: ["gown", "evening", "1920s"], colors: ["ivory", "white"] }],
         hair: { templateId: "female_retro_brown_waves", label: "1920s sculpted waves", keepColor: false },

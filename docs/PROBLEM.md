@@ -25,9 +25,11 @@ Small productions dress a whole cast from a shared rack, a hire house and second
 |---|---|---|
 | 81 Scottish community pantomime groups spent a combined £313,508 on production costs in 2008-09, about £3,823 per show | University of Glasgow, *Pantomime in Scotland: some economic findings*: <https://www.gla.ac.uk/media/Media_416345_smxx.doc> | Costumes not broken out for community groups |
 | Costumes were 14% of non-wage production spending in the professional survey | same source | Professional companies, not community |
+| US high schools reported spending $7,510 on average on a musical and $2,701 on a full-length play | EdTA and Utah State University, *Survey of Theatre Education in United States High Schools* (2012): <https://ww2.americansforthearts.org/sites/default/files/assets/files/Survey%20of%20theatre%20education%20in%20United%20States%20high%20schools%202012_web.pdf> | Whole production, not costumes alone; surveyed schools, 2011–12 |
+| Just under 95% of the surveyed schools offered theatre extracurriculars such as play production; 79% offered at least one theatre course | same source | Survey respondents, not every US school |
 | Over 85% of high school theatre programs relied on ticket sales for a substantial share of their budget (1991 EdTA survey) | Cited in Illinois Theatre Association: <https://illinoistheatre.org/articles/13640114> | Secondary citation of a 1991 report |
 
-No search turned up a current survey figure for costume spend per production from AACT or EdTA. Their survey pages are listed under Gaps.
+No source found gives costume spend alone per production; the EdTA figures above are for the whole production.
 
 ## 3. How costumes are sourced
 
@@ -63,5 +65,5 @@ These are the costs ENCORE is built to avoid: changing course after pieces are h
 ## Gaps to fill before the video
 
 - AACT survey pages found (<https://mact.net/?p=5680>, <https://mact.net/aact-survey-of-community-theatre-trends-part-3/>) report season trends, not costume budgets.
-- EdTA's 2011–12 landscape survey (<https://digitalcommons.usu.edu/theatre_facpub/10>) covers play production but the search returned no budget figure from it. Worth opening.
+- AACT's often-quoted "more than 7,000 community theatres" could not be found on an aact.org page on 2026-11-01, so it is not used.
 - Could not be checked on 2026-11-01, so left out: Phantom Projects pricing (<https://phantomprojects.com/pricing/>, the site refused automated requests), the Yale School of Drama rental PDF (404) and the Penn Manor Productions blog (410, removed).

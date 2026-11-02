@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useStudio } from "@/lib/client/store";
 import { itemById, lookState, money, SLOT_LABEL, SOURCE_LABEL } from "@/lib/client/view";
+import { fittingNotes } from "@/lib/fitting";
 
 /** One card per look, grouped by performer: what to pull, what to fit, what to check. */
 export default function PrintCards() {
@@ -25,15 +26,14 @@ export default function PrintCards() {
             {looks.map((l) => {
               const s = lookState(p, l.id);
               const a = p.plan?.assignment[l.id] ?? {};
-              const soft = (p.plan?.conflicts ?? []).filter((c) => c.severity === "soft" && c.lookIds.includes(l.id));
               return (
                 <article key={l.id} className="print-card mt-4 grid gap-4 rounded-2xl border border-line p-4 sm:grid-cols-[160px_1fr]">
                   <div className="space-y-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {(s.complete ?? s.body)?.url ? <img src={(s.complete ?? s.body)!.url} alt={s.complete?.composite ? "Complete look (composite)" : ""} className="w-full rounded-lg" /> : <div className="aspect-[2/3] rounded-lg bg-panel" />}
-                    {s.complete?.composite ? <p className="text-[10px] text-muted">Complete look · composite</p> : null}
+                    {s.complete ? <p className="text-[10px] text-muted">Complete look{s.complete.composite ? " · composite" : ""}</p> : null}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    {s.portrait?.url ? <img src={s.portrait.url} alt="" className="w-full rounded-lg" /> : null}
+                    {s.portrait?.url ? <><img src={s.portrait.url} alt="Hair and makeup close-up" className="w-full rounded-lg" /><p className="text-[10px] text-muted">Hair and makeup close-up</p></> : null}
                   </div>
                   <div className="text-sm">
                     <h3 className="font-[family-name:var(--font-display)] text-xl">{l.name}</h3>
@@ -58,10 +58,7 @@ export default function PrintCards() {
                     <div className="mt-3 rounded-lg bg-panel/60 p-2 text-xs">
                       <div className="font-medium">At the fitting</div>
                       <ul className="mt-1 list-disc pl-4">
-                        <li>Check fit and movement in every piece.</li>
-                        {a.hat ? <li>Fit headwear in person; it is excluded from the preview.</li> : null}
-                        {soft.map((c, i) => <li key={i}>{c.message}: rehearse {c.kind === "quick-change" ? "the change" : "the handoff"}.</li>)}
-                        {l.locked ? <li>Look approved and locked.</li> : null}
+                        {fittingNotes(p, l).map((note) => <li key={note}>{note}</li>)}
                       </ul>
                     </div>
                   </div>

@@ -6,6 +6,7 @@
  *   npm run showcase:render -- gatsby --looks l-daisy --strategy composite
  *   npm run showcase:render -- gatsby --looks l-daisy --strategy direct
  *   npm run showcase:render -- gatsby --extra l-nick:outer=g-black-jacket     # the look-by-look conflict image (~2 units)
+ *   add --extra-costume-only to render only the costume layers of an --extra (what the plan check shows)
  *
  * Prints the balance and the estimate first, stops after two failures, and
  * resumes from .local/<name>/render-state.json without resubmitting a task.
@@ -35,14 +36,15 @@ export function parseExtra(text: string): Extra {
 }
 
 /** The stages a run would create: unfinished stages of the chosen looks, plus alternates for --extra. */
-export function plannedStages(p: Production, looks: string[] | undefined, extras: Extra[]): StageSpec[] {
+export function plannedStages(p: Production, looks: string[] | undefined, extras: Extra[], extraCostumeOnly = false): StageSpec[] {
   const done = (key: string) => p.renders[key]?.status === "done" && !p.renders[key]?.demo;
   const out = allStages(p).filter((s) => !looks || looks.includes(s.lookId));
   for (const extra of extras) {
     const variant: Production = { ...p, plan: { ...p.plan!, assignment: { ...p.plan!.assignment, [extra.lookId]: { ...p.plan!.assignment[extra.lookId], [extra.slot]: extra.itemId } } } };
     const look = variant.looks.find((l) => l.id === extra.lookId);
     if (!look) throw new Error(`No look ${extra.lookId}`);
-    out.push(...stagesForLook(variant, look).filter((s) => s.chain !== "portrait"));
+    // The plan check only shows the costume render, so --extra-costume-only skips the hair and makeup on top.
+    out.push(...stagesForLook(variant, look).filter((s) => (extraCostumeOnly ? s.chain === "body" : s.chain !== "portrait")));
   }
   return [...new Map(out.filter((s) => !done(s.key)).map((s) => [s.key, s])).values()];
 }
@@ -96,7 +98,7 @@ async function runStage(live: Live, p: Production, spec: StageSpec, dir: string)
 
 async function main() {
   const { values, positionals } = parseArgs({ allowPositionals: true, options: {
-    looks: { type: "string" }, strategy: { type: "string" }, "crop-from": { type: "string" }, extra: { type: "string", multiple: true }, "dry-run": { type: "boolean" },
+    looks: { type: "string" }, strategy: { type: "string" }, "crop-from": { type: "string" }, extra: { type: "string", multiple: true }, "extra-costume-only": { type: "boolean" }, "dry-run": { type: "boolean" },
   } });
   const name = positionals[0] ?? "midsummer";
   const showcase = SHOWCASES[name];
@@ -108,7 +110,7 @@ async function main() {
   }
   p.plan ??= solve(p);
   const looks = values.looks?.split(",");
-  const stages = plannedStages(p, looks, (values.extra ?? []).map(parseExtra));
+  const stages = plannedStages(p, looks, (values.extra ?? []).map(parseExtra), values["extra-costume-only"]);
   const estimate = estimateUnits(stages);
   console.log(`${p.title}: ${plural(stages.length, "layer")} to make (${plural(stages.filter((s) => s.feature === "composite").length, "local composite")}), ~${plural(estimate, "unit")}.`);
   for (const s of stages) console.log(`  ${s.lookId.padEnd(14)} ${s.stage.padEnd(12)} ${String(s.units).padStart(2)}u  ${s.label}`);
