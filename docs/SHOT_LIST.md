@@ -8,11 +8,11 @@ Picture and on-screen text only. No narration in this list; the voice-over is re
 
 | Asset | Status on this branch | How to make it |
 |---|---|---|
-| Gatsby showcase, 12 saved layers | Ready | in the repo |
-| Nick in the black dinner jacket (the look-by-look clash) | Needs live render, ~2 units | `npm run showcase:render -- gatsby --extra l-nick:outer=g-black-jacket` |
-| Gatsby complete looks (Daisy first) | Needs live render, ~3 units a look | `npm run showcase:render -- gatsby --looks l-daisy --strategy composite`, then `--strategy direct`; keep the one that looks right, then render Gatsby and Nick |
-| Midsummer cast and garment photos (33 images) | Needs live text-to-image | `npm run showcase:generate -- --units-per-image <console price>` |
-| Midsummer renders (15 complete looks, ~75 units) | Needs live render | `npm run showcase:build` then `npm run showcase:render -- midsummer` |
+| Gatsby showcase, 18 saved layers | Ready | in the repo |
+| Nick in the black dinner jacket (the look-by-look clash) | Rendered live 2026-11-01 | `npm run showcase:render -- gatsby --extra l-nick:outer=g-black-jacket` |
+| Gatsby complete looks (all three, plus Gatsby in the ivory jacket for the repair) | Rendered live 2026-11-01, direct chain | `npm run showcase:render -- gatsby` |
+| Midsummer cast and garment photos (33 images) | Generated live 2026-11-01, 1 unit each | `npm run showcase:generate -- --units-per-image 1` |
+| Midsummer renders (47 layers, 15 complete looks) | Rendered live 2026-11-01 | `npm run showcase:build -- midsummer` then `npm run showcase:render -- midsummer` |
 
 ## Shots
 
@@ -21,7 +21,7 @@ Picture and on-screen text only. No narration in this list; the voice-over is re
 - **Action:** Start on the left half of the Plan check. Hold 3 s. Slow push in.
 - **Zoom target:** the two thumbnails, Gatsby and Nick, each with the black jacket ringed in red, and the line "Same scene. The rack has 1."
 - **On-screen text:** "Two characters. One jacket. Same scene."
-- **Assets:** Nick in the black dinner jacket (*needs live render*). Without it his thumbnail says "not rendered"; do not record this shot until it exists.
+- **Assets:** Nick in the black dinner jacket (rendered).
 
 ### 2 · 0:12–0:25 · Stakes, then the name
 - **Route:** same page, blurred to 20% behind text cards (edit-side blur).
@@ -42,7 +42,7 @@ Picture and on-screen text only. No narration in this list; the voice-over is re
   - (c) "Picked look by look: 4 double-bookings, over budget."
   - (d) "Planned together: 0 conflicts, $160."
   - (e) [Synthetic benchmark, 200 generated productions: look-by-look plans are feasible 24.5% of the time, ENCORE 100.0%.]
-- **Assets:** Midsummer photos and renders (*needs live*). If they are not ready, use the Gatsby showcase for (c)–(e) and cut (a).
+- **Assets:** Midsummer photos and renders (ready).
 
 ### 4 · 0:55–1:35 · One complete look, layer by layer
 - **Route:** Gatsby showcase, open Daisy's look (click her card).
@@ -55,7 +55,7 @@ Picture and on-screen text only. No narration in this list; the voice-over is re
   - "AI Makeup Virtual Try-On · wine lip"
   - If the composite strategy is kept: "Head composite (local, 0 units)" and keep the "composite" badge visible.
   - Final: "One image. Costume, outer layer, hair, makeup."
-- **Assets:** Daisy's complete look (*needs live render*).
+- **Assets:** Daisy's complete look (rendered, direct chain).
 
 ### 5 · 1:35–2:15 · Damage, then only the changed layers re-render live
 - **Route:** Gatsby showcase, cast board.
@@ -76,7 +76,7 @@ Picture and on-screen text only. No narration in this list; the voice-over is re
   - (a) "What to pull, hire, buy and find secondhand."
   - (b) "Per performer, with sizes and the scene it's needed by."
   - (d) "A quote request you send yourself."
-- **Assets:** none beyond Midsummer (works with swatches if photos are missing).
+- **Assets:** none beyond Midsummer.
 
 ### 7 · 2:40–2:50 · Fitting card and close
 - **Route:** `/studio/print` (Gatsby or Midsummer).

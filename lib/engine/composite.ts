@@ -75,3 +75,28 @@ export function blendInto(base: Uint8ClampedArray | Uint8Array, baseW: number, h
     }
   }
 }
+
+/**
+ * Match the head crop's tone to the image it goes back into. A try-on call can
+ * shift the whole crop slightly (brighter, cooler), which shows as a pale oval
+ * once pasted. Compare per-channel means over the feathered ring, where both
+ * images show the same background, and scale the crop's channels to match.
+ */
+export function matchTone(base: Uint8ClampedArray | Uint8Array, baseW: number, head: Uint8ClampedArray | Uint8Array, rect: Rect, mask = featherMask(rect.width, rect.height)): void {
+  const sumBase = [0, 0, 0], sumHead = [0, 0, 0];
+  let n = 0;
+  for (let y = 0; y < rect.height; y++) {
+    for (let x = 0; x < rect.width; x++) {
+      const a = mask[y * rect.width + x];
+      if (a <= 0 || a >= 0.95) continue;
+      const bi = ((rect.top + y) * baseW + rect.left + x) * 4;
+      const hi = (y * rect.width + x) * 4;
+      for (let c = 0; c < 3; c++) { sumBase[c] += base[bi + c]; sumHead[c] += head[hi + c]; }
+      n++;
+    }
+  }
+  if (!n) return;
+  // Capped at ±10%: enough for the drift a try-on call adds, never enough to undo the makeup itself.
+  const gain = sumBase.map((b, c) => (sumHead[c] > 0 ? Math.min(1.1, Math.max(0.9, b / sumHead[c])) : 1));
+  for (let i = 0; i < head.length; i += 4) for (let c = 0; c < 3; c++) head[i + c] = Math.max(0, Math.min(255, Math.round(head[i + c] * gain[c])));
+}

@@ -13,7 +13,7 @@ Built for the **YouCam API Skin AI & eCommerce VTO Hackathon** (eCommerce VTO tr
 | Route | What it is | State on this branch |
 |---|---|---|
 | `/studio?showcase=1&public=1` | *The Great Gatsby* party scene: 3 fictional performers, 3 looks, 12 saved YouCam layers, the $40 jacket repair | Complete; works with no API key |
-| `/studio?showcase=midsummer&public=1` | *A Midsummer Night's Dream* (public domain) as a 1920s wedding: 10 fictional performers, 15 looks, 4 scenes, two doubled roles, a hire/buy/secondhand catalogue, $180 budget | Plan, conflicts, cast wall, order sheet work. Photos and renders are **not generated yet** (see Honest limits); until then it shows labelled swatches and sketches |
+| `/studio?showcase=midsummer&public=1` | *A Midsummer Night's Dream* (public domain) as a 1920s wedding: 10 fictional performers, 15 looks, 4 scenes, two doubled roles, a hire/buy/secondhand catalogue, $180 budget | Plan, conflicts, cast wall and order sheet, with 33 generated fictional photos and 15 complete looks rendered live with YouCam |
 
 ## The problem
 
@@ -119,7 +119,7 @@ npm run showcase:render -- gatsby --extra l-nick:outer=g-black-jacket   # the cl
 
 ## Honest limits
 
-- **Not verified live on this branch.** The complete-look chain (both strategies), the Midsummer photos and renders, and Nick's black-jacket render were built and tested against mocks only: the development environment could not reach the YouCam API host. Which strategy looks right is still to be decided on real renders. The full-length head is small in the frame, so the composite may need waist-up or three-quarter photos.
+- **Complete looks, verified live on 2026-11-01** (spend in [docs/LIVE_RUNS.md](docs/LIVE_RUNS.md)). On real renders the direct chain (hair, then makeup, on the clothed image) beat the head-crop composite, which pasted the photo's collar and showed a seam, so direct is the default. In full-length shots the face is small and makeup sometimes returns `error_no_face`; the script then runs makeup on a head crop of the same render, matches its tone and pastes it back. Those looks (Nick, Hippolyta, Titania, Helena twice, Demetrius) are marked `composite` in the data and the UI.
 - Previews support appearance decisions. Physical fittings establish fit, comfort and movement. Hairstyle renders show a direction for the wig or styling team; they don't certify a wig.
 - Every performer, vendor and price in the demos is fictional and labelled so on screen. Sizes, quantities and prices in real use come from what the wardrobe team and suppliers enter.
 - The order sheet's quote request is a draft the designer sends; prices are catalogue listings, not quotes.

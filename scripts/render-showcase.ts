@@ -87,6 +87,7 @@ async function runStage(live: Live, p: Production, spec: StageSpec, dir: string)
     const headFile = file(url).replace(/\.jpg$/, ".head.jpg");
     await live.task(`${p.id}:${spec.key}:head-crop`, FEATURES[job.feature].taskPath, buildBody(job, cropSrc, ref), spec.units, headFile);
     writeFileSync(file(url), await pasteHeadFile(source, readFileSync(headFile), box));
+    live.failures = Math.max(0, live.failures - 1); // Recovered, so it does not count towards the stop rule.
     console.log(`OK   ${spec.lookId} ${spec.stage} via head crop (composite)`);
     return { key: spec.key, lookId: spec.lookId, stage: spec.stage, status: "done", url, demo: false, composite: true, units: spec.units, finishedAt: Date.now() };
   }
