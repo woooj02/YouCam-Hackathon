@@ -76,7 +76,7 @@ export default function Home() {
           <div>
             <p className="text-xs uppercase tracking-wider text-accent">The whole production keeps moving</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl">“Gatsby&apos;s black dinner jacket is damaged.”</h2>
-            <p className="mt-4 leading-relaxed text-muted">Gatsby gets an ivory dinner jacket from Footlights Costume Hire, a fictional hire house. The basket becomes $40 of $250. One of 12 render layers changes; the other 11 are kept.</p>
+            <p className="mt-4 leading-relaxed text-muted">Gatsby gets an ivory dinner jacket from Footlights Costume Hire, a fictional hire house. The basket becomes $40 of $250. Three of 18 render layers change (the jacket and the complete look on top of it); the other 15 are kept.</p>
             <p className="mt-3 text-xs text-muted">Try the repair in the showcase. Its saved replacement preview works without an API key.</p>
             <Link href="/studio?showcase=1&public=1" className="mt-6 inline-block rounded-full grad px-5 py-3 text-sm font-medium text-white">Try the jacket repair →</Link>
           </div>

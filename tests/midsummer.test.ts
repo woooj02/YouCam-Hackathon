@@ -57,7 +57,7 @@ describe("Midsummer showcase production", () => {
     const p = midsummerProduction(); p.plan = solve(p);
     const stages = allStages(p);
     expect(stages.some((s) => s.chain === "portrait")).toBe(false);
-    expect(new Set(stages.filter((s) => s.stage === "composite").map((s) => s.lookId)).size).toBe(15);
+    expect(new Set(stages.filter((s) => s.chain === "look").map((s) => s.lookId)).size).toBe(15);
     const units = stages.filter(isApiStage).reduce((sum, s) => sum + s.units, 0);
     expect(units).toBeLessThan(100);
   });

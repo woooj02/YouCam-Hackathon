@@ -512,7 +512,152 @@
       "url": "/showcase/gatsby/renders/gatsby-ivory-jacket-f0c4eae8ef.jpg",
       "demo": false,
       "units": 2
+    },
+    "1dce4908": {
+      "key": "1dce4908",
+      "lookId": "l-daisy",
+      "stage": "look-hair",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/1dce4908.jpg",
+      "demo": false,
+      "units": 2,
+      "finishedAt": 1793579543710
+    },
+    "eeb7c787": {
+      "key": "eeb7c787",
+      "lookId": "l-daisy",
+      "stage": "look-makeup",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/eeb7c787.jpg",
+      "demo": false,
+      "units": 1,
+      "finishedAt": 1793579550665
+    },
+    "7ef9dd57": {
+      "key": "7ef9dd57",
+      "lookId": "l-daisy",
+      "stage": "look-hair",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/7ef9dd57.jpg",
+      "demo": false,
+      "units": 2,
+      "finishedAt": 1793579563478
+    },
+    "df9add28": {
+      "key": "df9add28",
+      "lookId": "l-daisy",
+      "stage": "look-makeup",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/df9add28.jpg",
+      "demo": false,
+      "units": 1,
+      "finishedAt": 1793579570532
+    },
+    "b19a1b9b": {
+      "key": "b19a1b9b",
+      "lookId": "l-daisy",
+      "stage": "composite",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/b19a1b9b.jpg",
+      "demo": false,
+      "composite": true,
+      "units": 0,
+      "finishedAt": 1793579570642
+    },
+    "a4f8ced0": {
+      "key": "a4f8ced0",
+      "lookId": "l-gatsby",
+      "stage": "look-hair",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/a4f8ced0.jpg",
+      "demo": false,
+      "units": 2,
+      "finishedAt": 1793579642983
+    },
+    "e0d57517": {
+      "key": "e0d57517",
+      "lookId": "l-gatsby",
+      "stage": "look-makeup",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/e0d57517.jpg",
+      "demo": false,
+      "units": 1,
+      "finishedAt": 1793579649845
+    },
+    "57d80582": {
+      "key": "57d80582",
+      "lookId": "l-nick",
+      "stage": "look-hair",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/57d80582.jpg",
+      "demo": false,
+      "units": 2,
+      "finishedAt": 1793579656583
+    },
+    "e18d82c0": {
+      "key": "e18d82c0",
+      "lookId": "l-gatsby",
+      "stage": "look-hair",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/e18d82c0.jpg",
+      "demo": false,
+      "units": 2,
+      "finishedAt": 1793579666892
+    },
+    "87d78b9b": {
+      "key": "87d78b9b",
+      "lookId": "l-gatsby",
+      "stage": "look-makeup",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/87d78b9b.jpg",
+      "demo": false,
+      "units": 1,
+      "finishedAt": 1793579673681
+    },
+    "49a8f711": {
+      "key": "49a8f711",
+      "lookId": "l-nick",
+      "stage": "outer",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/49a8f711.jpg",
+      "demo": false,
+      "units": 2,
+      "finishedAt": 1793579686754
+    },
+    "56ffcc6f": {
+      "key": "56ffcc6f",
+      "lookId": "l-nick",
+      "stage": "look-hair",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/56ffcc6f.jpg",
+      "demo": false,
+      "units": 2,
+      "finishedAt": 1793579693464
+    },
+    "9c0fb423": {
+      "key": "9c0fb423",
+      "lookId": "l-nick",
+      "stage": "look-makeup",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/9c0fb423.jpg",
+      "demo": false,
+      "units": 1,
+      "finishedAt": 1793579700300
+    },
+    "2df3400f": {
+      "key": "2df3400f",
+      "lookId": "l-nick",
+      "stage": "look-makeup",
+      "status": "done",
+      "url": "/showcase/gatsby/renders/2df3400f.jpg",
+      "demo": false,
+      "composite": true,
+      "units": 1,
+      "finishedAt": 1793579774828
     }
   },
-  "history": []
+  "history": [],
+  "completeLook": {
+    "strategy": "direct"
+  }
 }

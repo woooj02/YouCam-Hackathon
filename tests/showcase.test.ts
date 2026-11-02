@@ -9,14 +9,15 @@ import type { Production } from "@/lib/engine/types";
 const showcase = (): Production => JSON.parse(readFileSync("public/showcase/production.json", "utf8"));
 
 describe("the complete public showcase", () => {
-  it("ships the Gatsby cast, every rack photo and 12 actual completed layers", () => {
+  it("ships the Gatsby cast, every rack photo and 18 actual completed layers, including a complete look per performer", () => {
     const p = showcase();
     expect(p.performers).toHaveLength(3);
     expect(p.performers.every((performer) => performer.reference === "fictional")).toBe(true);
     expect(p.title).toBe("The Great Gatsby");
     expect(p.looks).toHaveLength(3);
     expect(new Set(p.looks.map((look) => look.hair?.templateId)).size).toBe(3);
-    expect(allStages(p)).toHaveLength(12);
+    expect(allStages(p)).toHaveLength(18);
+    expect(allStages(p).filter((stage) => stage.chain === "look")).toHaveLength(6);
     expect(pendingStages(p, undefined, true)).toEqual([]);
     expect(p.plan?.gaps).toEqual([]);
     expect(p.plan?.conflicts.filter((c) => c.severity === "hard")).toEqual([]);
@@ -37,7 +38,7 @@ describe("the complete public showcase", () => {
     expect(JSON.stringify(p)).not.toMatch(/data:|\.local\/|\/home\/|X-Amz-|access_token|secret_key/i);
   });
 
-  it("demonstrates the shared-rack conflict and a one-layer $40 repair without a key", () => {
+  it("demonstrates the shared-rack conflict and a $40 jacket repair that keeps every other layer, without a key", () => {
     const p = showcase();
     expect(naivePlan(p).conflicts.some((c) => c.kind === "double-booked" && c.itemId === "g-black-jacket")).toBe(true);
     const repaired = replanWithout(p, "g-black-jacket");
@@ -45,8 +46,9 @@ describe("the complete public showcase", () => {
     expect(repaired.changes).toEqual([{ lookId: "l-gatsby", slot: "outer", from: "g-black-jacket", to: "g-ivory-jacket" }]);
     expect(p.plan?.cost).toBe(0);
     expect(repaired.production.plan?.cost).toBe(40);
-    expect(impact).toMatchObject({ total: 12, kept: 11, lookIds: ["l-gatsby"] });
-    expect(impact.changedKeys).toHaveLength(1);
+    expect(impact).toMatchObject({ total: 18, kept: 15, lookIds: ["l-gatsby"] });
+    // The jacket layer, plus the complete look built on top of it (hair, then makeup).
+    expect(impact.changedKeys).toHaveLength(3);
     expect(impact.cachedKeys).toEqual(impact.changedKeys);
     expect(pendingStages(repaired.production, undefined, true)).toEqual([]);
   });
@@ -76,5 +78,15 @@ describe("the complete public showcase", () => {
     expect(allStages(out).every((stage) => out.renders[stage.key]?.url?.startsWith("data:image/"))).toBe(true);
     expect(new Set(inline.mock.calls.map(([url]) => url)).size).toBe(inline.mock.calls.length);
     await expect(portableProduction(p, async () => { throw new Error("Missing photo"); })).rejects.toThrow("Missing photo");
+  });
+});
+
+describe("the public Gatsby repair headline", () => {
+  it("counts the jacket layer and the complete look built on it, from the saved showcase", async () => {
+    const { repairCost } = await import("@/lib/engine/render");
+    const { applyOp } = await import("@/lib/engine/ops");
+    const p = showcase();
+    const cost = repairCost(p, applyOp(p, { type: "unavailable", itemId: "g-black-jacket" }).production);
+    expect(cost).toEqual({ apiLayers: 18, changedApiLayers: 3, units: 5, fullCastUnits: 30, recomposited: 0 });
   });
 });

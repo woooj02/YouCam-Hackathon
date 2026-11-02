@@ -4,7 +4,7 @@
 
 ENCORE is a fitting room for an entire cast. A costume designer gives it the show, the cast and the rack they already have. ENCORE plans every look across every scene from that rack, renders each look on the performer with the YouCam API (costume, outer layer, hairstyle and makeup in one image), and turns what is left into an order sheet: what to pull, hire, buy or find secondhand, inside the budget.
 
-When something breaks ("Gatsby’s black dinner jacket is damaged"), ENCORE re-plans only the looks that used it, re-renders only the layers that changed, and says what that saved: "Re-rendered 1 of 12 layers: 2 units instead of 21 for the whole cast".
+When something breaks ("Gatsby’s black dinner jacket is damaged"), ENCORE re-plans only the looks that used it, re-renders only the layers that changed, and says what that saved: "Re-rendered 3 of 18 layers: 5 units instead of 30 for the whole cast" (the jacket, then the hair and makeup of the complete look built on it).
 
 Built for the **YouCam API Skin AI & eCommerce VTO Hackathon** (eCommerce VTO track).
 

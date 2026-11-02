@@ -7,8 +7,7 @@
   "budget": 180,
   "currency": "$",
   "completeLook": {
-    "strategy": "composite",
-    "cropFrom": "photo"
+    "strategy": "direct"
   },
   "performers": [
     {

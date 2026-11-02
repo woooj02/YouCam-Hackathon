@@ -57,14 +57,14 @@ Picture and on-screen text only. No narration in this list; the voice-over is re
   - Final: "One image. Costume, outer layer, hair, makeup."
 - **Assets:** Daisy's complete look (*needs live render*).
 
-### 5 · 1:35–2:15 · Damage, then one layer re-renders live
+### 5 · 1:35–2:15 · Damage, then only the changed layers re-render live
 - **Route:** Gatsby showcase, cast board.
 - **Action:** (a) Type in the director bar: "Gatsby's black dinner jacket is damaged" and send. (b) The change summary appears: hold on it. (c) Open Gatsby's look, click "Redo this layer" on the outer layer to render the ivory jacket live (2 units; the composite re-pastes locally). Let the shimmer run to the finished image. (d) Back to the summary.
-- **Zoom targets:** (b) the headline [Re-rendered 1 of 12 layers: 2 units instead of 21 for the whole cast] (with composite complete looks on Gatsby it reads [1 of 18 layers: 2 units instead of 30] plus one local re-composite); (c) the outer-layer tile finishing; (d) the Sourcing stat [$40 / $250].
+- **Zoom targets:** (b) the headline [Re-rendered 3 of 18 layers: 5 units instead of 30 for the whole cast]; (c) the outer-layer tile finishing; (d) the Sourcing stat [$40 / $250].
 - **On-screen text:**
   - (a) "Opening week. A jacket tears."
   - (b) "Only the jacket changes. Everything else is kept."
-  - (c) "Re-rendering one layer, live." (true only in this take: it costs 2 real units)
+  - (c) "Re-rendering only what changed, live." (true only in this take: it costs 5 real units)
   - (d) "$40 hire. Inside budget."
 - **Assets:** a working key with ≥ 2 units (≥ 5 if Gatsby has complete looks with the direct strategy).
 

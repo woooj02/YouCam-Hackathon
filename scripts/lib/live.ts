@@ -74,7 +74,9 @@ export class Live {
   readonly pollMs: number;
   constructor(stateFile: string, script: string, transport: Transport = httpTransport, pollMs = 3000) {
     this.stateFile = stateFile; this.script = script; this.transport = transport; this.pollMs = pollMs;
-    this.state = readJson<LiveState>(stateFile, { uploads: {}, tasks: {} });
+    // Older tools wrote other shapes to the same path; keep only what this class understands.
+    const saved = readJson<Partial<LiveState>>(stateFile, {});
+    this.state = { uploads: saved.uploads ?? {}, tasks: saved.tasks ?? {} };
   }
   save() { writeJson(this.stateFile, this.state); }
 

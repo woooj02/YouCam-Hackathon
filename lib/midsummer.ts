@@ -43,7 +43,7 @@ export function midsummerProduction(): Production {
     notice: "Fictional performers, vendors and prices. A Midsummer Night's Dream is public domain; this staging is original to the demo.",
     budget: 180,
     currency: "$",
-    completeLook: { strategy: "composite", cropFrom: "photo" },
+    completeLook: { strategy: "direct" },
     performers: [
       performer("p-elliot", "Elliot", "M", "male"),
       performer("p-ama", "Ama", "M", "female"),

@@ -13,6 +13,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { allStages, estimateUnits, stagesForLook, type StageSpec } from "../lib/engine/render.ts";
+import { DEFAULT_HEAD_BOX } from "../lib/engine/composite.ts";
 import { solve } from "../lib/engine/solver.ts";
 import type { CompleteLook, Production, RenderRecord, Slot } from "../lib/engine/types.ts";
 import { buildBody, Job } from "../lib/youcam/bodies.ts";
@@ -41,7 +42,7 @@ export function plannedStages(p: Production, looks: string[] | undefined, extras
     const variant: Production = { ...p, plan: { ...p.plan!, assignment: { ...p.plan!.assignment, [extra.lookId]: { ...p.plan!.assignment[extra.lookId], [extra.slot]: extra.itemId } } } };
     const look = variant.looks.find((l) => l.id === extra.lookId);
     if (!look) throw new Error(`No look ${extra.lookId}`);
-    out.push(...stagesForLook(variant, look).filter((s) => s.chain === "body"));
+    out.push(...stagesForLook(variant, look).filter((s) => s.chain !== "portrait"));
   }
   return [...new Map(out.filter((s) => !done(s.key)).map((s) => [s.key, s])).values()];
 }
@@ -74,7 +75,21 @@ async function runStage(live: Live, p: Production, spec: StageSpec, dir: string)
     if (!job.ref || !existsSync(file(job.ref))) throw new StopRun(`No garment photo for ${spec.label}. Run the generation script first.`);
     ref = { ref_file_id: await live.upload(bytes(job.ref), "image/jpeg", "garment.jpg") };
   }
-  await live.task(`${p.id}:${spec.key}`, FEATURES[job.feature].taskPath, buildBody(job, src, ref), spec.units, file(url));
+  try {
+    await live.task(`${p.id}:${spec.key}`, FEATURES[job.feature].taskPath, buildBody(job, src, ref), spec.units, file(url));
+  } catch (error) {
+    // In a full-length render the face can be too small for makeup to detect. Retry on a head crop of the
+    // same image and paste it back: same pixels around the seam, and the record says it is a composite.
+    if (!(spec.stage === "look-makeup" && !spec.crop && /error_no_face/.test((error as Error).message))) throw error;
+    const box = perf.headBox ?? DEFAULT_HEAD_BOX;
+    const crop = await cropHeadFile(source, box);
+    const cropSrc = { src_file_id: await live.upload(crop, "image/jpeg", "head.jpg") };
+    const headFile = file(url).replace(/\.jpg$/, ".head.jpg");
+    await live.task(`${p.id}:${spec.key}:head-crop`, FEATURES[job.feature].taskPath, buildBody(job, cropSrc, ref), spec.units, headFile);
+    writeFileSync(file(url), await pasteHeadFile(source, readFileSync(headFile), box));
+    console.log(`OK   ${spec.lookId} ${spec.stage} via head crop (composite)`);
+    return { key: spec.key, lookId: spec.lookId, stage: spec.stage, status: "done", url, demo: false, composite: true, units: spec.units, finishedAt: Date.now() };
+  }
   return { key: spec.key, lookId: spec.lookId, stage: spec.stage, status: "done", url, demo: false, units: spec.units, finishedAt: Date.now() };
 }
 
