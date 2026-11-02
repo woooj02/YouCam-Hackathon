@@ -123,7 +123,8 @@ describe("the complete studio journey", () => {
     });
     await act(async () => { input.closest("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
     await tick(1200);
-    expect(document.body.textContent).toContain("1 of 23 layers changed. 22 kept.");
+    expect(document.body.textContent).toContain("Re-rendered 1 of 23 layers: 2 units instead of 40 for the whole cast");
+    expect(document.body.textContent).toContain("22 of 23 layers kept");
     expect(document.body.textContent).toContain("Saved preview reused · 0 new units");
     expect(current.production?.plan?.cost).toBe(40);
     await click(button("Sourcing ·"));

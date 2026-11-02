@@ -37,3 +37,13 @@ describe("Gatsby party wardrobe", () => {
     expect(changed.map((stage) => [stage.stage, stage.units])).toEqual([["outer", 2]]);
   });
 });
+
+describe("Gatsby repair numbers", () => {
+  it("costs 2 units instead of 21 for the whole cast, from the graph and unit costs", async () => {
+    const { repairCost, UNIT_COST } = await import("@/lib/engine/render");
+    const p = gatsbyProduction(); p.plan = solve(p);
+    const cost = repairCost(p, applyOp(p, { type: "unavailable", itemId: "g-black-jacket" }).production);
+    expect(cost).toEqual({ apiLayers: 12, changedApiLayers: 1, units: UNIT_COST.cloth, fullCastUnits: 3 * (2 * UNIT_COST.cloth + UNIT_COST["hair-transfer"] + UNIT_COST["makeup-vto"]), recomposited: 0 });
+    expect(cost.fullCastUnits).toBe(21);
+  });
+});

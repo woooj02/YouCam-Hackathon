@@ -2,7 +2,7 @@
 /** Production state, deterministic planner changes and a resumable render queue. */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { applyOp, type Op, type OpResult } from "../engine/ops";
-import { allStages, dependencies, pendingStages, renderImpact, type RenderImpact, type StageSpec } from "../engine/render";
+import { allStages, dependencies, pendingStages, renderImpact, repairCost, type RenderImpact, type RepairCost, type StageSpec } from "../engine/render";
 import { cropHead, pasteHead } from "./composite";
 import type { Production, RenderRecord } from "../engine/types";
 import { showcaseProduction } from "../showcase";
@@ -12,7 +12,7 @@ import { imageDataUrl } from "./images";
 
 type Status = { demo: boolean; agent: boolean };
 export type Highlight = { lookIds: string[]; itemIds: string[]; at: number };
-export type ChangeReport = RenderImpact & { at: number; summary: string; changes: OpResult["changes"] };
+export type ChangeReport = RenderImpact & { at: number; summary: string; changes: OpResult["changes"]; cost: RepairCost };
 type Ctx = {
   production: Production | null; status: Status | null;
   setProduction: (p: Production | ((prev: Production) => Production)) => void;
@@ -110,7 +110,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     setProduction(result.production);
     void idbSet(KEY, result.production);
     const impact = renderImpact(current, result.production);
-    if (impact.changedKeys.length) setChangeReport({ ...impact, at: Date.now(), summary: result.summary, changes: result.changes });
+    if (impact.changedKeys.length) setChangeReport({ ...impact, at: Date.now(), summary: result.summary, changes: result.changes, cost: repairCost(current, result.production) });
     const itemIds = result.changes.flatMap((change) => [change.from, change.to].filter(Boolean) as string[]);
     if ("itemId" in operation) itemIds.push(operation.itemId);
     flash({ lookIds: result.affected, itemIds });
